@@ -7,7 +7,6 @@ url=''
 license=('GPLv2')
 makedepends=('go')
 source=('holo-apply.go')
-md5sums=('ad556242491ab2dd294f4f12583ecd77')
 
 build() {
     go build -o holo-apply holo-apply.go
