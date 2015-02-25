@@ -18,23 +18,6 @@
 *
 ********************************************************************************/
 
-// The idea of holo is to rely as much on package management as possible for
-// the whole system setup and maintenance process. This is achieved by using
-// metapackages to define personal package selections for all systems or for
-// certain types of systems.
-//
-// Metapackages go only 90% of the way, though. A prominent shortcoming is that
-// the holo metapackages cannot install custom configuration files where the
-// original packages already installed stock configuration files.
-//
-// Instead, the custom configuration file is placed under the /holo/repo
-// directory, e.g. /holo/repo/etc/foobar.conf. This tool, holo-apply, is then
-// run by the metapackage's post-install and post-update hook to place the
-// custom configuration file at its designated position
-// (e.g. /etc/foobar.conf), while simultaneously retaining a copy of the stock
-// configuration file in /holo/backup (e.g. /holo/backup/etc/foobar.conf) for
-// reference.
-
 package main
 
 import (
