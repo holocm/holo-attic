@@ -116,6 +116,7 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	if isRegularFile(pacnewPath) {
 		msg(msgInfo, fmt.Sprintf("Saving %s in /holo/backup", pacnewPath))
 		copyFile(pacnewPath, backupPath)
+		_ = os.Remove(pacnewPath) //this can fail silently
 	}
 
 	return nil
