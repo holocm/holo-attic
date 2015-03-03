@@ -103,7 +103,8 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//complain if the user made any changes to config files governed by holo
 	targetSha := sha256ForFile(targetPath)
 	if targetSha != sha256ForFile(repoPath) {
-		if targetSha != sha256ForFile(backupPath) {
+		if isNewerThan(targetPath, repoPath) {
+			//NOTE: this check works because copyFile() copies the mtime
 			panic(fmt.Sprintf("Skipping %s: has been modified by user", targetPath))
 		}
 		msg(msgInfo, fmt.Sprintf("Installing %s", targetPath))
@@ -122,12 +123,29 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	return nil
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// helper functions
+
 func isRegularFile(path string) bool {
 	info, err := os.Lstat(path)
 	if err != nil {
 		return false
 	}
 	return info.Mode().IsRegular()
+}
+
+//Returns true if the file at firstPath is newer than the file at secondPath.
+//Panics on error. (Compare implementation of walkRepo.)
+func isNewerThan(path1, path2 string) bool {
+	info1, err := os.Stat(path1)
+	if err != nil {
+		panic(err.Error())
+	}
+	info2, err := os.Stat(path2)
+	if err != nil {
+		panic(err.Error())
+	}
+	return info1.ModTime().After(info2.ModTime())
 }
 
 //Panics on error. (Compare implementation of walkRepo.)
@@ -157,7 +175,7 @@ func copyFileImpl(fromPath, toPath string) (result error) {
 		return err
 	}
 
-	//apply permissions and ownership from source file to target file
+	//apply permissions, ownership, modification date from source file to target file
 	//NOTE: We cannot just pass the FileMode in WriteFile(), because its
 	//FileMode argument is only applied when a new file is created, not when
 	//an existing one is truncated.
@@ -171,6 +189,10 @@ func copyFileImpl(fromPath, toPath string) (result error) {
 	}
 	stat_t := info.Sys().(*syscall.Stat_t) // UGLY
 	err = os.Chown(toPath, int(stat_t.Uid), int(stat_t.Gid))
+	if err != nil {
+		return err
+	}
+	err = os.Chtimes(toPath, info.ModTime(), info.ModTime())
 	if err != nil {
 		return err
 	}
