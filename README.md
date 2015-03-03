@@ -3,12 +3,19 @@ holo - minimal configuration management
 
 Today's DevOps is all about configuration management tools like Chef and
 Puppet, humongous software suites that intend to manage your system
-configuration. Wait, wasn't that what we invented package management for? Why
-slap another 100k lines of Ruby code on the existing package management
-solution?
+configuration. Their complex domain model allows you to document and manage the
+configuration of thousands of systems at once.
 
-holo is a radically different configuration management tool that relies as much
-as possible on package management for the whole system setup and maintenance
+And I'm just sitting here, wanting a slice of the cake for my single notebook
+and my single home server. I certainly don't want to bother with all that
+complexity in order to achieve a defined system state.
+
+Defined system state... Wasn't that what we invented package management for?
+Why slap another 100k lines of Ruby code on the existing package management
+solution for my simple use-case?
+
+holo is a radically simple configuration management tool that relies as much as
+possible on package management for the whole system setup and maintenance
 process. This is achieved by using metapackages to define personal package
 selections for all systems or for certain types of systems.
 
@@ -26,6 +33,15 @@ to place the custom configuration file at its designated position
 (e.g. `/etc/foobar.conf`), while simultaneously retaining a copy of the stock
 configuration file in `/holo/backup` (e.g. `/holo/backup/etc/foobar.conf`) for
 reference.
+
+Dependencies
+============
+
+holo is written in Go, so it compiles to static binaries without any runtime
+dependencies (other than a UNIX kernel). That being said, the current
+implementation depends on Arch Linux at some points (the packaging using a
+PKGBUILD, and the built-in handling of `pacnew` files). The algorithm itself is
+distribution-independent, though.
 
 TODO
 ====
