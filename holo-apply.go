@@ -87,6 +87,7 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//step 2: we know that a file exists at installPath; if we don't have a
 	//backup of the original file, the file at installPath *is* the original
 	//file which we have to backup now
+	skipIntegrityCheck := false
 	if !isRegularFile(backupPath) {
 		msg(msgInfo, fmt.Sprintf("Saving %s in /holo/backup", targetPath))
 
@@ -96,6 +97,18 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 		}
 
 		copyFile(targetPath, backupPath)
+		//don't complain in the next steps that the file at targetPath does not
+		//match its template at repoPath
+		skipIntegrityCheck = true
+	}
+
+	//step 2.5: if a .pacnew file exists next to the targetPath, the base
+	//package was updated and the .pacnew is the newer version of the original
+	//config file; move it to the backup location
+	if isRegularFile(pacnewPath) {
+		msg(msgInfo, fmt.Sprintf("Saving %s in /holo/backup", pacnewPath))
+		copyFile(pacnewPath, backupPath)
+		_ = os.Remove(pacnewPath) //this can fail silently
 	}
 
 	//step 3: overwrite targetPath with repoPath *if* the version at targetPath
@@ -103,21 +116,12 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//complain if the user made any changes to config files governed by holo
 	targetSha := sha256ForFile(targetPath)
 	if targetSha != sha256ForFile(repoPath) {
-		if isNewerThan(targetPath, repoPath) {
+		if !skipIntegrityCheck && isNewerThan(targetPath, repoPath) {
 			//NOTE: this check works because copyFile() copies the mtime
 			panic(fmt.Sprintf("Skipping %s: has been modified by user", targetPath))
 		}
 		msg(msgInfo, fmt.Sprintf("Installing %s", targetPath))
 		copyFile(repoPath, targetPath)
-	}
-
-	//step 4: if a .pacnew file exists next to the targetPath, the base package
-	//was updated and the .pacnew is the newer version of the original config
-	//file; move it to the backup location
-	if isRegularFile(pacnewPath) {
-		msg(msgInfo, fmt.Sprintf("Saving %s in /holo/backup", pacnewPath))
-		copyFile(pacnewPath, backupPath)
-		_ = os.Remove(pacnewPath) //this can fail silently
 	}
 
 	return nil
