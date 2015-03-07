@@ -26,6 +26,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"syscall"
 )
 
@@ -71,8 +72,23 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 		}
 	}()
 
+	//application strategy is determined by the file suffix
+	repoBasePath := repoPath
+	var applicationStrategy func(string, string, string)
+	switch {
+	case strings.HasSuffix(repoPath, ".holoscript"):
+		//repoPath ends in ".holoscript" -> the repo file is a script that
+		//converts the backup file into the target file
+		repoBasePath = strings.TrimSuffix(repoPath, ".holoscript")
+		applicationStrategy = applyProgram
+	default:
+		//repoPath does not have special suffix -> the repo file is applied by
+		//copying it to the target location
+		applicationStrategy = applyCopy
+	}
+
 	//determine the related paths
-	relPath, _ := filepath.Rel("/holo/repo", repoPath)
+	relPath, _ := filepath.Rel("/holo/repo", repoBasePath)
 	targetPath := filepath.Join("/", relPath)
 	backupPath := filepath.Join("/holo/backup", relPath)
 	pacnewPath := targetPath + ".pacnew"
@@ -114,17 +130,22 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//step 3: overwrite targetPath with repoPath *if* the version at targetPath
 	//is the one installed by the package (which can be found at backupPath);
 	//complain if the user made any changes to config files governed by holo
-	targetSha := sha256ForFile(targetPath)
-	if targetSha != sha256ForFile(repoPath) {
-		if !skipIntegrityCheck && isNewerThan(targetPath, repoPath) {
-			//NOTE: this check works because copyFile() copies the mtime
-			panic(fmt.Sprintf("Skipping %s: has been modified by user", targetPath))
-		}
-		msg(msgInfo, fmt.Sprintf("Installing %s", targetPath))
-		copyFile(repoPath, targetPath)
+	if !skipIntegrityCheck && isNewerThan(targetPath, repoPath) {
+		//NOTE: this check works because copyFile() copies the mtime
+		panic(fmt.Sprintf("Skipping %s: has been modified by user", targetPath))
 	}
+	msg(msgInfo, fmt.Sprintf("Installing %s", targetPath))
+	applicationStrategy(repoPath, backupPath, targetPath)
 
 	return nil
+}
+
+func applyCopy(repoPath, backupPath, targetPath string) {
+	copyFile(repoPath, targetPath)
+}
+
+func applyProgram(repoPath, backupPath, targetPath string) {
+	//TODO
 }
 
 ////////////////////////////////////////////////////////////////////////////////
