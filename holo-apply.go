@@ -21,10 +21,12 @@
 package main
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"syscall"
@@ -145,7 +147,31 @@ func applyCopy(repoPath, backupPath, targetPath string) {
 }
 
 func applyProgram(repoPath, backupPath, targetPath string) {
-	//TODO
+	//apply repoPath by executing it in the form
+	//$ exec repoPath < backupPath > targetPath
+	cmd := exec.Command(repoPath)
+
+	//prepare standard input
+	var err error
+	cmd.Stdin, err = os.Open(backupPath)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	//run command, fetch result file into buffer
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err = cmd.Run()
+	if err != nil {
+		panic(err.Error())
+	}
+
+	//write result file and apply permissions from backup path
+	err = ioutil.WriteFile(targetPath, out.Bytes(), 600)
+	if err != nil {
+		panic(err.Error())
+	}
+	applyFilePermissions(backupPath, targetPath)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -189,7 +215,7 @@ func copyFile(fromPath, toPath string) {
 	}
 }
 
-func copyFileImpl(fromPath, toPath string) (result error) {
+func copyFileImpl(fromPath, toPath string) error {
 	//copy contents
 	data, err := ioutil.ReadFile(fromPath)
 	if err != nil {
@@ -200,6 +226,10 @@ func copyFileImpl(fromPath, toPath string) (result error) {
 		return err
 	}
 
+	return applyFilePermissions(fromPath, toPath)
+}
+
+func applyFilePermissions(fromPath, toPath string) error {
 	//apply permissions, ownership, modification date from source file to target file
 	//NOTE: We cannot just pass the FileMode in WriteFile(), because its
 	//FileMode argument is only applied when a new file is created, not when
