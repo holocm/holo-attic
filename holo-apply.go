@@ -30,24 +30,19 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+
+	"./holo"
 )
-
-var msgError = "31"
-var msgInfo = "38"
-
-func msg(color string, message string) {
-	fmt.Printf("\x1b[%sm\x1b[1m[holo-apply]\x1b[0m %s\n", color, message)
-}
 
 func main() {
 	//check that /holo/repo exists
 	repoInfo, err := os.Lstat("/holo/repo")
 	if err != nil {
-		msg(msgError, fmt.Sprintf("Cannot open /holo/repo: %s", err.Error()))
+		holo.PrintError("Cannot open /holo/repo: %s", err.Error())
 		return
 	}
 	if !repoInfo.IsDir() {
-		msg(msgError, "Cannot open /holo/repo: not a directory!")
+		holo.PrintError("Cannot open /holo/repo: not a directory!")
 		return
 	}
 
@@ -69,7 +64,7 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//with the next file
 	defer func() {
 		if message := recover(); message != nil {
-			msg(msgError, message.(string))
+			holo.PrintError(message.(string))
 			resultError = nil
 		}
 	}()
@@ -107,7 +102,7 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//file which we have to backup now
 	skipIntegrityCheck := false
 	if !isRegularFile(backupPath) {
-		msg(msgInfo, fmt.Sprintf("Saving %s in /holo/backup", targetPath))
+		holo.PrintInfo("Saving %s in /holo/backup", targetPath)
 
 		backupDir := filepath.Dir(backupPath)
 		if err := os.MkdirAll(backupDir, 0755); err != nil {
@@ -124,7 +119,7 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//package was updated and the .pacnew is the newer version of the original
 	//config file; move it to the backup location
 	if isRegularFile(pacnewPath) {
-		msg(msgInfo, fmt.Sprintf("Saving %s in /holo/backup", pacnewPath))
+		holo.PrintInfo("Saving %s in /holo/backup", pacnewPath)
 		copyFile(pacnewPath, backupPath)
 		_ = os.Remove(pacnewPath) //this can fail silently
 	}
@@ -136,7 +131,7 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 		//NOTE: this check works because copyFile() copies the mtime
 		panic(fmt.Sprintf("Skipping %s: has been modified by user", targetPath))
 	}
-	msg(msgInfo, fmt.Sprintf("Installing %s", targetPath))
+	holo.PrintInfo("Installing %s", targetPath)
 	applicationStrategy(repoPath, backupPath, targetPath)
 
 	return nil
