@@ -6,11 +6,7 @@ arch=('any')
 url=''
 license=('GPLv2')
 makedepends=('go')
-source=('holo-apply.go')
-
-build() {
-    go build -o holo-apply holo-apply.go
-}
+source=('holo-apply')
 
 package() {
     cd "${pkgdir}"

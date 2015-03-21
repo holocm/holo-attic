@@ -1,3 +1,5 @@
+# ignore build results
+holo-apply
 # ignore directories used by makepkg
 pkg/
 src/
