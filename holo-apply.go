@@ -22,14 +22,12 @@ package main
 
 import (
 	"bytes"
-	"crypto/sha256"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"syscall"
 
 	"./holo"
 )
@@ -93,7 +91,7 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//step 1: will only install files from repo if there is a corresponding
 	//regular file in the target location (that file comes from the application
 	//package, the repo file from the holo metapackage)
-	if !isRegularFile(targetPath) {
+	if !holo.IsRegularFile(targetPath) {
 		panic(fmt.Sprintf("%s is not a regular file", targetPath))
 	}
 
@@ -101,7 +99,7 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//backup of the original file, the file at installPath *is* the original
 	//file which we have to backup now
 	skipIntegrityCheck := false
-	if !isRegularFile(backupPath) {
+	if !holo.IsRegularFile(backupPath) {
 		holo.PrintInfo("Saving %s in /holo/backup", targetPath)
 
 		backupDir := filepath.Dir(backupPath)
@@ -109,7 +107,7 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 			panic(fmt.Sprintf("Cannot create directory %s: %s", backupDir, err.Error()))
 		}
 
-		copyFile(targetPath, backupPath)
+		holo.CopyFile(targetPath, backupPath)
 		//don't complain in the next steps that the file at targetPath does not
 		//match its template at repoPath
 		skipIntegrityCheck = true
@@ -118,17 +116,17 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//step 2.5: if a .pacnew file exists next to the targetPath, the base
 	//package was updated and the .pacnew is the newer version of the original
 	//config file; move it to the backup location
-	if isRegularFile(pacnewPath) {
+	if holo.IsRegularFile(pacnewPath) {
 		holo.PrintInfo("Saving %s in /holo/backup", pacnewPath)
-		copyFile(pacnewPath, backupPath)
+		holo.CopyFile(pacnewPath, backupPath)
 		_ = os.Remove(pacnewPath) //this can fail silently
 	}
 
 	//step 3: overwrite targetPath with repoPath *if* the version at targetPath
 	//is the one installed by the package (which can be found at backupPath);
 	//complain if the user made any changes to config files governed by holo
-	if !skipIntegrityCheck && isNewerThan(targetPath, repoPath) {
-		//NOTE: this check works because copyFile() copies the mtime
+	if !skipIntegrityCheck && holo.IsNewerThan(targetPath, repoPath) {
+		//NOTE: this check works because holo.CopyFile() copies the mtime
 		panic(fmt.Sprintf("Skipping %s: has been modified by user", targetPath))
 	}
 	holo.PrintInfo("Installing %s", targetPath)
@@ -138,7 +136,7 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 }
 
 func applyCopy(repoPath, backupPath, targetPath string) {
-	copyFile(repoPath, targetPath)
+	holo.CopyFile(repoPath, targetPath)
 }
 
 func applyProgram(repoPath, backupPath, targetPath string) {
@@ -166,86 +164,5 @@ func applyProgram(repoPath, backupPath, targetPath string) {
 	if err != nil {
 		panic(err.Error())
 	}
-	applyFilePermissions(backupPath, targetPath)
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// helper functions
-
-func isRegularFile(path string) bool {
-	info, err := os.Lstat(path)
-	if err != nil {
-		return false
-	}
-	return info.Mode().IsRegular()
-}
-
-//Returns true if the file at firstPath is newer than the file at secondPath.
-//Panics on error. (Compare implementation of walkRepo.)
-func isNewerThan(path1, path2 string) bool {
-	info1, err := os.Stat(path1)
-	if err != nil {
-		panic(err.Error())
-	}
-	info2, err := os.Stat(path2)
-	if err != nil {
-		panic(err.Error())
-	}
-	return info1.ModTime().After(info2.ModTime())
-}
-
-//Panics on error. (Compare implementation of walkRepo.)
-func sha256ForFile(path string) [32]byte {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		panic(err.Error())
-	}
-	return sha256.Sum256(data)
-}
-
-//Panics on error. (Compare implementation of walkRepo.)
-func copyFile(fromPath, toPath string) {
-	if err := copyFileImpl(fromPath, toPath); err != nil {
-		panic(fmt.Sprintf("Cannot copy %s to %s: %s", fromPath, toPath, err.Error()))
-	}
-}
-
-func copyFileImpl(fromPath, toPath string) error {
-	//copy contents
-	data, err := ioutil.ReadFile(fromPath)
-	if err != nil {
-		return err
-	}
-	err = ioutil.WriteFile(toPath, data, 0600)
-	if err != nil {
-		return err
-	}
-
-	return applyFilePermissions(fromPath, toPath)
-}
-
-func applyFilePermissions(fromPath, toPath string) error {
-	//apply permissions, ownership, modification date from source file to target file
-	//NOTE: We cannot just pass the FileMode in WriteFile(), because its
-	//FileMode argument is only applied when a new file is created, not when
-	//an existing one is truncated.
-	info, err := os.Stat(fromPath)
-	if err != nil {
-		return err
-	}
-	err = os.Chmod(toPath, info.Mode())
-	if err != nil {
-		return err
-	}
-	stat_t := info.Sys().(*syscall.Stat_t) // UGLY
-	err = os.Chown(toPath, int(stat_t.Uid), int(stat_t.Gid))
-	if err != nil {
-		return err
-	}
-	err = os.Chtimes(toPath, info.ModTime(), info.ModTime())
-	if err != nil {
-		return err
-	}
-
-	return nil
+	holo.ApplyFilePermissions(backupPath, targetPath)
 }
