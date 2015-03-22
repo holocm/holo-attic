@@ -19,8 +19,8 @@ possible on package management for the whole system setup and maintenance
 process. This is achieved by using metapackages to define personal package
 selections for all systems or for certain types of systems.
 
-What the package management doesn't do
---------------------------------------
+What the package management does not cover
+------------------------------------------
 
 Metapackages go only 90% of the way, though. The most important shortcoming is
 that metapackages cannot install custom configuration files where the original
@@ -43,7 +43,52 @@ implementation depends on Arch Linux at some points (the packaging using a
 PKGBUILD, and the built-in handling of `pacnew` files). The algorithm itself is
 distribution-independent, though.
 
+Installation
+------------
+
+On Arch Linux, the preferred installation method is as a package (following the
+prime directive of never installing programs in `/usr` manually). To do so,
+
+    make archpackage
+
+and then install the resulting package, either through `pacman -U` or by putting
+the package in a [private package repository](https://www.archlinux.org/pacman/repo-add.8.html).
+
+Building holo metapackages
+==========================
+
+So system configuration is now expressed as metapackages, which I personally
+refer to as **holodecks**. You can also choose any other weird name that you
+like. For how to build packages, please refer to the documentation of your
+distribution. What will your metapackage need to do?
+
+1. List all the packages in the metapackage's dependency list, to ensure that
+   they are installed when you install your metapackage (and removed when you
+   remove the metapackage and its dependencies recursively).
+
+2. You will also need to list `holo-tools` as a package dependency to get the
+   `holo-apply` command.
+
+3. Install any configuration files that the included software needs to function
+   in whatever way you desire. If the base packages for that software install a
+   sample configuration file in the same location, install your file in
+   `/holo/repo` instead, e.g. `/holo/repo/etc/locale.conf` instead of
+   `/etc/locale.conf`.
+
+4. If the package format specifies post-install and post-upgrade script hooks
+   (the important ones all do), use these to run `holo-apply`. For example, an
+   Arch PKGBUILD would need a `.install` script containing:
+
+    post_install() {
+        holo-apply
+    }
+    post_upgrade() {
+        holo-apply
+    }
+
 TODO
 ====
 
 * include some example metapackages in the repo
+* support for other distributions (I rely on external patches here, I'm on Arch
+  only)
