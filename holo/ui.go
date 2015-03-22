@@ -33,3 +33,7 @@ func PrintError(message string, a ...interface{}) {
 func PrintInfo(message string, a ...interface{}) {
 	msg("38", fmt.Sprintf(message, a...))
 }
+
+func PrintWarning(message string, a ...interface{}) {
+	msg("33", fmt.Sprintf(message, a...))
+}

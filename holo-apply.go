@@ -151,16 +151,25 @@ func applyProgram(repoPath, backupPath, targetPath string) {
 		panic(err.Error())
 	}
 
-	//run command, fetch result file into buffer
-	var out bytes.Buffer
-	cmd.Stdout = &out
+	//run command, fetch result file into buffer (not into the targetPath
+	//directly, in order not to corrupt the file there if the script run fails)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
 	err = cmd.Run()
+	if stderr.Len() > 0 {
+		holo.PrintWarning("execution of %s produced error output:", repoPath)
+		stderrLines := strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
+		for _, stderrLine := range stderrLines {
+			holo.PrintWarning("    %s", stderrLine)
+		}
+	}
 	if err != nil {
 		panic(err.Error())
 	}
 
 	//write result file and apply permissions from backup path
-	err = ioutil.WriteFile(targetPath, out.Bytes(), 600)
+	err = ioutil.WriteFile(targetPath, stdout.Bytes(), 600)
 	if err != nil {
 		panic(err.Error())
 	}
