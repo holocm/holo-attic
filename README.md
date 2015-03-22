@@ -79,12 +79,38 @@ distribution. What will your metapackage need to do?
    (the important ones all do), use these to run `holo-apply`. For example, an
    Arch PKGBUILD would need a `.install` script containing:
 
-    post_install() {
-        holo-apply
-    }
-    post_upgrade() {
-        holo-apply
-    }
+```
+post_install() {
+    holo-apply
+}
+post_upgrade() {
+    holo-apply
+}
+```
+
+How files from /holo/repo are applied
+-------------------------------------
+
+The default strategy is to copy the repo file at e.g.
+`/holo/repo/etc/foobar.conf` to its target location at `/etc/foobar.conf`
+(minus the `/holo/repo` prefix), while taking a backup of the stock
+configuration in `/holo/backup/etc/foobar.conf` (target location plus
+`/holo/backup` prefix).
+
+However, if the repo file carries the extra `.holoscript` extension, it will be
+executed like this to produce the target configuration file:
+
+    /holo/repo/etc/foobar.conf.holoscript < /holo/backup/etc/foobar.conf > /etc/foobar.conf
+
+So the `.holoscript` program takes the stock configuration file on standard
+input and produces the custom configuration file on standard output. This is
+especially useful to modify only selected configuration values while otherwise
+retaining the default configuration:
+
+    $ cat /holo/repo/etc/pacman.conf.holoscript
+    #!/bin/sh
+    # enable the "Color" option of pacman
+    sed 's/^#\s*Color$/Color/'
 
 TODO
 ====
