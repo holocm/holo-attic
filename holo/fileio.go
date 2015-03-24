@@ -118,10 +118,12 @@ func copySymlinkImpl(fromPath, toPath string) error {
 	if err != nil {
 		return err
 	}
-	//remove old file or link
-	err = os.Remove(toPath)
-	if err != nil {
-		return err
+	//remove old file or link if it exists
+	if IsManageableFile(toPath) {
+		err = os.Remove(toPath)
+		if err != nil {
+			return err
+		}
 	}
 	//create new link
 	err = os.Symlink(target, toPath)
