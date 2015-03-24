@@ -1,5 +1,5 @@
 pkgname='holo-tools'
-pkgver=0.2.0
+pkgver=0.2.1
 pkgrel=1
 pkgdesc='holo package management toolchain'
 arch=('any')
