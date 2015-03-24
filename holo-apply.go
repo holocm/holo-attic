@@ -54,7 +54,7 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 		return err
 	}
 	//only look at files
-	if !repoInfo.Mode().IsRegular() {
+	if !(repoInfo.Mode().IsRegular() || holo.IsFileInfoASymbolicLink(repoInfo)) {
 		return nil
 	}
 
@@ -70,15 +70,20 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//application strategy is determined by the file suffix
 	repoBasePath := repoPath
 	var applicationStrategy func(string, string, string)
-	switch {
-	case strings.HasSuffix(repoPath, ".holoscript"):
-		//repoPath ends in ".holoscript" -> the repo file is a script that
-		//converts the backup file into the target file
-		repoBasePath = strings.TrimSuffix(repoPath, ".holoscript")
-		applicationStrategy = applyProgram
-	default:
-		//repoPath does not have special suffix -> the repo file is applied by
-		//copying it to the target location
+	if repoInfo.Mode().IsRegular() {
+		switch {
+		case strings.HasSuffix(repoPath, ".holoscript"):
+			//repoPath ends in ".holoscript" -> the repo file is a script that
+			//converts the backup file into the target file
+			repoBasePath = strings.TrimSuffix(repoPath, ".holoscript")
+			applicationStrategy = applyProgram
+		default:
+			//repoPath does not have special suffix -> the repo file is applied by
+			//copying it to the target location
+			applicationStrategy = applyCopy
+		}
+	} else {
+		//for symbolic links, always use the copy strategy
 		applicationStrategy = applyCopy
 	}
 
@@ -91,7 +96,7 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//step 1: will only install files from repo if there is a corresponding
 	//regular file in the target location (that file comes from the application
 	//package, the repo file from the holo metapackage)
-	if !holo.IsRegularFile(targetPath) {
+	if !holo.IsManageableFile(targetPath) {
 		panic(fmt.Sprintf("%s is not a regular file", targetPath))
 	}
 
@@ -99,7 +104,7 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//backup of the original file, the file at installPath *is* the original
 	//file which we have to backup now
 	skipIntegrityCheck := false
-	if !holo.IsRegularFile(backupPath) {
+	if !holo.IsManageableFile(backupPath) {
 		holo.PrintInfo("Saving %s in /holo/backup", targetPath)
 
 		backupDir := filepath.Dir(backupPath)
@@ -116,7 +121,7 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//step 2.5: if a .pacnew file exists next to the targetPath, the base
 	//package was updated and the .pacnew is the newer version of the original
 	//config file; move it to the backup location
-	if holo.IsRegularFile(pacnewPath) {
+	if holo.IsManageableFile(pacnewPath) {
 		holo.PrintInfo("Saving %s in /holo/backup", pacnewPath)
 		holo.CopyFile(pacnewPath, backupPath)
 		_ = os.Remove(pacnewPath) //this can fail silently

@@ -27,7 +27,15 @@ import (
 	"syscall"
 )
 
-func IsRegularFile(path string) bool {
+func IsManageableFile(path string) bool {
+	info, err := os.Lstat(path)
+	if err != nil {
+		return false
+	}
+	return info.Mode().IsRegular() || IsFileInfoASymbolicLink(info)
+}
+
+func isRegularFile(path string) bool {
 	info, err := os.Lstat(path)
 	if err != nil {
 		return false
@@ -35,24 +43,58 @@ func IsRegularFile(path string) bool {
 	return info.Mode().IsRegular()
 }
 
+func isSymbolicLink(path string) bool {
+	info, err := os.Lstat(path)
+	if err != nil {
+		return false
+	}
+	return IsFileInfoASymbolicLink(info)
+}
+
+func IsFileInfoASymbolicLink(fileInfo os.FileInfo) bool {
+	return (fileInfo.Mode() & os.ModeType) == os.ModeSymlink
+}
+
 //Returns true if the file at firstPath is newer than the file at secondPath.
 //Panics on error. (Compare implementation of walkRepo.)
 func IsNewerThan(path1, path2 string) bool {
-	info1, err := os.Stat(path1)
+	info1, err := os.Lstat(path1)
 	if err != nil {
 		panic(err.Error())
 	}
-	info2, err := os.Stat(path2)
+	info2, err := os.Lstat(path2)
 	if err != nil {
 		panic(err.Error())
 	}
+
+	//Usually, we rely on the mtime to tell if the file path1 has been modified
+	//after being created from the file at path2 (see copyFileImpl). This relies
+	//on manually applying the mtime from path2 to path1 in ApplyFilePermissions.
+	//But since Unix does not allow to update the mtime on symlinks, ignore the
+	//mtime of symlinks.
+	if IsFileInfoASymbolicLink(info1) {
+		return false
+	}
+
 	return info1.ModTime().After(info2.ModTime())
 }
 
 //Panics on error. (Compare implementation of walkRepo.)
 func CopyFile(fromPath, toPath string) {
-	if err := copyFileImpl(fromPath, toPath); err != nil {
-		panic(fmt.Sprintf("Cannot copy %s to %s: %s", fromPath, toPath, err.Error()))
+	//case 1: copy a regular file
+	if isRegularFile(fromPath) {
+		if err := copyFileImpl(fromPath, toPath); err != nil {
+			panic(fmt.Sprintf("Cannot copy %s to %s: %s", fromPath, toPath, err.Error()))
+		}
+		return
+	}
+
+	//case 2: copy a symlink
+	if isSymbolicLink(fromPath) {
+		if err := copySymlinkImpl(fromPath, toPath); err != nil {
+			panic(fmt.Sprintf("Cannot copy %s to %s: %s", fromPath, toPath, err.Error()))
+		}
+		return
 	}
 }
 
@@ -70,12 +112,32 @@ func copyFileImpl(fromPath, toPath string) error {
 	return ApplyFilePermissions(fromPath, toPath)
 }
 
+func copySymlinkImpl(fromPath, toPath string) error {
+	//read link target
+	target, err := os.Readlink(fromPath)
+	if err != nil {
+		return err
+	}
+	//remove old file or link
+	err = os.Remove(toPath)
+	if err != nil {
+		return err
+	}
+	//create new link
+	err = os.Symlink(target, toPath)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func ApplyFilePermissions(fromPath, toPath string) error {
 	//apply permissions, ownership, modification date from source file to target file
 	//NOTE: We cannot just pass the FileMode in WriteFile(), because its
 	//FileMode argument is only applied when a new file is created, not when
 	//an existing one is truncated.
-	info, err := os.Stat(fromPath)
+	info, err := os.Lstat(fromPath)
 	if err != nil {
 		return err
 	}
