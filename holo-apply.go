@@ -67,8 +67,10 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 		}
 	}()
 
+	//application strategy is determined by the file suffix (TODO: make this mess object-oriented)
 	//application strategy is determined by the file suffix
 	repoBasePath := repoPath
+	var strategyName string
 	var applicationStrategy func(string, string, string)
 	if repoInfo.Mode().IsRegular() {
 		switch {
@@ -76,14 +78,17 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 			//repoPath ends in ".holoscript" -> the repo file is a script that
 			//converts the backup file into the target file
 			repoBasePath = strings.TrimSuffix(repoPath, ".holoscript")
+			strategyName = "program"
 			applicationStrategy = applyProgram
 		default:
 			//repoPath does not have special suffix -> the repo file is applied by
 			//copying it to the target location
+			strategyName = "copy"
 			applicationStrategy = applyCopy
 		}
 	} else {
 		//for symbolic links, always use the copy strategy
+		strategyName = "copy"
 		applicationStrategy = applyCopy
 	}
 
@@ -132,9 +137,9 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//complain if the user made any changes to config files governed by holo
 	if !skipIntegrityCheck && holo.IsNewerThan(targetPath, repoPath) {
 		//NOTE: this check works because holo.CopyFile() copies the mtime
-		panic(fmt.Sprintf("Skipping %s: has been modified by user", targetPath))
+		panic(fmt.Sprintf("Skipping %s: has been modified by user (application strategy: %s)", targetPath, strategyName))
 	}
-	holo.PrintInfo("Installing %s", targetPath)
+	holo.PrintInfo("Installing %s with application strategy: %s", targetPath, strategyName)
 	applicationStrategy(repoPath, backupPath, targetPath)
 
 	return nil
