@@ -46,13 +46,16 @@ distribution-independent, though.
 Installation
 ------------
 
-On Arch Linux, the preferred installation method is as a package (following the
-prime directive of never installing programs in `/usr` manually). To do so,
+Installation is the classical
 
-    make archpackage
+    make
+    sudo make install
 
-and then install the resulting package, either through `pacman -U` or by putting
-the package in a [private package repository](https://www.archlinux.org/pacman/repo-add.8.html).
+For Arch Linux, an [AUR package](https://aur4.archlinux.org/packages/holo/) is
+provided. Using the packaged form is very desirable since packages using holo
+tools should reference the `holo` package as a dependency. If you don't want to
+rely on the AUR for this package, you can put the package in a
+[private package repository](https://www.archlinux.org/pacman/repo-add.8.html).
 
 Building holo metapackages
 ==========================
