@@ -20,17 +20,7 @@
 
 package main
 
-import (
-	"bytes"
-	"fmt"
-	"io/ioutil"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"strings"
-
-	"./holo"
-)
+import "./holo"
 
 func main() {
 	//scan the repo
@@ -43,120 +33,6 @@ func main() {
 
 	//apply all files found in the repo
 	for _, file := range files {
-		apply(file)
-	}
-}
-
-func apply(file holo.ConfigFile) {
-	//when anything of the following panics, display the error and continue
-	//with the next file
-	defer func() {
-		if message := recover(); message != nil {
-			holo.PrintError(message.(string))
-		}
-	}()
-
-	//determine the related paths
-	repoPath := file.RepoPath()
-	targetPath := file.TargetPath()
-	backupPath := file.BackupPath()
-	pacnewPath := targetPath + ".pacnew"
-
-	//application strategy is determined by the file suffix (TODO: make this mess object-oriented)
-	var strategyName string
-	var applicationStrategy func(string, string, string)
-	if strings.HasSuffix(repoPath, ".holoscript") {
-		//repoPath ends in ".holoscript" -> the repo file is a script that
-		//converts the backup file into the target file
-		strategyName = "program"
-		applicationStrategy = applyProgram
-	} else {
-		//repoPath does not have special suffix -> the repo file is applied by
-		//copying it to the target location
-		strategyName = "copy"
-		applicationStrategy = applyCopy
-	}
-
-	//step 1: will only install files from repo if there is a corresponding
-	//regular file in the target location (that file comes from the application
-	//package, the repo file from the holo metapackage)
-	if !holo.IsManageableFile(targetPath) {
-		panic(fmt.Sprintf("%s is not a regular file", targetPath))
-	}
-
-	//step 2: we know that a file exists at installPath; if we don't have a
-	//backup of the original file, the file at installPath *is* the original
-	//file which we have to backup now
-	if !holo.IsManageableFile(backupPath) {
-		holo.PrintInfo("Saving %s in %s", targetPath, holo.BackupDirectory())
-
-		backupDir := filepath.Dir(backupPath)
-		if err := os.MkdirAll(backupDir, 0755); err != nil {
-			panic(fmt.Sprintf("Cannot create directory %s: %s", backupDir, err.Error()))
-		}
-
-		holo.CopyFile(targetPath, backupPath)
-	}
-
-	//step 2.5: if a .pacnew file exists next to the targetPath, the base
-	//package was updated and the .pacnew is the newer version of the original
-	//config file; move it to the backup location
-	if holo.IsManageableFile(pacnewPath) {
-		holo.PrintInfo("Saving %s in %s", pacnewPath, holo.BackupDirectory())
-		holo.CopyFile(pacnewPath, backupPath)
-		_ = os.Remove(pacnewPath) //this can fail silently
-	}
-
-	//step 3: overwrite targetPath with repoPath *if* the version at targetPath
-	//is the one installed by the package (which can be found at backupPath);
-	//complain if the user made any changes to config files governed by holo
-	if holo.IsNewerThan(targetPath, backupPath) {
-		panic(fmt.Sprintf("Skipping %s: has been modified by user (application strategy: %s)", targetPath, strategyName))
-	}
-	holo.PrintInfo("Installing %s with application strategy: %s", targetPath, strategyName)
-	applicationStrategy(repoPath, backupPath, targetPath)
-
-	//step 4: copy permissions/timestamps from backup file to target file, in order to
-	//be able to detect manual modifications in the next holo-apply run
-	holo.ApplyFilePermissions(backupPath, targetPath)
-}
-
-func applyCopy(repoPath, backupPath, targetPath string) {
-	holo.CopyFile(repoPath, targetPath)
-}
-
-func applyProgram(repoPath, backupPath, targetPath string) {
-	//apply repoPath by executing it in the form
-	//$ exec repoPath < backupPath > targetPath
-	cmd := exec.Command(repoPath)
-
-	//prepare standard input
-	var err error
-	cmd.Stdin, err = os.Open(backupPath)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	//run command, fetch result file into buffer (not into the targetPath
-	//directly, in order not to corrupt the file there if the script run fails)
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	err = cmd.Run()
-	if stderr.Len() > 0 {
-		holo.PrintWarning("execution of %s produced error output:", repoPath)
-		stderrLines := strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
-		for _, stderrLine := range stderrLines {
-			holo.PrintWarning("    %s", stderrLine)
-		}
-	}
-	if err != nil {
-		panic(err.Error())
-	}
-
-	//write result file and apply permissions from backup path
-	err = ioutil.WriteFile(targetPath, stdout.Bytes(), 600)
-	if err != nil {
-		panic(err.Error())
+		holo.Apply(file)
 	}
 }
