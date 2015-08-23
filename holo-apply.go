@@ -33,68 +33,49 @@ import (
 )
 
 func main() {
-	//check that /holo/repo exists
-	repoPath := holo.RepoDirectory()
-	repoInfo, err := os.Lstat(repoPath)
-	if err != nil {
-		holo.PrintError("Cannot open %s: %s", repoPath, err.Error())
-		return
-	}
-	if !repoInfo.IsDir() {
-		holo.PrintError("Cannot open %s: not a directory!", repoPath)
+	//scan the repo
+	files := holo.ScanRepo()
+	if files == nil {
+		//some fatal error occurred while scanning the repo - it was already
+		//reported, so just exit
 		return
 	}
 
-	//do the work :)
-	filepath.Walk(repoPath, walkRepo)
+	//apply all files found in the repo
+	for _, file := range files {
+		apply(file)
+	}
 }
 
-func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError error) {
-	//skip over unaccessible stuff
-	if err != nil {
-		return err
-	}
-	//only look at files
-	if !(repoInfo.Mode().IsRegular() || holo.IsFileInfoASymbolicLink(repoInfo)) {
-		return nil
-	}
-
+func apply(file holo.ConfigFile) {
 	//when anything of the following panics, display the error and continue
 	//with the next file
 	defer func() {
 		if message := recover(); message != nil {
 			holo.PrintError(message.(string))
-			resultError = nil
 		}
 	}()
+
+	//determine the related paths
+	repoPath := file.RepoPath()
+	targetPath := file.TargetPath()
+	backupPath := file.BackupPath()
+	pacnewPath := targetPath + ".pacnew"
 
 	//application strategy is determined by the file suffix (TODO: make this mess object-oriented)
 	var strategyName string
 	var applicationStrategy func(string, string, string)
-	if repoInfo.Mode().IsRegular() {
-		switch {
-		case strings.HasSuffix(repoPath, ".holoscript"):
-			//repoPath ends in ".holoscript" -> the repo file is a script that
-			//converts the backup file into the target file
-			strategyName = "program"
-			applicationStrategy = applyProgram
-		default:
-			//repoPath does not have special suffix -> the repo file is applied by
-			//copying it to the target location
-			strategyName = "copy"
-			applicationStrategy = applyCopy
-		}
+	if strings.HasSuffix(repoPath, ".holoscript") {
+		//repoPath ends in ".holoscript" -> the repo file is a script that
+		//converts the backup file into the target file
+		strategyName = "program"
+		applicationStrategy = applyProgram
 	} else {
-		//for symbolic links, always use the copy strategy
+		//repoPath does not have special suffix -> the repo file is applied by
+		//copying it to the target location
 		strategyName = "copy"
 		applicationStrategy = applyCopy
 	}
-
-	//determine the related paths
-	configFile := holo.NewConfigFileFromRepoPath(repoPath)
-	targetPath := configFile.TargetPath()
-	backupPath := configFile.BackupPath()
-	pacnewPath := targetPath + ".pacnew"
 
 	//step 1: will only install files from repo if there is a corresponding
 	//regular file in the target location (that file comes from the application
@@ -130,7 +111,6 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//is the one installed by the package (which can be found at backupPath);
 	//complain if the user made any changes to config files governed by holo
 	if holo.IsNewerThan(targetPath, backupPath) {
-		//NOTE: this check works because holo.CopyFile() copies the mtime
 		panic(fmt.Sprintf("Skipping %s: has been modified by user (application strategy: %s)", targetPath, strategyName))
 	}
 	holo.PrintInfo("Installing %s with application strategy: %s", targetPath, strategyName)
@@ -139,8 +119,6 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//step 4: copy permissions/timestamps from backup file to target file, in order to
 	//be able to detect manual modifications in the next holo-apply run
 	holo.ApplyFilePermissions(backupPath, targetPath)
-
-	return nil
 }
 
 func applyCopy(repoPath, backupPath, targetPath string) {

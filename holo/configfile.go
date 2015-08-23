@@ -64,3 +64,21 @@ func (file ConfigFile) RepoPath() string {
 		return repoPath
 	}
 }
+
+//This type holds a slice of ConfigFile instances, and implements some methods
+//to satisfy the sort.Interface interface.
+type ConfigFiles []ConfigFile
+
+func (files ConfigFiles) Len() int {
+	return len(files)
+}
+
+func (files ConfigFiles) Less(i, j int) bool {
+	return strings.Compare(string(files[i]), string(files[j])) < 0
+}
+
+func (files ConfigFiles) Swap(i, j int) {
+	f := files[i]
+	files[i] = files[j]
+	files[j] = f
+}
