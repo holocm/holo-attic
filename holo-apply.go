@@ -34,18 +34,19 @@ import (
 
 func main() {
 	//check that /holo/repo exists
-	repoInfo, err := os.Lstat("/holo/repo")
+	repoPath := holo.RepoDirectory()
+	repoInfo, err := os.Lstat(repoPath)
 	if err != nil {
-		holo.PrintError("Cannot open /holo/repo: %s", err.Error())
+		holo.PrintError("Cannot open %s: %s", repoPath, err.Error())
 		return
 	}
 	if !repoInfo.IsDir() {
-		holo.PrintError("Cannot open /holo/repo: not a directory!")
+		holo.PrintError("Cannot open %s: not a directory!", repoPath)
 		return
 	}
 
 	//do the work :)
-	filepath.Walk("/holo/repo", walkRepo)
+	filepath.Walk(repoPath, walkRepo)
 }
 
 func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError error) {
@@ -68,7 +69,6 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	}()
 
 	//application strategy is determined by the file suffix (TODO: make this mess object-oriented)
-	repoBasePath := repoPath
 	var strategyName string
 	var applicationStrategy func(string, string, string)
 	var checkModifiedStrategy func(string, string, string) bool
@@ -77,7 +77,6 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 		case strings.HasSuffix(repoPath, ".holoscript"):
 			//repoPath ends in ".holoscript" -> the repo file is a script that
 			//converts the backup file into the target file
-			repoBasePath = strings.TrimSuffix(repoPath, ".holoscript")
 			strategyName = "program"
 			applicationStrategy = applyProgram
 			checkModifiedStrategy = checkModifiedForProgramStrategy
@@ -96,9 +95,9 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	}
 
 	//determine the related paths
-	relPath, _ := filepath.Rel("/holo/repo", repoBasePath)
-	targetPath := filepath.Join("/", relPath)
-	backupPath := filepath.Join("/holo/backup", relPath)
+	configFile := holo.NewConfigFileFromRepoPath(repoPath)
+	targetPath := configFile.TargetPath()
+	backupPath := configFile.BackupPath()
 	pacnewPath := targetPath + ".pacnew"
 
 	//step 1: will only install files from repo if there is a corresponding
@@ -113,7 +112,7 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//file which we have to backup now
 	skipIntegrityCheck := false
 	if !holo.IsManageableFile(backupPath) {
-		holo.PrintInfo("Saving %s in /holo/backup", targetPath)
+		holo.PrintInfo("Saving %s in %s", targetPath, holo.BackupDirectory())
 
 		backupDir := filepath.Dir(backupPath)
 		if err := os.MkdirAll(backupDir, 0755); err != nil {
@@ -130,7 +129,7 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//package was updated and the .pacnew is the newer version of the original
 	//config file; move it to the backup location
 	if holo.IsManageableFile(pacnewPath) {
-		holo.PrintInfo("Saving %s in /holo/backup", pacnewPath)
+		holo.PrintInfo("Saving %s in %s", pacnewPath, holo.BackupDirectory())
 		holo.CopyFile(pacnewPath, backupPath)
 		_ = os.Remove(pacnewPath) //this can fail silently
 	}
