@@ -20,9 +20,32 @@
 
 package main
 
-import "./holo"
+import (
+	"fmt"
+	"os"
+
+	"./holo"
+)
 
 func main() {
+	//a command word must be given as first argument
+	if len(os.Args) < 2 {
+		commandHelp()
+		return
+	}
+
+	//check that it is a known command word
+	var command func(holo.ConfigFiles)
+	switch os.Args[1] {
+	case "apply":
+		command = commandApply
+	case "scan":
+		command = commandScan
+	default:
+		commandHelp()
+		return
+	}
+
 	//scan the repo
 	files := holo.ScanRepo()
 	if files == nil {
@@ -31,8 +54,26 @@ func main() {
 		return
 	}
 
+	//execute command
+	command(files)
+}
+
+func commandHelp() {
+	fmt.Printf("Usage: %s [apply|scan]\n", os.Args[0])
+}
+
+func commandApply(files holo.ConfigFiles) {
 	//apply all files found in the repo
 	for _, file := range files {
 		holo.Apply(file)
+	}
+}
+
+func commandScan(files holo.ConfigFiles) {
+	//report scan results
+	for _, file := range files {
+		fmt.Printf("%s\n", file.TargetPath())
+		fmt.Printf("\tstore at %s\n", file.BackupPath())
+		fmt.Printf("\tapply %s\n", file.RepoPath())
 	}
 }
