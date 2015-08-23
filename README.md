@@ -28,7 +28,7 @@ packages already installed stock configuration files.
 
 Instead, metapackages designed for holo place their custom configuration files
 under the `/holo/repo` directory, e.g. `/holo/repo/etc/foobar.conf`. The
-`holo-apply` is then run by the metapackage's post-install and post-update hook
+`holo apply` is then run by the metapackage's post-install and post-update hook
 to place the custom configuration file at its designated position
 (e.g. `/etc/foobar.conf`), while simultaneously retaining a copy of the stock
 configuration file in `/holo/backup` (e.g. `/holo/backup/etc/foobar.conf`) for
@@ -52,9 +52,9 @@ Installation is the classical
     sudo make install
 
 For Arch Linux, an [AUR package](https://aur4.archlinux.org/packages/holo/) is
-provided. Using the packaged form is very desirable since packages using holo
-tools should reference the `holo` package as a dependency. If you don't want to
-rely on the AUR for this package, you can put the package in a
+provided. Using the packaged form is very desirable since packages using Holo
+should reference the `holo` package as a dependency. If you don't want to rely
+on the AUR for this package, you can put the package in a
 [private package repository](https://www.archlinux.org/pacman/repo-add.8.html).
 
 Building holo metapackages
@@ -69,8 +69,8 @@ distribution. What will your metapackage need to do?
    they are installed when you install your metapackage (and removed when you
    remove the metapackage and its dependencies recursively).
 
-2. You will also need to list `holo-tools` as a package dependency to get the
-   `holo-apply` command.
+2. You will also need to list `holo` as a package dependency to get the
+   `holo apply` command.
 
 3. Install any configuration files that the included software needs to function
    in whatever way you desire. If the base packages for that software install a
@@ -79,15 +79,15 @@ distribution. What will your metapackage need to do?
    `/etc/locale.conf`.
 
 4. If the package format specifies post-install and post-upgrade script hooks
-   (the important ones all do), use these to run `holo-apply`. For example, an
+   (the important ones all do), use these to run `holo apply`. For example, an
    Arch PKGBUILD would need a `.install` script containing:
 
 ```
 post_install() {
-    holo-apply
+    holo apply
 }
 post_upgrade() {
-    holo-apply
+    holo apply
 }
 ```
 
