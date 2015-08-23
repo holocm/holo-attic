@@ -71,7 +71,6 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//application strategy is determined by the file suffix (TODO: make this mess object-oriented)
 	var strategyName string
 	var applicationStrategy func(string, string, string)
-	var checkModifiedStrategy func(string, string, string) bool
 	if repoInfo.Mode().IsRegular() {
 		switch {
 		case strings.HasSuffix(repoPath, ".holoscript"):
@@ -79,19 +78,16 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 			//converts the backup file into the target file
 			strategyName = "program"
 			applicationStrategy = applyProgram
-			checkModifiedStrategy = checkModifiedForProgramStrategy
 		default:
 			//repoPath does not have special suffix -> the repo file is applied by
 			//copying it to the target location
 			strategyName = "copy"
 			applicationStrategy = applyCopy
-			checkModifiedStrategy = checkModifiedForCopyStrategy
 		}
 	} else {
 		//for symbolic links, always use the copy strategy
 		strategyName = "copy"
 		applicationStrategy = applyCopy
-		checkModifiedStrategy = checkModifiedForCopyStrategy
 	}
 
 	//determine the related paths
@@ -110,7 +106,6 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//step 2: we know that a file exists at installPath; if we don't have a
 	//backup of the original file, the file at installPath *is* the original
 	//file which we have to backup now
-	skipIntegrityCheck := false
 	if !holo.IsManageableFile(backupPath) {
 		holo.PrintInfo("Saving %s in %s", targetPath, holo.BackupDirectory())
 
@@ -120,9 +115,6 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 		}
 
 		holo.CopyFile(targetPath, backupPath)
-		//don't complain in the next steps that the file at targetPath does not
-		//match its template at repoPath
-		skipIntegrityCheck = true
 	}
 
 	//step 2.5: if a .pacnew file exists next to the targetPath, the base
@@ -137,31 +129,22 @@ func walkRepo(repoPath string, repoInfo os.FileInfo, err error) (resultError err
 	//step 3: overwrite targetPath with repoPath *if* the version at targetPath
 	//is the one installed by the package (which can be found at backupPath);
 	//complain if the user made any changes to config files governed by holo
-	if !skipIntegrityCheck && checkModifiedStrategy(repoPath, backupPath, targetPath) {
+	if holo.IsNewerThan(targetPath, backupPath) {
 		//NOTE: this check works because holo.CopyFile() copies the mtime
 		panic(fmt.Sprintf("Skipping %s: has been modified by user (application strategy: %s)", targetPath, strategyName))
 	}
 	holo.PrintInfo("Installing %s with application strategy: %s", targetPath, strategyName)
 	applicationStrategy(repoPath, backupPath, targetPath)
 
-	return nil
-}
+	//step 4: copy permissions/timestamps from backup file to target file, in order to
+	//be able to detect manual modifications in the next holo-apply run
+	holo.ApplyFilePermissions(backupPath, targetPath)
 
-func checkModifiedForCopyStrategy(repoPath, backupPath, targetPath string) bool {
-	//The "copy" strategy copies the repo file (and thus also its mtime), so
-	//manual modification of the target file can be detected by comparing to
-	//the repo file's mtime.
-	return holo.IsNewerThan(targetPath, repoPath)
+	return nil
 }
 
 func applyCopy(repoPath, backupPath, targetPath string) {
 	holo.CopyFile(repoPath, targetPath)
-}
-
-func checkModifiedForProgramStrategy(repoPath, backupPath, targetPath string) bool {
-	//The "copy" strategy copies file metadata from backup file, so compare the
-	//mtimes of target and backup to check for manual modification of the target.
-	return holo.IsNewerThan(targetPath, backupPath)
 }
 
 func applyProgram(repoPath, backupPath, targetPath string) {
@@ -198,5 +181,4 @@ func applyProgram(repoPath, backupPath, targetPath string) {
 	if err != nil {
 		panic(err.Error())
 	}
-	holo.ApplyFilePermissions(backupPath, targetPath)
 }
