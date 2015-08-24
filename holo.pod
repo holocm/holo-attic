@@ -1,0 +1,146 @@
+=head1 NAME
+
+holo - minimal configuration management
+
+=head1 SYNOPSIS
+
+holo B<apply> [I<--force>] [I<file> ...]
+
+holo B<scan>
+
+holo B<--help|--version>
+
+=head1 DESCRIPTION
+
+Holo adds a few sprinkles on top of package management to make it suitable for
+basic configuration management tasks. Its prime directive is to have all
+configuration statically declared and defined within packages, which can be
+installed to add new configuration, or uninstalled to remove configuration from
+a system.
+
+Package management already offers 99% of the needed tools: Metapackages (usually
+called "holograms" or "holodecks" in Holo) can pull in other packages as
+dependencies, thus installing the software required for a certain task, and
+contain their own files to configure the software installed.
+
+Holo adds a configuration repository to work around package management behavior
+that is unsuitable for configuration management: its handling of filesystem
+conflicts. When the package of an application installs an example configuration
+file, the hologram cannot install the specific configuration file in the same
+place. Instead, the hologram can place its configuration file in F</holo/repo>,
+from where the B<holo apply> command (usually run in the hologram's post-install
+routine) will copy it to its designated location.
+
+Entries in the configuration repository can either be plain configuration files
+(or symlinks), whose content will be written to the target location directly, or
+scripts (denoted by the F<.holoscript> extension), through which the content of
+the configuration file will be piped. (See the B<L<EXAMPLE|/EXAMPLE>> below if
+this explanation just confuses you.)
+
+The directory layout of the configuration repository allows multiple holograms
+to act on the same configuration file. Therefore, a more specific hologram can
+modify the configuration provided by a more general hologram. Again, this will
+be made clearer by the B<L<EXAMPLE|/EXAMPLE>> below.
+
+=head1 OPERATIONS
+
+=over 4
+
+=item B<apply> [I<--force>] [I<file> ...]
+
+Apply configuration from Holo's repository using the application algorithm
+described in this manpage.
+
+By default, all available configuration files are applied. If files are listed
+as arguments, apply configuration only to these target files.
+
+By default, Holo will refuse to write to configuration files that have been
+changed by the user or by other programs. Apply B<--force> to overwrite such
+changes.
+
+=item B<scan>
+
+Scan the configuration repository, and print a report of what the application
+algorithm will do with its contents. This operation does not write anything and
+thus generally does not need to be performed with elevated privileges.
+
+=back
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--help>
+
+Print out usage information.
+
+=item B<--version>
+
+Print out Holo's version string.
+
+=back
+
+=head1 EXAMPLE
+
+Suppose that the configuration file F</etc/foo.conf> is used to configure some
+sort of application that talks with some sort of server. The package for this
+application may install an example configuration:
+
+    $ cat /etc/foo.conf        # from package "foo"
+    #FOO_HOSTNAME=localhost
+    #FOO_PORT=8888
+    #FOO_PROTOCOL=ssh
+
+When used in a company, the company might create a hologram that configures the
+application to talk to the company server.
+
+    $ cat /holo/repo/10-corporate/etc/foo.conf
+    FOO_HOSTNAME=fooservice.initech.corp
+    FOO_PORT=10582
+    FOO_PROTOCOL=ssh
+
+Notice the path format: The configuration repository is located at
+F</holo/repo>. The path of the repository entry ends in the path of the target
+configuration file, F</etc/foo.conf>. The path element inbetween
+(F<10-corporate>) can be chosen freely to disambiguate repository entries
+working on the same target configuration file. When applying the configuration,
+repository entries will be sorted alphabetically by this path element, hence we
+choose the same numbering convention which is also used by e.g.
+F</etc/X11/xorg.conf.d/*.conf>.
+
+Now, to round off our example, suppose that a single department within the
+company does not have direct access to the intranet and has to use an HTTP proxy
+server to talk to the company server. They therefore have to change the
+C<FOO_PROTOCOL> setting to C<https>, while retaining the rest of the
+configuration. They can do so by distributing an additional hologram with the
+following file:
+
+    $ cat /holo/repo/20-department/etc/foo.conf.holoscript
+    #!/bin/sed
+    s/FOO_PROTOCOL=ssh/FOO_PROTOCOL=https/
+
+When B<holo apply> is run, it will save a copy of the original stock
+configuration file in its backup location (below F</holo/backup>), apply the
+corporate configuration, plus the department's changes (by piping the contents
+of the corporate configuration file through the department's script), and save
+the result at the target location. This process is explained by the B<holo scan>
+command:
+
+    $ holo scan
+    ...
+    /etc/foo.conf
+        store at /holo/backup/etc/foo.conf
+           apply /holo/repo/10-corporate/etc/foo.conf
+        passthru /holo/repo/20-department/etc/foo.conf.holoscript
+    ...
+
+Ownership and permissions are always copied from the backup location (and thus
+from the original configuration file).
+
+=head1 AUTHOR
+
+Stefan Majewsky
+
+Please report any issues and feature requests at Github: http://github.com/majewsky/holo/issues
+
+=cut
