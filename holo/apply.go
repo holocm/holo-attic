@@ -30,7 +30,7 @@ import (
 	"strings"
 )
 
-func Apply(file ConfigFile) {
+func Apply(file ConfigFile, withForce bool) {
 	//when anything of the following panics, display the error and continue
 	//with the next file
 	defer func() {
@@ -93,7 +93,8 @@ func Apply(file ConfigFile) {
 	//step 3: overwrite targetPath with repoPath *if* the version at targetPath
 	//is the one installed by the package (which can be found at backupPath);
 	//complain if the user made any changes to config files governed by holo
-	if IsNewerThan(targetPath, backupPath) {
+	//(this check is overridden by the --force option)
+	if !withForce && IsNewerThan(targetPath, backupPath) {
 		panic(fmt.Sprintf("Skipping %s: has been modified by user (application strategy: %s)", targetPath, strategyName))
 	}
 	PrintInfo("Installing %s with application strategy: %s", targetPath, strategyName)

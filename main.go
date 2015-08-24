@@ -73,9 +73,31 @@ func commandHelp() {
 }
 
 func commandApply(files holo.ConfigFiles) {
-	//apply all files found in the repo
+	//parse arguments after "holo apply" (either files or "--force")
+	withForce := false
+	withFiles := false
+	targetFiles := make(map[string]bool)
+
+	args := os.Args[2:]
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "-") {
+			if arg == "--force" {
+				withForce = true
+			} else {
+				fmt.Println("Unrecognized option: " + arg)
+				return
+			}
+		} else {
+			targetFiles[arg] = true
+			withFiles = true
+		}
+	}
+
+	//apply all files found in the repo (or only some if the args contain a limited subset)
 	for _, file := range files {
-		holo.Apply(file)
+		if !withFiles || targetFiles[file.TargetPath()] {
+			holo.Apply(file, withForce)
+		}
 	}
 }
 
