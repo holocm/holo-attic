@@ -52,7 +52,7 @@ func ScanRepo() ConfigFiles {
 			return nil
 		}
 
-		result = append(result, NewConfigFileFromRepoPath(repoFile))
+		result = append(result, NewRepoFile(repoFile).ConfigFile())
 		return nil
 	})
 

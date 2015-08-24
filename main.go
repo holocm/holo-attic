@@ -106,15 +106,10 @@ func commandScan(files holo.ConfigFiles) {
 	fmt.Println()
 
 	for _, file := range files {
-		repoPath := file.RepoPath()
-		repoVerb := "   apply"
-		if strings.HasSuffix(repoPath, ".holoscript") {
-			repoVerb = "passthru"
-		}
-
+		repoFile := file.RepoFile()
 		fmt.Printf("\x1b[1m%s\x1b[0m\n", file.TargetPath())
 		fmt.Printf("    store at %s\n", file.BackupPath())
-		fmt.Printf("    %s %s\n", repoVerb, file.RepoPath())
+		fmt.Printf("    %8s %s\n", repoFile.ApplicationStrategy(), repoFile.Path())
 		fmt.Println("")
 	}
 }

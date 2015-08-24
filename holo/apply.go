@@ -40,29 +40,28 @@ func Apply(file ConfigFile, withForce bool) {
 	}()
 
 	//determine the related paths
-	repoPath := file.RepoPath()
+	repoFile := file.RepoFile()
+	repoPath := repoFile.Path()
 	targetPath := file.TargetPath()
 	backupPath := file.BackupPath()
 	pacnewPath := targetPath + ".pacnew"
 
 	//application strategy is determined by the file suffix (TODO: make this mess object-oriented)
-	var strategyName string
 	var applicationStrategy func(string, string, string)
-	if strings.HasSuffix(repoPath, ".holoscript") {
+	if repoFile.ApplicationStrategy() == "passthru" {
 		//repoPath ends in ".holoscript" -> the repo file is a script that
 		//converts the backup file into the target file
-		strategyName = "program"
 		applicationStrategy = applyProgram
 	} else {
 		//repoPath does not have special suffix -> the repo file is applied by
 		//copying it to the target location
-		strategyName = "copy"
 		applicationStrategy = applyCopy
 	}
 
 	//step 1: will only install files from repo if there is a corresponding
 	//regular file in the target location (that file comes from the application
 	//package, the repo file from the holo metapackage)
+	PrintInfo("Working on \x1b[1m%s\x1b[0m", targetPath)
 	if !IsManageableFile(targetPath) {
 		panic(fmt.Sprintf("%s is not a regular file", targetPath))
 	}
@@ -95,9 +94,9 @@ func Apply(file ConfigFile, withForce bool) {
 	//complain if the user made any changes to config files governed by holo
 	//(this check is overridden by the --force option)
 	if !withForce && IsNewerThan(targetPath, backupPath) {
-		panic(fmt.Sprintf("Skipping %s: has been modified by user (application strategy: %s)", targetPath, strategyName))
+		panic(fmt.Sprintf("Skipping %s: has been modified by user", targetPath))
 	}
-	PrintInfo("Installing %s with application strategy: %s", targetPath, strategyName)
+	PrintInfo("%10s %s", repoFile.ApplicationStrategy(), repoPath)
 	applicationStrategy(repoPath, backupPath, targetPath)
 
 	//step 4: copy permissions/timestamps from backup file to target file, in order to

@@ -25,49 +25,51 @@ import (
 	"strings"
 )
 
-//This type represents a single target file, and includes methods to calculate
-//the corresponding backup location and repo file(s). The string stored in it
-//is the path of the target file relative to the target directory.
-//
-//For example, if the target file is "/etc/pacman.conf", the string stored is
-//"etc/pacman.conf".
-type ConfigFile string
+//This type represents a single file in the configuration repository. The
+//string stored in it is the path to the repo file (also accessible as Path()).
+type RepoFile string
 
-func (file ConfigFile) TargetPath() string {
-	//make path absolute
-	return filepath.Join(TargetDirectory(), string(file))
+func NewRepoFile(path string) RepoFile {
+	return RepoFile(path)
 }
 
-func (file ConfigFile) BackupPath() string {
-	//make path absolute
-	return filepath.Join(BackupDirectory(), string(file))
+func (file RepoFile) Path() string {
+	return string(file)
 }
 
-func (file ConfigFile) RepoFile() RepoFile {
-	//make path absolute
-	repoPath := filepath.Join(RepoDirectory(), string(file))
+func (file RepoFile) ConfigFile() ConfigFile {
+	//the optional ".holoscript" suffix appears only on repo files
+	repoFile := file.Path()
+	if strings.HasSuffix(repoFile, ".holoscript") {
+		repoFile = strings.TrimSuffix(repoFile, ".holoscript")
+	}
 
-	//the repo file may have an optional ".holoscript" suffix
-	if repoPath2 := repoPath + ".holoscript"; IsManageableFile(repoPath2) {
-		return NewRepoFile(repoPath2)
+	//make path relative
+	relPath, _ := filepath.Rel(RepoDirectory(), repoFile)
+	return ConfigFile(relPath)
+}
+
+func (file RepoFile) ApplicationStrategy() string {
+	if strings.HasSuffix(file.Path(), ".holoscript") {
+		return "passthru"
 	} else {
-		return NewRepoFile(repoPath)
+		return "apply"
 	}
 }
 
-//This type holds a slice of ConfigFile instances, and implements some methods
+//This type holds a slice of RepoFile instances, and implements some methods
 //to satisfy the sort.Interface interface.
-type ConfigFiles []ConfigFile
+type RepoFiles []RepoFile
 
-func (files ConfigFiles) Len() int {
+func (files RepoFiles) Len() int {
 	return len(files)
 }
 
-func (files ConfigFiles) Less(i, j int) bool {
+func (files RepoFiles) Less(i, j int) bool {
 	return strings.Compare(string(files[i]), string(files[j])) < 0
 }
 
-func (files ConfigFiles) Swap(i, j int) {
+func (files RepoFiles) Swap(i, j int) {
 	f := files[i]
 	files[i] = files[j]
 	files[j] = f
