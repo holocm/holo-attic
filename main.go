@@ -73,7 +73,8 @@ func commandScan(files holo.ConfigFiles) {
 	//report scan results
 	for _, file := range files {
 		fmt.Printf("%s\n", file.TargetPath())
-		fmt.Printf("\tstore at %s\n", file.BackupPath())
-		fmt.Printf("\tapply %s\n", file.RepoPath())
+		fmt.Printf("    store at %s\n", file.BackupPath())
+		fmt.Printf("       apply %s\n", file.RepoPath())
+		fmt.Println("")
 	}
 }
