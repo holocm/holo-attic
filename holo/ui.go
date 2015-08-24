@@ -23,7 +23,7 @@ package holo
 import "fmt"
 
 func msg(color, message string) {
-	fmt.Printf("\x1b[%sm\x1b[1m[holo-apply]\x1b[0m %s\n", color, message)
+	fmt.Printf("\x1b[%sm\x1b[1m[holo]\x1b[0m %s\n", color, message)
 }
 
 func PrintError(message string, a ...interface{}) {
