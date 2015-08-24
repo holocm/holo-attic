@@ -27,6 +27,8 @@ import (
 	"./holo"
 )
 
+var version string = "v0.3-pre"
+
 func main() {
 	//a command word must be given as first argument
 	if len(os.Args) < 2 {
@@ -41,6 +43,9 @@ func main() {
 		command = commandApply
 	case "scan":
 		command = commandScan
+	case "version", "--version":
+		fmt.Println(version)
+		return
 	default:
 		commandHelp()
 		return
