@@ -23,6 +23,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"./holo"
 )
@@ -80,10 +81,18 @@ func commandApply(files holo.ConfigFiles) {
 
 func commandScan(files holo.ConfigFiles) {
 	//report scan results
+	fmt.Println()
+
 	for _, file := range files {
-		fmt.Printf("%s\n", file.TargetPath())
+		repoPath := file.RepoPath()
+		repoVerb := "   apply"
+		if strings.HasSuffix(repoPath, ".holoscript") {
+			repoVerb = "passthru"
+		}
+
+		fmt.Printf("\x1b[1m%s\x1b[0m\n", file.TargetPath())
 		fmt.Printf("    store at %s\n", file.BackupPath())
-		fmt.Printf("       apply %s\n", file.RepoPath())
+		fmt.Printf("    %s %s\n", repoVerb, file.RepoPath())
 		fmt.Println("")
 	}
 }
