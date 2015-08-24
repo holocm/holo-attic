@@ -64,7 +64,11 @@ func main() {
 }
 
 func commandHelp() {
-	fmt.Printf("Usage: %s [apply|scan]\n", os.Args[0])
+	program := os.Args[0]
+	fmt.Printf("Usage: %s <operation> [...]\nOperations:\n", program)
+	fmt.Printf("    %s apply [--force] [file(s)]\n", program)
+	fmt.Printf("    %s scan\n", program)
+	fmt.Printf("\nSee `man 8 holo` for details.\n")
 }
 
 func commandApply(files holo.ConfigFiles) {
