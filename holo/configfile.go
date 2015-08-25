@@ -20,10 +20,7 @@
 
 package holo
 
-import (
-	"path/filepath"
-	"strings"
-)
+import "path/filepath"
 
 //This type represents a single target file, and includes methods to calculate
 //the corresponding backup location and repo file(s). The string stored in it
@@ -59,16 +56,6 @@ func (file ConfigFile) RepoFile() RepoFile {
 //to satisfy the sort.Interface interface.
 type ConfigFiles []ConfigFile
 
-func (files ConfigFiles) Len() int {
-	return len(files)
-}
-
-func (files ConfigFiles) Less(i, j int) bool {
-	return strings.Compare(string(files[i]), string(files[j])) < 0
-}
-
-func (files ConfigFiles) Swap(i, j int) {
-	f := files[i]
-	files[i] = files[j]
-	files[j] = f
-}
+func (f ConfigFiles) Len() int           { return len(f) }
+func (f ConfigFiles) Less(i, j int) bool { return f[i] < f[j] }
+func (f ConfigFiles) Swap(i, j int)      { f[i], f[j] = f[j], f[i] }

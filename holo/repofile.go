@@ -61,16 +61,6 @@ func (file RepoFile) ApplicationStrategy() string {
 //to satisfy the sort.Interface interface.
 type RepoFiles []RepoFile
 
-func (files RepoFiles) Len() int {
-	return len(files)
-}
-
-func (files RepoFiles) Less(i, j int) bool {
-	return strings.Compare(string(files[i]), string(files[j])) < 0
-}
-
-func (files RepoFiles) Swap(i, j int) {
-	f := files[i]
-	files[i] = files[j]
-	files[j] = f
-}
+func (f RepoFiles) Len() int           { return len(f) }
+func (f RepoFiles) Less(i, j int) bool { return f[i] < f[j] }
+func (f RepoFiles) Swap(i, j int)      { f[i], f[j] = f[j], f[i] }
