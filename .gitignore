@@ -1,3 +1,2 @@
 # ignore build results
-holobinary
-holo.8
+build/*
