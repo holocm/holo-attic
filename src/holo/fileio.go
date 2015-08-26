@@ -21,7 +21,6 @@
 package holo
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"syscall"
@@ -56,15 +55,14 @@ func IsFileInfoASymbolicLink(fileInfo os.FileInfo) bool {
 }
 
 //Returns true if the file at firstPath is newer than the file at secondPath.
-//Panics on error. (Compare implementation of walkRepo.)
-func IsNewerThan(path1, path2 string) bool {
+func IsNewerThan(path1, path2 string) (bool, error) {
 	info1, err := os.Lstat(path1)
 	if err != nil {
-		panic(err.Error())
+		return false, err
 	}
 	info2, err := os.Lstat(path2)
 	if err != nil {
-		panic(err.Error())
+		return false, err
 	}
 
 	//Usually, we rely on the mtime to tell if the file path1 has been modified
@@ -73,28 +71,17 @@ func IsNewerThan(path1, path2 string) bool {
 	//But since Unix does not allow to update the mtime on symlinks, ignore the
 	//mtime of symlinks.
 	if IsFileInfoASymbolicLink(info1) {
-		return false
+		return false, nil
 	}
 
-	return info1.ModTime().After(info2.ModTime())
+	return info1.ModTime().After(info2.ModTime()), nil
 }
 
-//Panics on error. (Compare implementation of holo.Apply().)
-func CopyFile(fromPath, toPath string) {
-	//case 1: copy a regular file
+func CopyFile(fromPath, toPath string) error {
 	if isRegularFile(fromPath) {
-		if err := copyFileImpl(fromPath, toPath); err != nil {
-			panic(fmt.Sprintf("Cannot copy %s to %s: %s", fromPath, toPath, err.Error()))
-		}
-		return
-	}
-
-	//case 2: copy a symlink
-	if isSymbolicLink(fromPath) {
-		if err := copySymlinkImpl(fromPath, toPath); err != nil {
-			panic(fmt.Sprintf("Cannot copy %s to %s: %s", fromPath, toPath, err.Error()))
-		}
-		return
+		return copyFileImpl(fromPath, toPath)
+	} else {
+		return copySymlinkImpl(fromPath, toPath)
 	}
 }
 

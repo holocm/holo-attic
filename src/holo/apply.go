@@ -21,20 +21,11 @@
 package holo
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 )
 
 func Apply(file ConfigFile, withForce bool) {
-	//when anything of the following panics, display the error and continue
-	//with the next file
-	defer func() {
-		if message := recover(); message != nil {
-			PrintError(message.(string))
-		}
-	}()
-
 	//determine the related paths
 	repoFile := file.RepoFile()
 	repoPath := repoFile.Path()
@@ -47,7 +38,8 @@ func Apply(file ConfigFile, withForce bool) {
 	//package, the repo file from the holo metapackage)
 	PrintInfo("Working on \x1b[1m%s\x1b[0m", targetPath)
 	if !IsManageableFile(targetPath) {
-		panic(fmt.Sprintf("%s is not a regular file", targetPath))
+		PrintError("%s is not a regular file", targetPath)
+		return
 	}
 
 	//step 2: we know that a file exists at installPath; if we don't have a
@@ -57,11 +49,17 @@ func Apply(file ConfigFile, withForce bool) {
 		PrintInfo("  store at %s", backupPath)
 
 		backupDir := filepath.Dir(backupPath)
-		if err := os.MkdirAll(backupDir, 0755); err != nil {
-			panic(fmt.Sprintf("Cannot create directory %s: %s", backupDir, err.Error()))
+		err := os.MkdirAll(backupDir, 0755)
+		if err != nil {
+			PrintError("Cannot create directory %s: %s", backupDir, err.Error())
+			return
 		}
 
-		CopyFile(targetPath, backupPath)
+		err = CopyFile(targetPath, backupPath)
+		if err != nil {
+			PrintError("Cannot copy %s to %s: %s", targetPath, backupPath, err.Error())
+			return
+		}
 	}
 
 	//step 2.5: if a .pacnew file exists next to the targetPath, the base
@@ -69,7 +67,11 @@ func Apply(file ConfigFile, withForce bool) {
 	//config file; move it to the backup location
 	if IsManageableFile(pacnewPath) {
 		PrintInfo("    update %s -> %s", pacnewPath, backupPath)
-		CopyFile(pacnewPath, backupPath)
+		err := CopyFile(pacnewPath, backupPath)
+		if err != nil {
+			PrintError("Cannot copy %s to %s: %s", pacnewPath, backupPath, err.Error())
+			return
+		}
 		_ = os.Remove(pacnewPath) //this can fail silently
 	}
 
@@ -77,22 +79,32 @@ func Apply(file ConfigFile, withForce bool) {
 	//installed by the package (which can be found at backupPath); complain if
 	//the user made any changes to config files governed by holo (this check is
 	//overridden by the --force option)
-	if !withForce && IsNewerThan(targetPath, backupPath) {
-		panic(fmt.Sprintf("  skipped: target file has been modified by user (use --force to overwrite)"))
+	if !withForce {
+		isNewer, err := IsNewerThan(targetPath, backupPath)
+		if err != nil {
+			PrintError(err.Error())
+			return
+		}
+		if isNewer {
+			PrintError("  skipped: target file has been modified by user (use --force to overwrite)")
+			return
+		}
 	}
 
 	//step 3a: load the backup file into a buffer as the start for the
 	//application algorithm
 	buffer, err := NewFileBuffer(backupPath, targetPath)
 	if err != nil {
-		panic(err.Error())
+		PrintError(err.Error())
+		return
 	}
 
 	//step 3b: apply all the applicable repo files in order
 	PrintInfo("%10s %s", repoFile.ApplicationStrategy(), repoPath)
 	buffer, err = GetApplyImpl(repoFile)(buffer)
 	if err != nil {
-		panic(err.Error())
+		PrintError(err.Error())
+		return
 	}
 
 	//step 3c: write the result buffer to the target location and copy
