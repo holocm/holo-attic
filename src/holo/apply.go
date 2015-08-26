@@ -21,13 +21,9 @@
 package holo
 
 import (
-	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strings"
 )
 
 func Apply(file ConfigFile, withForce bool) {
@@ -45,18 +41,6 @@ func Apply(file ConfigFile, withForce bool) {
 	targetPath := file.TargetPath()
 	backupPath := file.BackupPath()
 	pacnewPath := targetPath + ".pacnew"
-
-	//application strategy is determined by the file suffix (TODO: make this mess object-oriented)
-	var applicationStrategy func(string, string, string)
-	if repoFile.ApplicationStrategy() == "passthru" {
-		//repoPath ends in ".holoscript" -> the repo file is a script that
-		//converts the backup file into the target file
-		applicationStrategy = applyProgram
-	} else {
-		//repoPath does not have special suffix -> the repo file is applied by
-		//copying it to the target location
-		applicationStrategy = applyCopy
-	}
 
 	//step 1: will only install files from repo if there is a corresponding
 	//regular file in the target location (that file comes from the application
@@ -89,57 +73,31 @@ func Apply(file ConfigFile, withForce bool) {
 		_ = os.Remove(pacnewPath) //this can fail silently
 	}
 
-	//step 3: overwrite targetPath with repoPath *if* the version at targetPath
-	//is the one installed by the package (which can be found at backupPath);
-	//complain if the user made any changes to config files governed by holo
-	//(this check is overridden by the --force option)
+	//step 3: apply the repo files *if* the version at targetPath is the one
+	//installed by the package (which can be found at backupPath); complain if
+	//the user made any changes to config files governed by holo (this check is
+	//overridden by the --force option)
 	if !withForce && IsNewerThan(targetPath, backupPath) {
 		panic(fmt.Sprintf("  skipped: target file has been modified by user (use --force to overwrite)"))
 	}
+
+	//step 3a: load the backup file into a buffer as the start for the
+	//application algorithm
+	buffer, err := NewFileBuffer(backupPath, targetPath)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	//step 3b: apply all the applicable repo files in order
 	PrintInfo("%10s %s", repoFile.ApplicationStrategy(), repoPath)
-	applicationStrategy(repoPath, backupPath, targetPath)
+	buffer, err = GetApplyImpl(repoFile)(buffer)
+	if err != nil {
+		panic(err.Error())
+	}
 
-	//step 4: copy permissions/timestamps from backup file to target file, in order to
-	//be able to detect manual modifications in the next holo-apply run
+	//step 3c: write the result buffer to the target location and copy
+	//permissions/timestamps from backup file to target file, in order to be
+	//able to detect manual modifications in the next holo-apply run
+	buffer.Write(targetPath)
 	ApplyFilePermissions(backupPath, targetPath)
-}
-
-func applyCopy(repoPath, backupPath, targetPath string) {
-	CopyFile(repoPath, targetPath)
-}
-
-func applyProgram(repoPath, backupPath, targetPath string) {
-	//apply repoPath by executing it in the form
-	//$ exec repoPath < backupPath > targetPath
-	cmd := exec.Command(repoPath)
-
-	//prepare standard input
-	var err error
-	cmd.Stdin, err = os.Open(backupPath)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	//run command, fetch result file into buffer (not into the targetPath
-	//directly, in order not to corrupt the file there if the script run fails)
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	err = cmd.Run()
-	if stderr.Len() > 0 {
-		PrintWarning("execution of %s produced error output:", repoPath)
-		stderrLines := strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
-		for _, stderrLine := range stderrLines {
-			PrintWarning("    %s", stderrLine)
-		}
-	}
-	if err != nil {
-		panic(err.Error())
-	}
-
-	//write result file and apply permissions from backup path
-	err = ioutil.WriteFile(targetPath, stdout.Bytes(), 600)
-	if err != nil {
-		panic(err.Error())
-	}
 }

@@ -79,7 +79,7 @@ func IsNewerThan(path1, path2 string) bool {
 	return info1.ModTime().After(info2.ModTime())
 }
 
-//Panics on error. (Compare implementation of walkRepo.)
+//Panics on error. (Compare implementation of holo.Apply().)
 func CopyFile(fromPath, toPath string) {
 	//case 1: copy a regular file
 	if isRegularFile(fromPath) {
