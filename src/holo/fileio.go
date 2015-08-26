@@ -34,22 +34,6 @@ func IsManageableFile(path string) bool {
 	return info.Mode().IsRegular() || IsFileInfoASymbolicLink(info)
 }
 
-func isRegularFile(path string) bool {
-	info, err := os.Lstat(path)
-	if err != nil {
-		return false
-	}
-	return info.Mode().IsRegular()
-}
-
-func isSymbolicLink(path string) bool {
-	info, err := os.Lstat(path)
-	if err != nil {
-		return false
-	}
-	return IsFileInfoASymbolicLink(info)
-}
-
 func IsFileInfoASymbolicLink(fileInfo os.FileInfo) bool {
 	return (fileInfo.Mode() & os.ModeType) == os.ModeSymlink
 }
@@ -78,7 +62,11 @@ func IsNewerThan(path1, path2 string) (bool, error) {
 }
 
 func CopyFile(fromPath, toPath string) error {
-	if isRegularFile(fromPath) {
+	info, err := os.Lstat(fromPath)
+	if err != nil {
+		return err
+	}
+	if info.Mode().IsRegular() {
 		return copyFileImpl(fromPath, toPath)
 	} else {
 		return copySymlinkImpl(fromPath, toPath)
