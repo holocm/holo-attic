@@ -70,7 +70,7 @@ func Apply(file ConfigFile, withForce bool) {
 	//backup of the original file, the file at installPath *is* the original
 	//file which we have to backup now
 	if !IsManageableFile(backupPath) {
-		PrintInfo("Saving %s in %s", targetPath, BackupDirectory())
+		PrintInfo("  store at %s", backupPath)
 
 		backupDir := filepath.Dir(backupPath)
 		if err := os.MkdirAll(backupDir, 0755); err != nil {
@@ -84,7 +84,7 @@ func Apply(file ConfigFile, withForce bool) {
 	//package was updated and the .pacnew is the newer version of the original
 	//config file; move it to the backup location
 	if IsManageableFile(pacnewPath) {
-		PrintInfo("Saving %s in %s", pacnewPath, BackupDirectory())
+		PrintInfo("    update %s -> %s", pacnewPath, backupPath)
 		CopyFile(pacnewPath, backupPath)
 		_ = os.Remove(pacnewPath) //this can fail silently
 	}
@@ -94,7 +94,7 @@ func Apply(file ConfigFile, withForce bool) {
 	//complain if the user made any changes to config files governed by holo
 	//(this check is overridden by the --force option)
 	if !withForce && IsNewerThan(targetPath, backupPath) {
-		panic(fmt.Sprintf("Skipping %s: has been modified by user", targetPath))
+		panic(fmt.Sprintf("  skipped: target file has been modified by user (use --force to overwrite)"))
 	}
 	PrintInfo("%10s %s", repoFile.ApplicationStrategy(), repoPath)
 	applicationStrategy(repoPath, backupPath, targetPath)
