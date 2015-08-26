@@ -38,10 +38,15 @@ Dependencies
 ============
 
 holo is written in Go, so it compiles to static binaries without any runtime
-dependencies (other than a UNIX kernel). That being said, the current
-implementation depends on Arch Linux at some points (the packaging using a
-PKGBUILD, and the built-in handling of `pacnew` files). The algorithm itself is
-distribution-independent, though.
+dependencies (other than a UNIX kernel). Building requires a Unix shell and a
+reasonably recent Perl, stuff that is preinstalled on almost every Linux
+distribution.
+
+That being said, the current implementation depends on Arch Linux at one point
+(the built-in handling of `pacnew` files). The algorithm itself is
+distribution-independent, though. Support for other distributions can be added
+easily, the author just does not have any other distributions set up for
+testing.
 
 Installation
 ------------
@@ -49,7 +54,11 @@ Installation
 Installation is the classical
 
     make
+    make check
     sudo make install
+
+If `make check` prints anything else than "Running testcase xyz..." progress
+messages, there's a problem.
 
 For Arch Linux, an [AUR package](https://aur4.archlinux.org/packages/holo/) is
 provided. Using the packaged form is very desirable since packages using Holo

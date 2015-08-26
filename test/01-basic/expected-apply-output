@@ -1,0 +1,3 @@
+[holo] Working on target/etc/foo.conf
+[holo]   store at backup/etc/foo.conf
+[holo]      apply repo/etc/foo.conf

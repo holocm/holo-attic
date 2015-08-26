@@ -1,0 +1,5 @@
+
+target/etc/foo.conf
+    store at backup/etc/foo.conf
+       apply repo/etc/foo.conf
+
