@@ -1,2 +1,11 @@
->> ./etc/foo.conf = regular
-repo foo.conf
+>> ./etc/link-over-link.conf = symlink
+ddd
+>> ./etc/link-over-plain.conf = symlink
+ccc
+>> ./etc/plain-over-link.conf = regular
+bbb
+bbb
+>> ./etc/plain-over-plain.conf = regular
+aaa
+aaa
+>> ./etc/stock-file-is-directory.conf/.keep = regular

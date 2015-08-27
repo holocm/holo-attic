@@ -38,7 +38,7 @@ func Apply(file ConfigFile, withForce bool) {
 	//package, the repo file from the holo metapackage)
 	PrintInfo("Working on \x1b[1m%s\x1b[0m", targetPath)
 	if !IsManageableFile(targetPath) {
-		PrintError("%s is not a regular file", targetPath)
+		PrintError("  skipped: target is not a manageable file")
 		return
 	}
 

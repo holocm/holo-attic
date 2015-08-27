@@ -1,5 +1,25 @@
 
-target/etc/foo.conf
-    store at backup/etc/foo.conf
-       apply repo/etc/foo.conf
+target/etc/link-over-link.conf
+    store at backup/etc/link-over-link.conf
+       apply repo/etc/link-over-link.conf
+
+target/etc/link-over-plain.conf
+    store at backup/etc/link-over-plain.conf
+       apply repo/etc/link-over-plain.conf
+
+target/etc/plain-over-link.conf
+    store at backup/etc/plain-over-link.conf
+       apply repo/etc/plain-over-link.conf
+
+target/etc/plain-over-plain.conf
+    store at backup/etc/plain-over-plain.conf
+       apply repo/etc/plain-over-plain.conf
+
+target/etc/stock-file-is-directory.conf
+    store at backup/etc/stock-file-is-directory.conf
+       apply repo/etc/stock-file-is-directory.conf
+
+target/etc/stock-file-missing.conf
+    store at backup/etc/stock-file-missing.conf
+       apply repo/etc/stock-file-missing.conf
 
