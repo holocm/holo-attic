@@ -40,6 +40,7 @@ func ScanRepo() ConfigFiles {
 	}
 
 	var result ConfigFiles
+	seen := make(map[string]bool) //used to avoid duplicates in result
 
 	//walk over the repo to find repo files (and thus the corresponding target files)
 	filepath.Walk(repoPath, func(repoFile string, repoFileInfo os.FileInfo, err error) error {
@@ -52,7 +53,12 @@ func ScanRepo() ConfigFiles {
 			return nil
 		}
 
-		result = append(result, NewRepoFile(repoFile).ConfigFile())
+		//check if we had this config file already
+		configFile := NewRepoFile(repoFile).ConfigFile()
+		if !seen[configFile.TargetPath()] {
+			result = append(result, configFile)
+			seen[configFile.TargetPath()] = true
+		}
 		return nil
 	})
 
