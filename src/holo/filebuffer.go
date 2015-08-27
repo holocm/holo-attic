@@ -59,6 +59,7 @@ func NewFileBuffer(path string, basePath string) (*FileBuffer, error) {
 		return &FileBuffer{
 			Contents:      nil,
 			SymlinkTarget: target,
+			BasePath:      basePath,
 		}, nil
 	}
 
@@ -71,6 +72,7 @@ func NewFileBuffer(path string, basePath string) (*FileBuffer, error) {
 		return &FileBuffer{
 			Contents:      contents,
 			SymlinkTarget: "",
+			BasePath:      basePath,
 		}, nil
 	}
 
@@ -90,6 +92,7 @@ func NewFileBufferFromContents(fileContents []byte, basePath string) *FileBuffer
 	return &FileBuffer{
 		Contents:      fileContents,
 		SymlinkTarget: "",
+		BasePath:      basePath,
 	}
 }
 
