@@ -1,0 +1,26 @@
+>> ./etc/contents = regular
+foo
+foo
+foo
+baz
+bar
+bar
+>> ./etc/link-through-link.conf = regular
+foo
+baz
+bar
+>> ./etc/link-through-plain.conf = regular
+foo
+foo
+foo
+buz
+bur
+bur
+>> ./etc/plain-through-link.conf = regular
+apple
+banana
+tomato
+>> ./etc/plain-through-plain.conf = regular
+foo
+qux
+baz

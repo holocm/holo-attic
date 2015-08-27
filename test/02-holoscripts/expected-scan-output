@@ -1,0 +1,17 @@
+
+target/etc/link-through-link.conf
+    store at backup/etc/link-through-link.conf
+    passthru repo/etc/link-through-link.conf.holoscript
+
+target/etc/link-through-plain.conf
+    store at backup/etc/link-through-plain.conf
+    passthru repo/etc/link-through-plain.conf.holoscript
+
+target/etc/plain-through-link.conf
+    store at backup/etc/plain-through-link.conf
+    passthru repo/etc/plain-through-link.conf.holoscript
+
+target/etc/plain-through-plain.conf
+    store at backup/etc/plain-through-plain.conf
+    passthru repo/etc/plain-through-plain.conf.holoscript
+

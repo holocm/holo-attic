@@ -70,6 +70,6 @@ fi
 if [ $TEST_EXIT_CODE == 0 ]; then
     echo ">> All tests completed successfully."
 else
-    echo "!! Some or all tests failed. Please check the output above for more information"
+    echo "!! Some or all tests failed. Please check the output above for more information."
 fi
 exit $TEST_EXIT_CODE

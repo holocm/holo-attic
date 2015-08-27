@@ -8,5 +8,6 @@ target files of all kinds (regular or symlink).
 
 Also, some error cases are tested:
 
-* `/etc/no-stock-file.conf` has a repo file, but not a stock config file.
-
+* `/etc/stock-file-missing.conf` has a repo file, but not a stock config file.
+* `/etc/stock-file-is-directory.conf` has a repo file, but the target is a
+  directory (and thus not a manageable file).

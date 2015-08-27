@@ -1,0 +1,12 @@
+[holo] Working on target/etc/link-through-link.conf
+[holo]   store at backup/etc/link-through-link.conf
+[holo]   passthru repo/etc/link-through-link.conf.holoscript
+[holo] Working on target/etc/link-through-plain.conf
+[holo]   store at backup/etc/link-through-plain.conf
+[holo]   passthru repo/etc/link-through-plain.conf.holoscript
+[holo] Working on target/etc/plain-through-link.conf
+[holo]   store at backup/etc/plain-through-link.conf
+[holo]   passthru repo/etc/plain-through-link.conf.holoscript
+[holo] Working on target/etc/plain-through-plain.conf
+[holo]   store at backup/etc/plain-through-plain.conf
+[holo]   passthru repo/etc/plain-through-plain.conf.holoscript
