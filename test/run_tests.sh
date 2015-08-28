@@ -18,13 +18,24 @@ run_testcase() {
 
     # clean the testcase directory
     git clean -qdXf .
+    # backup files are sometimes under source control for specific test setups;
+    # make sure that everything is clean here
+    [ -d backup/ ] && git checkout backup/
 
     # setup environment for holo run
-    cp -R source/ target/
     mkdir -p backup/
+    cp -R source/ target/
     export HOLO_TARGET_DIR="./target/"
     export HOLO_BACKUP_DIR="./backup/"
     export HOLO_REPO_DIR="./repo/"
+
+    # when backup files exist, make sure their mtimes are in sync with the
+    # targets (or else `holo apply` will refuse to work on them)
+    cd "$TESTCASE_DIR/backup/"
+    find -type f -o -type l | while read FILE; do
+        [ -f "../target/$FILE" ] && touch -r "$FILE" "../target/$FILE"
+    done
+    cd "$TESTCASE_DIR/"
 
     # run holo
     ../../build/holo scan 2>&1  | ../strip-ansi-colors.sh > scan-output

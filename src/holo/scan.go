@@ -27,21 +27,29 @@ import (
 	"strings"
 )
 
-func ScanRepo() ConfigFiles {
-	//check that the repo directory exists
+//This returns a slice of all the ConfigFiles which have accompanying RepoFiles,
+//and also a string slice of all orphaned backup files (backup files without a
+//ConfigFile).
+func ScanRepo() (configFiles ConfigFiles, orphanedBackupFiles []string) {
+	//check that the repo and backup directories exist
 	repoPath := RepoDirectory()
-	repoInfo, err := os.Lstat(repoPath)
-	if err != nil {
-		PrintError("Cannot open %s: %s", repoPath, err.Error())
-		return nil
-	}
-	if !repoInfo.IsDir() {
-		PrintError("Cannot open %s: not a directory!", repoPath)
-		return nil
+	backupPath := BackupDirectory()
+	pathsThatMustExist := []string{repoPath, backupPath}
+
+	for _, path := range pathsThatMustExist {
+		fi, err := os.Lstat(path)
+		if err != nil {
+			PrintError("Cannot open %s: %s", path, err.Error())
+			return nil, nil
+		}
+		if !fi.IsDir() {
+			PrintError("Cannot open %s: not a directory!", path)
+			return nil, nil
+		}
 	}
 
 	var result ConfigFiles
-	seen := make(map[string]bool) //used to avoid duplicates in result
+	seen := make(map[string]bool) //used to avoid duplicates in result, and also to find orphaned backup files
 
 	//walk over the repo to find repo files (and thus the corresponding target files)
 	filepath.Walk(repoPath, func(repoFile string, repoFileInfo os.FileInfo, err error) error {
@@ -69,6 +77,27 @@ func ScanRepo() ConfigFiles {
 		return nil
 	})
 
+	//walk over the backup directory to find orphaned backup files
+	var backupOrphans []string
+	filepath.Walk(backupPath, func(backupFile string, backupFileInfo os.FileInfo, err error) error {
+		//skip over unaccessible stuff
+		if err != nil {
+			return err
+		}
+		//only look at manageable files (regular files or symlinks)
+		if !(backupFileInfo.Mode().IsRegular() || IsFileInfoASymbolicLink(backupFileInfo)) {
+			return nil
+		}
+
+		//check if we have seen the config file for this backup file
+		configFile := NewConfigFileFromBackupPath(backupFile)
+		if !seen[configFile.TargetPath()] {
+			backupOrphans = append(backupOrphans, backupFile)
+		}
+		return nil
+	})
+
 	sort.Sort(result)
-	return result
+	sort.Strings(backupOrphans)
+	return result, backupOrphans
 }

@@ -1,0 +1,6 @@
+>> ./etc/repofile-deleted.conf = regular
+eee
+eee
+>> ./etc/still-existing.conf = regular
+bbb
+bbb

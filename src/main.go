@@ -40,7 +40,7 @@ func main() {
 	}
 
 	//check that it is a known command word
-	var command func(holo.ConfigFiles)
+	var command func(holo.ConfigFiles, []string)
 	switch os.Args[1] {
 	case "apply":
 		command = commandApply
@@ -55,15 +55,15 @@ func main() {
 	}
 
 	//scan the repo
-	files := holo.ScanRepo()
-	if files == nil {
+	configFiles, orphanedBackupFiles := holo.ScanRepo()
+	if configFiles == nil {
 		//some fatal error occurred while scanning the repo - it was already
 		//reported, so just exit
 		return
 	}
 
 	//execute command
-	command(files)
+	command(configFiles, orphanedBackupFiles)
 }
 
 func commandHelp() {
@@ -74,7 +74,7 @@ func commandHelp() {
 	fmt.Printf("\nSee `man 8 holo` for details.\n")
 }
 
-func commandApply(files holo.ConfigFiles) {
+func commandApply(configFiles holo.ConfigFiles, orphanedBackupFiles []string) {
 	//parse arguments after "holo apply" (either files or "--force")
 	withForce := false
 	withFiles := false
@@ -96,24 +96,41 @@ func commandApply(files holo.ConfigFiles) {
 	}
 
 	//apply all files found in the repo (or only some if the args contain a limited subset)
-	for _, file := range files {
+	for _, file := range configFiles {
 		if !withFiles || targetFiles[file.TargetPath()] {
 			holo.Apply(file, withForce)
 		}
 	}
+
+	//cleanup orphaned backup files
+	for _, file := range orphanedBackupFiles {
+		targetFile := holo.NewConfigFileFromBackupPath(file).TargetPath()
+		if !withFiles || targetFiles[targetFile] {
+			holo.HandleOrphanedBackupFile(file)
+		}
+	}
 }
 
-func commandScan(files holo.ConfigFiles) {
+func commandScan(configFiles holo.ConfigFiles, orphanedBackupFiles []string) {
 	//report scan results
 	fmt.Println()
 
-	for _, file := range files {
+	//report config files with repo files
+	for _, file := range configFiles {
 		fmt.Printf("\x1b[1m%s\x1b[0m\n", file.TargetPath())
 		fmt.Printf("    store at %s\n", file.BackupPath())
 		repoFiles := file.RepoFiles()
 		for _, repoFile := range repoFiles {
 			fmt.Printf("    %8s %s\n", repoFile.ApplicationStrategy(), repoFile.Path())
 		}
-		fmt.Println("")
+		fmt.Println()
+	}
+
+	//report orphaned backup files
+	for _, backupFile := range orphanedBackupFiles {
+		targetFile, strategy, assessment := holo.ScanOrphanedBackupFile(backupFile)
+		fmt.Printf("\x1b[1m%s\x1b[0m (%s)\n", targetFile, assessment)
+		fmt.Printf("    %8s %s\n", strategy, backupFile)
+		fmt.Println()
 	}
 }

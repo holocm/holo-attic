@@ -34,6 +34,12 @@ import (
 //"etc/pacman.conf".
 type ConfigFile string
 
+func NewConfigFileFromBackupPath(backupFile string) ConfigFile {
+	//make path relative
+	relPath, _ := filepath.Rel(BackupDirectory(), backupFile)
+	return ConfigFile(relPath)
+}
+
 func (file ConfigFile) TargetPath() string {
 	//make path absolute
 	return filepath.Join(TargetDirectory(), string(file))
