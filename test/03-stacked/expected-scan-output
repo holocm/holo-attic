@@ -1,0 +1,26 @@
+
+target/etc/link-and-script.conf
+    store at backup/etc/link-and-script.conf
+       apply repo/01-first/etc/link-and-script.conf
+    passthru repo/02-second/etc/link-and-script.conf.holoscript
+
+target/etc/link-through-scripts.conf
+    store at backup/etc/link-through-scripts.conf
+    passthru repo/01-first/etc/link-through-scripts.conf.holoscript
+    passthru repo/02-second/etc/link-through-scripts.conf.holoscript
+
+target/etc/plain-and-plain.conf
+    store at backup/etc/plain-and-plain.conf
+       apply repo/01-first/etc/plain-and-plain.conf
+       apply repo/02-second/etc/plain-and-plain.conf
+
+target/etc/plain-and-script.conf
+    store at backup/etc/plain-and-script.conf
+       apply repo/01-first/etc/plain-and-script.conf
+    passthru repo/02-second/etc/plain-and-script.conf.holoscript
+
+target/etc/script-and-script.conf
+    store at backup/etc/script-and-script.conf
+    passthru repo/01-first/etc/script-and-script.conf.holoscript
+    passthru repo/02-second/etc/script-and-script.conf.holoscript
+

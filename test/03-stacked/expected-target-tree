@@ -1,0 +1,26 @@
+>> ./etc/contents1 = regular
+jjj
+jjj
+>> ./etc/contents2 = regular
+mmm
+mmm
+>> ./etc/link-and-script.conf = regular
+ljj
+ljj
+>> ./etc/link-through-scripts.conf = regular
+nnn
+mmm
+mmm
+ooo
+>> ./etc/plain-and-plain.conf = regular
+ccc
+ccc
+>> ./etc/plain-and-script.conf = regular
+eee
+eee
+fff
+>> ./etc/script-and-script.conf = regular
+hhh
+ggg
+ggg
+iii
