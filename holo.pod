@@ -49,7 +49,11 @@ be made clearer by the B<L<EXAMPLE|/EXAMPLE>> below.
 =item B<apply> [I<--force>] [I<file> ...]
 
 Apply configuration from Holo's repository using the application algorithm
-described in this manpage.
+described in this manpage. Also, when repository files (or target configuration
+files) are deleted, but there are still backups of the original configuration
+files around, these are scrubbed (either deleted or restored, depending on the
+situation found). You can always run C<holo scan> beforehand to check what will
+be done.
 
 By default, all available configuration files are applied. If files are listed
 as arguments, apply configuration only to these target files.
