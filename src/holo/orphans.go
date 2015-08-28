@@ -47,6 +47,16 @@ func HandleOrphanedBackupFile(backupPath string) {
 			PrintError(err.Error())
 			return
 		}
+		//if there was a .pacsave file, we can delete it too
+		pacsavePath := targetPath + ".pacsave"
+		if IsManageableFile(pacsavePath) {
+			PrintInfo("    delete %s", pacsavePath)
+			err := os.Remove(pacsavePath)
+			if err != nil {
+				PrintError(err.Error())
+				return
+			}
+		}
 	case "restore":
 		//target is still there - restore the backup file
 		err := CopyFile(backupPath, targetPath)
