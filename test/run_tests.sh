@@ -32,15 +32,17 @@ run_testcase() {
 
     # dump the contents of the target/ directory into a single file for better diff'ing
     # (NOTE: I concede that this is slightly messy.)
-    cd "$TESTCASE_DIR/target/"
-    find \( -type f -printf '>> %p = regular\n' -exec cat {} \; \) -o \( -type l -printf '>> %p = symlink\n' -exec readlink {} \; \) \
-        | perl -E 'local $/; print for sort split /^(?=>>)/m, <>' > "$TESTCASE_DIR/target-tree"
+    for DIR in target backup; do
+        cd "$TESTCASE_DIR/$DIR/"
+        find \( -type f -printf '>> %p = regular\n' -exec cat {} \; \) -o \( -type l -printf '>> %p = symlink\n' -exec readlink {} \; \) \
+            | perl -E 'local $/; print for sort split /^(?=>>)/m, <>' > "$TESTCASE_DIR/$DIR-tree"
+    done
     cd "$TESTCASE_DIR/"
 
     local EXIT_CODE=0
 
     # use diff to check the actual run with our expectations
-    for FILE in target-tree scan-output apply-output; do
+    for FILE in backup-tree target-tree scan-output apply-output; do
         if diff -q expected-$FILE $FILE &>/dev/null; then true; else
             echo "!! The $FILE deviates from our expectation. Diff follows:"
             diff -u expected-$FILE $FILE 2>&1 | sed 's/^/    /'

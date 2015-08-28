@@ -1,0 +1,12 @@
+>> ./etc/link-through-link.conf = symlink
+contents
+>> ./etc/link-through-plain.conf = symlink
+contents
+>> ./etc/plain-through-link.conf = regular
+tomato
+apple
+banana
+>> ./etc/plain-through-plain.conf = regular
+foo
+bar
+baz

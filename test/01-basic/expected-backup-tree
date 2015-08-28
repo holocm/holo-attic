@@ -1,0 +1,10 @@
+>> ./etc/link-over-link.conf = symlink
+hhh
+>> ./etc/link-over-plain.conf = regular
+fff
+fff
+>> ./etc/plain-over-link.conf = symlink
+ggg
+>> ./etc/plain-over-plain.conf = regular
+eee
+eee

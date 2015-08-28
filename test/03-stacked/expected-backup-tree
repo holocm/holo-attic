@@ -1,0 +1,14 @@
+>> ./etc/link-and-script.conf = regular
+kkk
+kkk
+>> ./etc/link-through-scripts.conf = symlink
+contents2
+>> ./etc/plain-and-plain.conf = regular
+aaa
+aaa
+>> ./etc/plain-and-script.conf = regular
+ddd
+ddd
+>> ./etc/script-and-script.conf = regular
+ggg
+ggg

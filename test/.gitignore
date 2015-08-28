@@ -1,5 +1,6 @@
 backup/
 target/
+backup-tree
 target-tree
 apply-output
 scan-output
