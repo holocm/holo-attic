@@ -11,3 +11,8 @@ Also, some error cases are tested:
 * `/etc/stock-file-missing.conf` has a repo file, but not a stock config file.
 * `/etc/stock-file-is-directory.conf` has a repo file, but the target is a
   directory (and thus not a manageable file).
+
+We also check if files not conforming to the repo file naming pattern are
+ignored correctly by the scanner.
+
+* `repo/not-a-repo-file.conf` is not within a subdirectory of the repo directory.

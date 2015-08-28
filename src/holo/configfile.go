@@ -20,7 +20,11 @@
 
 package holo
 
-import "path/filepath"
+import (
+	"os"
+	"path/filepath"
+	"sort"
+)
 
 //This type represents a single target file, and includes methods to calculate
 //the corresponding backup location and repo file(s). The string stored in it
@@ -40,16 +44,48 @@ func (file ConfigFile) BackupPath() string {
 	return filepath.Join(BackupDirectory(), string(file))
 }
 
-func (file ConfigFile) RepoFile() RepoFile {
-	//make path absolute
-	repoPath := filepath.Join(RepoDirectory(), string(file))
+func (file ConfigFile) RepoFiles() RepoFiles {
+	var result RepoFiles
 
-	//the repo file may have an optional ".holoscript" suffix
-	if repoPath2 := repoPath + ".holoscript"; IsManageableFile(repoPath2) {
-		return NewRepoFile(repoPath2)
-	} else {
-		return NewRepoFile(repoPath)
+	//check every subdirectory of the RepoDirectory() if it contains a repo file for this ConfigFile
+	dirNames := repoSubDirectories()
+	for _, dirName := range dirNames {
+		//build absolute path
+		repoPath := filepath.Join(RepoDirectory(), dirName, string(file))
+
+		//check if the repo file exists
+		if IsManageableFile(repoPath) {
+			result = append(result, NewRepoFile(repoPath))
+		} else {
+			//it may have an optional ".holoscript" suffix
+			repoPath2 := repoPath + ".holoscript"
+			if IsManageableFile(repoPath2) {
+				result = append(result, NewRepoFile(repoPath2))
+			}
+		}
 	}
+
+	sort.Sort(result)
+	return result
+}
+
+func repoSubDirectories() []string {
+	//NOTE: Any IO errors in here are silently ignored. If any subdirectory is
+	//not accessible, we just ignore it.
+	dir, err := os.Open(RepoDirectory())
+	if err != nil {
+		return []string{}
+	}
+
+	//read all the directory entries in the repo directory
+	fis, _ := dir.Readdir(-1)
+	var result []string
+	for _, fi := range fis {
+		if fi.IsDir() {
+			result = append(result, fi.Name())
+		}
+	}
+	return result
 }
 
 //This type holds a slice of ConfigFile instances, and implements some methods

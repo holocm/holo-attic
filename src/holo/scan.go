@@ -24,6 +24,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 )
 
 func ScanRepo() ConfigFiles {
@@ -50,6 +51,12 @@ func ScanRepo() ConfigFiles {
 		}
 		//only look at manageable files (regular files or symlinks)
 		if !(repoFileInfo.Mode().IsRegular() || IsFileInfoASymbolicLink(repoFileInfo)) {
+			return nil
+		}
+		//only look at files within subdirectories (files in the repo directory
+		//itself are skipped)
+		relPath, _ := filepath.Rel(repoPath, repoFile)
+		if !strings.ContainsRune(relPath, filepath.Separator) {
 			return nil
 		}
 

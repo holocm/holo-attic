@@ -21,6 +21,7 @@
 package holo
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 )
@@ -46,6 +47,13 @@ func (file RepoFile) ConfigFile() ConfigFile {
 
 	//make path relative
 	relPath, _ := filepath.Rel(RepoDirectory(), repoFile)
+	//remove the disambiguation path element to get to the relPath for the ConfigFile
+	//e.g. repoFile = '/holo/repo/23-foo/etc/foo.conf'
+	//  -> relPath  = '23-foo/etc/foo.conf'
+	//  -> relPath  = 'etc/foo.conf'
+	segments := strings.SplitN(relPath, fmt.Sprintf("%c", filepath.Separator), 2)
+	relPath = segments[1]
+
 	return ConfigFile(relPath)
 }
 

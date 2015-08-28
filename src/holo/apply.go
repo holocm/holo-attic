@@ -27,8 +27,6 @@ import (
 
 func Apply(file ConfigFile, withForce bool) {
 	//determine the related paths
-	repoFile := file.RepoFile()
-	repoPath := repoFile.Path()
 	targetPath := file.TargetPath()
 	backupPath := file.BackupPath()
 	pacnewPath := targetPath + ".pacnew"
@@ -100,11 +98,14 @@ func Apply(file ConfigFile, withForce bool) {
 	}
 
 	//step 3b: apply all the applicable repo files in order
-	PrintInfo("%10s %s", repoFile.ApplicationStrategy(), repoPath)
-	buffer, err = GetApplyImpl(repoFile)(buffer)
-	if err != nil {
-		PrintError(err.Error())
-		return
+	repoFiles := file.RepoFiles()
+	for _, repoFile := range repoFiles {
+		PrintInfo("%10s %s", repoFile.ApplicationStrategy(), repoFile.Path())
+		buffer, err = GetApplyImpl(repoFile)(buffer)
+		if err != nil {
+			PrintError(err.Error())
+			return
+		}
 	}
 
 	//step 3c: write the result buffer to the target location and copy

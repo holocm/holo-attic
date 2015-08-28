@@ -108,10 +108,12 @@ func commandScan(files holo.ConfigFiles) {
 	fmt.Println()
 
 	for _, file := range files {
-		repoFile := file.RepoFile()
 		fmt.Printf("\x1b[1m%s\x1b[0m\n", file.TargetPath())
 		fmt.Printf("    store at %s\n", file.BackupPath())
-		fmt.Printf("    %8s %s\n", repoFile.ApplicationStrategy(), repoFile.Path())
+		repoFiles := file.RepoFiles()
+		for _, repoFile := range repoFiles {
+			fmt.Printf("    %8s %s\n", repoFile.ApplicationStrategy(), repoFile.Path())
+		}
 		fmt.Println("")
 	}
 }
