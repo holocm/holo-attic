@@ -1,7 +1,5 @@
 # Holo - minimalistic config management
 
-## Manifesto
-
 Today's DevOps is all about configuration management tools like Chef and
 Puppet, humongous software suites that intend to manage your system
 configuration. Their sophisticated domain model allows you to document and
