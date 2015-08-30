@@ -1,3 +1,0 @@
-#!/bin/sh
-echo -e "\e[1;31mholo-apply is deprecated. Use "'`holo apply`'" instead.\e[0m" >&2
-exec holo apply $@

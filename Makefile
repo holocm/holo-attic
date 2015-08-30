@@ -15,9 +15,8 @@ test: check # just a synonym
 check: build/holo
 	sh test/run_tests.sh
 
-install: build/holo src/holo-apply build/holo.8
+install: build/holo build/holo.8
 	install -d -m 0755 "$(DESTDIR)/holo/backup"
 	install -d -m 0755 "$(DESTDIR)/holo/repo"
-	install -D -m 0755 build/holo     "$(DESTDIR)/usr/bin/holo"
-	install -D -m 0755 src/holo-apply "$(DESTDIR)/usr/bin/holo-apply"
-	install -D -m 0755 build/holo.8   "$(DESTDIR)/usr/share/man/man8/holo.8"
+	install -D -m 0755 build/holo   "$(DESTDIR)/usr/bin/holo"
+	install -D -m 0755 build/holo.8 "$(DESTDIR)/usr/share/man/man8/holo.8"
