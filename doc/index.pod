@@ -1,0 +1,182 @@
+=head1 Installation
+
+The recommended method, if possible, is to install Holo as a package.
+
+=over 4
+
+=item *
+
+Arch Linux users can use the L<AUR package|https://aur.archlinux.org/packages/holo>.
+
+=item *
+
+If you have packaged Holo for your distribution, please
+L<send me a link|https://github.com/majewsky/holo/issues/new> that I can add to
+this list.
+
+=back
+
+Alternatively, to install from source, clone the
+L<Git repository|https://github.com/majewsky/holo>
+and build the master branch:
+
+    $ git clone https://github.com/majewsky/holo
+    $ cd holo
+    $ make
+    $ make check
+    $ sudo make install
+
+You need L<Go|https://golang.org> to compile Holo and
+L<Perl|https://www.perl.org> to run the testcase. Packages for Go and Perl are
+available for all major distributions. Note that these are all build-time
+dependencies; when installed, Holo is a single static binary (plus manpage) that
+depends only on a UNIX kernel.
+
+=head1 Building holograms
+
+In Holo, configuration is deployed in packages using the standard package
+management tools of your Linux distribution, so first, you should familiarize
+yourself with building and installing such packages. When administrating
+multiple systems, it is good practice to create a package repository to
+distribute configuration updates. To differentiate configuration packages from
+the application packages provided by your distribution, we're going to call
+these I<holograms>.
+
+The package management allows us to specify application packages and other
+holograms as dependencies of our hologram, and put configuration files into the
+hologram. Holo only comes into play when we go beyond the capabilities of the
+package management.
+
+=head1 The configuration repository
+
+Package management does not allow multiple packages to install a file in the
+same location. So when an application package installs a default configuration
+file, a hologram cannot directly overwrite this configuration file.
+
+    $ pacman -Qo /etc/nginx/nginx.conf
+    /etc/nginx/nginx.conf is owned by nginx 1.8.0-1
+
+Instead, Holo offers a configuration repository at F</holo/repo> where the
+hologram can put its configuration file.
+
+    $ pacman -Qo /holo/repo/20-webserver/etc/nginx/nginx.conf
+    /holo/repo/20-webserver/etc/nginx/nginx.conf is owned by hologram-webserver 1.0.0-1
+
+The C<holo apply> command is then used to install the hologram's configuration
+file in the right place. Most package management tools allow packages to carry
+post-install hooks for this purpose.
+
+    $ sudo holo apply
+    [holo] Working on /etc/nginx/nginx.conf
+    [holo]   store at /holo/backup/etc/nginx/nginx.conf
+    [holo]      apply /holo/repo/20-webserver/etc/nginx/nginx.conf
+
+Entries in the configuration repository follow a fixed naming scheme:
+
+    /holo/repo/20-webserver/etc/nginx/nginx.conf
+      ^         ^            ^
+      |         |            |
+      |         |            +-- path to target
+      |         |
+      |         +-- disambiguator
+      |
+      +-- repository path
+
+The disambiguator is always required, and allows multiple repository files to
+operate on the same target (sorted alphabetically by their disambiguator). The
+pattern of putting a number at the start of the disambiguator is not required,
+but useful to control the ordering of repo files.
+
+=head1 Application strategies
+
+When the repository file is a plain file or a symlink, the default strategy
+("apply") is to copy this file to the target location. Symlink targets are
+copied verbatim, so relative symlinks should be relative to the target
+directory.
+
+When the repository file is an executable file or a symlink to an executable
+file carrying the extra C<.holoscript> extension, the script is executed and the
+contents of the original file are piped through it to obtain the resulting
+configuration file. This strategy is called "passthru" in the output of C<holo
+apply> and C<holo scan>.
+
+For example, the following setup installs the default configuration for Pacman,
+but enables the "Color" option which is commented out in the default
+configuration.
+
+    $ holo scan
+    ...
+    /etc/pacman.conf
+    store at /holo/backup/etc/pacman.conf
+    passthru /holo/repo/20-enable-color/etc/pacman.conf.holoscript
+    ...
+    $ cat /holo/repo/20-enable-color/etc/pacman.conf.holoscript
+    #!/bin/sh
+    sed 's/^#\s*Color$/Color/'
+
+The advantage of holoscripts over plain configuration files is that when the
+default configuration is updated, you get the updates as well during the next
+C<holo apply>.
+
+    $ sudo pacman -Syu
+    ...
+    (3/8) upgrading pacman
+    warning: /etc/pacman.conf installed as /etc/pacman.conf.pacnew
+    ... 
+
+In this example, the system update includes a new default configuration, which
+is placed next to the currently used configuration. Holo will recognize this and
+use the new default configuration:
+
+    $ sudo holo apply
+    ...
+    [holo] Working on /etc/pacman.conf
+    [holo]     update /etc/pacman.conf.pacnew -&gt; /holo/backup/etc/pacman.conf
+    [holo]   passthru /holo/repo/20-enable-color/etc/pacman.conf.holoscript
+    ... 
+
+Another advantage is that multiple holoscripts can be chained. Multiple
+holograms can thus modify the same default configuration, or further specialize
+a base configuration provided by a base hologram:
+
+    $ holo scan
+    ...
+    /etc/pacman.conf
+    store at /holo/backup/etc/pacman.conf
+    apply /holo/repo/00-base/etc/pacman.conf
+    passthru /holo/repo/10-add-catalyst-repo/etc/pacman.conf.holoscript
+    passthru /holo/repo/20-enable-color/etc/pacman.conf.holoscript
+    ... 
+
+As seen in this example, the disambiguator is used to determine the application
+order when multiple repository files work on the same target. There is no
+restriction on how repository files are ordered. When somewhere in the
+application chain, a plain file is found, the effects of all previous
+application steps are discarded and overwritten by that config file.
+
+=head1 The backup directory
+
+Before Holo overwrites the default configuration supplied by the application
+package, it always takes a copy which is placed below F</holo/backup>. This
+typically happens only once. The first C<holo apply> after installing a new
+hologram might look like this:
+
+    $ sudo holo apply
+    [holo] Working on /etc/nginx/nginx.conf
+    [holo]   store at /holo/backup/etc/nginx/nginx.conf
+    [holo]      apply /holo/repo/20-webserver/etc/nginx/nginx.conf
+
+But when C<holo apply> is run again, it recognizes that the backup is already
+up-to-date:
+
+    $ sudo holo apply
+    [holo] Working on /etc/nginx/nginx.conf
+    [holo]      apply /holo/repo/20-webserver/etc/nginx/nginx.conf
+
+Besides allowing the user to inspect the default configuration, this backup
+serves two purposes: First, it is used as a base for applying holoscripts.
+Second, the owner, group, permissions and timestamps of the target configuration
+are always copied from this backup, and thus match the corresponding metadata of
+the default configuration.
+
+=cut
