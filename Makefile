@@ -6,7 +6,7 @@ build/holo: src/main.go src/holo/*.go
 
 # the manpage is generated using pod2man (which comes with Perl and therefore
 # should be readily available on almost every Unix system)
-build/holo.8: holo.pod src/main.go
+build/holo.8: doc/manpage.pod src/main.go
 	pod2man --name="holo" --section=8 --center="Configuration Management" \
 		--release="Holo $(shell grep 'var version string' src/main.go | cut -d'"' -f2)" \
 		$< $@
