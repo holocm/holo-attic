@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" type="text/css" href="./site.css">
+    <link rel="stylesheet" type="text/css" href="./font/font-awesome.min.css">
+    <!-- TODO: favicon, apple-touch-icon -->
+</head>
+<body>
+    <header{{if .IsIndex}} id="pitch"{{end}}>
+        <div id="header-container">
+            <div id="header-icon" class="fixed-width">
+                <a href="index.html"><img src="img/holo-logo.svg" alt="Holo"></a>
+            </div>
+            <div id="header-buttons" class="fixed-width">
+                <a href="https://twitter.com/holocm" title="Follow on Twitter"><i class="fa fa-twitter"></i></a>
+                <a href="https://github.com/majewsky/holo" title="Fork on GitHub"><i class="fa fa-github"></i></a>
+            </div>
+        </div>
+        {{if .IsIndex}}<div id="pitch-container" class="fixed-width">
+            <div id="pitch-content">
+                <table cellpadding="0" cellspacing="0"><tr>
+                    <td class="logo"><img src="img/logo.png"></td>
+                    <td class="pitch">
+                        <p>Configuration management tools are vast.</p>
+                        <p>And then there's Holo.</p>
+                    </td>
+                </tr></table>
+                <p>Holo builds on the package management of your Linux system and adds a
+                minimal set of additional features to manage your system's configuration.</p>
+                <p><a class="button" href="01-hello-world.html" onclick="alert('This part is still under construction. Meanwhile, you can have a look at the user documentation below.');return false;">See how it works</a></p>
+                <p id="plz-scroll">Or scroll down for the user documentation.</p>
+            </div>
+        </div>{{end}}
+    </header>
+    {{.Contents}}
+    <footer>
+        <div class="fixed-width clearfix">
+            <p>
+                This website is made with <a href="http://montserrat.zkysky.com.ar/en">Montserrat</a>
+                and <a href="http://fontawesome.io">FontAwesome</a>
+                and <a href="https://github.com/majewsky/majewsky.github.io">maintained at GitHub</a>.
+            </p>
+        </div>
+    </footer>
+</body>
+</html>

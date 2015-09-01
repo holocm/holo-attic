@@ -1,2 +1,6 @@
 # ignore build results
 build/*
+# ignore nested working copy (see "make prepare-website-repo")
+website/
+# ignore fragments from pod2html
+*.tmp

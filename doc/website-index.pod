@@ -107,8 +107,8 @@ configuration.
     $ holo scan
     ...
     /etc/pacman.conf
-    store at /holo/backup/etc/pacman.conf
-    passthru /holo/repo/20-enable-color/etc/pacman.conf.holoscript
+        store at /holo/backup/etc/pacman.conf
+        passthru /holo/repo/20-enable-color/etc/pacman.conf.holoscript
     ...
     $ cat /holo/repo/20-enable-color/etc/pacman.conf.holoscript
     #!/bin/sh
@@ -142,10 +142,10 @@ a base configuration provided by a base hologram:
     $ holo scan
     ...
     /etc/pacman.conf
-    store at /holo/backup/etc/pacman.conf
-    apply /holo/repo/00-base/etc/pacman.conf
-    passthru /holo/repo/10-add-catalyst-repo/etc/pacman.conf.holoscript
-    passthru /holo/repo/20-enable-color/etc/pacman.conf.holoscript
+        store at /holo/backup/etc/pacman.conf
+           apply /holo/repo/00-base/etc/pacman.conf
+        passthru /holo/repo/10-add-catalyst-repo/etc/pacman.conf.holoscript
+        passthru /holo/repo/20-enable-color/etc/pacman.conf.holoscript
     ... 
 
 As seen in this example, the disambiguator is used to determine the application
