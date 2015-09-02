@@ -129,7 +129,11 @@ func cleanWhitespaceInPre(text string) string {
 
 	var trimmedLines []string
 	for _, line := range lines {
-		trimmedLines = append(trimmedLines, line[minLeadingSpaces:])
+		trimmedLine := ""
+		if len(line) >= minLeadingSpaces {
+			trimmedLine = line[minLeadingSpaces:]
+		}
+		trimmedLines = append(trimmedLines, trimmedLine)
 	}
 	text = strings.Join(trimmedLines, "\n")
 

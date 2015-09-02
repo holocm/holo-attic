@@ -1,9 +1,0 @@
-=head1 1. How tiny is Holo?
-
-This tiny:
-
-    $ ls -l /usr/bin/holo
-    -rwxr-xr-x 1 root root 2038592 29. Aug 01:10 /usr/bin/holo
-    $ ldd /usr/bin/holo
-          not a dynamic executable
-

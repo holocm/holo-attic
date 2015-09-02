@@ -1,0 +1,16 @@
+=head1 PKGBUILD for configure-haveged
+
+    pkgname='configure-haveged'
+    pkgdesc='Configuration package that installs and starts haveged'
+    pkgver='1.0.0'
+    pkgrel=1
+    arch=any
+    depends=(
+        'haveged'
+    )
+
+    package() {
+        mkdir -p "${pkgdir}/etc/systemd/system/multi-user.target.wants/"
+        ln -sf /usr/lib/systemd/system/haveged.service \
+            "${pkgdir}/etc/systemd/system/multi-user.target.wants/haveged.service"
+    }
