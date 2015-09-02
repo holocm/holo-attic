@@ -20,7 +20,7 @@ install: build/holo src/holo-apply build/holo.8
 	install -d -m 0755 "$(DESTDIR)/holo/repo"
 	install -D -m 0755 build/holo     "$(DESTDIR)/usr/bin/holo"
 	install -D -m 0755 src/holo-apply "$(DESTDIR)/usr/bin/holo-apply"
-	install -D -m 0755 build/holo.8   "$(DESTDIR)/usr/share/man/man8/holo.8"
+	install -D -m 0644 build/holo.8   "$(DESTDIR)/usr/share/man/man8/holo.8"
 
 # the website is generated with pod2html (also from Perl) and a HTML template;
 # everything is mushed together using a small helper program
