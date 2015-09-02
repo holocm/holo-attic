@@ -22,3 +22,29 @@ For developers, this means:
 * Bugfixes go on the `master` branch. I will take care of forward-merging them
   into `develop` afterwards.
 * Features go on the `develop` branch.
+
+Documentation
+-------------
+
+Documentation is written in POD (Perl's documentation format), since that
+format has converters to manpage and HTML readily available on all
+distributions (through the pod2man and pod2html executables included with
+Perl). Also I know a lot of Perl and thus was already familiar with POD.
+
+The manpage lives at `doc/manpage.pod` and is built with:
+
+    make build/holo.8
+
+The website contents are at `doc/website-*.pod` and are compiled with:
+
+    make website
+
+This will clone the website repository into the `website` subdirectory of this
+repo and place the generated HTML files in there at the right places. When you
+change the website contents by editing the POD files, you only need to submit
+a pull request to this repo (where the doc lives); I will take care of
+publishing the changes to the website after merging your pull request here.
+
+Of course, when you change something else about the website, e.g. the
+stylesheets or the images, you need to submit a pull request to the website
+repo.

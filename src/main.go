@@ -30,7 +30,7 @@ import (
 
 //Note: This line is parsed by the Makefile to get the version string. If you
 //change the format, adjust the Makefile too.
-var version string = "v0.3.0"
+var version string = "v0.3.1"
 
 func main() {
 	//a command word must be given as first argument

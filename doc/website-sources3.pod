@@ -1,0 +1,74 @@
+=head1 PKGBUILD for configure-bashdocserver (second try)
+
+Only three small changes from last time: The C<nginx.conf> is installed to
+Holo's configuration repository, and we added the dependency on Holo and an
+C<.install> file with the post-install/upgrade/remove routines (see below).
+
+    pkgname='configure-bashdocserver'
+    pkgdesc='Configuration package for a bashdoc webserver'
+    pkgver='1.0.0'
+    pkgrel=1
+    arch=any
+    depends=(
+        'nginx'
+        'holo'
+    )
+    sources=(
+        'nginx.conf'
+    )
+    install='configure-bashdocserver.install'
+
+    package() {
+        mkdir -p "${pkgdir}/etc/systemd/system/multi-user.target.wants/"
+        ln -sf /usr/lib/systemd/system/nginx.service \
+            "${pkgdir}/etc/systemd/system/multi-user.target.wants/nginx.service"
+
+        install -D -m 0644 nginx.conf \
+            "${pkgdir}/holo/repo/10-bashdocserver/etc/nginx/nginx.conf"
+    }
+
+=head1 configure-bashdocserver.install
+
+    post_install() {
+        holo apply
+    }
+    post_upgrade() {
+        holo apply
+    }
+    post_remove() {
+        holo apply
+    }
+
+=head1 nginx.conf
+
+Same as in the last example.
+
+    user http;
+    worker_processes 1;
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        include mime.types;
+        default_type application/octet-stream;
+
+        sendfile on;
+        keepalive_timeout 65;
+
+        server {
+            listen      80;
+            server_name bashdoc.local;
+
+            location / {
+                root  /usr/share/doc/bash;
+                index bash.html;
+            }
+
+            error_page 500 502 503 504  /nginx_50x.html;
+            location = /nginx_50x.html {
+                root /etc/nginx/pages;
+            }
+        }
+    }
+

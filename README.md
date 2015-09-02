@@ -18,6 +18,22 @@ possible on package management for the whole system setup and maintenance
 process. This is achieved by using metapackages to define personal package
 selections for all systems or for certain types of systems.
 
+## Installation
+
+You need [Go](https://golang.org) to compile Holo and [Perl](https://perl.org)
+to run the unit tests. Both are available as packages for any major Linux
+distribution. Once you're all set, the classical
+
+```
+make
+make check
+sudo make install
+```
+
+will do the trick. It is, however, recommended to install to Holo as a package.
+The [website](http://holotools.org) lists distributions that have a Holo
+package available.
+
 ## Documentation
 
 User documentation, including installation instructions, is now available at

@@ -111,6 +111,14 @@ func Apply(file ConfigFile, withForce bool) {
 	//step 3c: write the result buffer to the target location and copy
 	//permissions/timestamps from backup file to target file, in order to be
 	//able to detect manual modifications in the next holo-apply run
-	buffer.Write(targetPath)
-	ApplyFilePermissions(backupPath, targetPath)
+	err = buffer.Write(targetPath)
+	if err != nil {
+		PrintError(err.Error())
+		return
+	}
+	err = ApplyFilePermissions(backupPath, targetPath)
+	if err != nil {
+		PrintError(err.Error())
+		return
+	}
 }
