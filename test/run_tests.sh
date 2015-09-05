@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # find the directory containing the test cases
 TESTS_DIR="$(readlink -f "$(dirname $0)")"
