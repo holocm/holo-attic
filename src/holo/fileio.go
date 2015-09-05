@@ -118,18 +118,30 @@ func ApplyFilePermissions(fromPath, toPath string) error {
 	if err != nil {
 		return err
 	}
-	err = os.Chmod(toPath, info.Mode())
+	targetInfo, err := os.Lstat(toPath)
 	if err != nil {
 		return err
 	}
-	stat_t := info.Sys().(*syscall.Stat_t) // UGLY
-	err = os.Chown(toPath, int(stat_t.Uid), int(stat_t.Gid))
-	if err != nil {
-		return err
-	}
-	err = os.Chtimes(toPath, info.ModTime(), info.ModTime())
-	if err != nil {
-		return err
+
+	if !IsFileInfoASymbolicLink(targetInfo) {
+		//apply permissions
+		err = os.Chmod(toPath, info.Mode())
+		if err != nil {
+			return err
+		}
+
+		//apply ownership
+		stat_t := info.Sys().(*syscall.Stat_t) // UGLY
+		err = os.Chown(toPath, int(stat_t.Uid), int(stat_t.Gid))
+		if err != nil {
+			return err
+		}
+
+		//apply timestamps
+		err = os.Chtimes(toPath, info.ModTime(), info.ModTime())
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
