@@ -1,7 +1,7 @@
 default: build/holo build/holo.8
 .PHONY: install check test
 
-build/holo: src/main.go src/holo/*.go
+build/holo: src/main.go src/*/*.go
 	go build -o $@ $<
 
 # the manpage is generated using pod2man (which comes with Perl and therefore

@@ -18,9 +18,13 @@
 *
 ********************************************************************************/
 
-package holo
+package files
 
-import "os"
+import (
+	"os"
+
+	"../common"
+)
 
 //Some shared logic for `holo scan` and `holo apply` concerning orphaned backup
 //files. Find the corresponding target file, and assess the situation.
@@ -36,24 +40,24 @@ func ScanOrphanedBackupFile(backupPath string) (targetPath, strategy, assessment
 //Clean up an orphaned backup file.
 func HandleOrphanedBackupFile(backupPath string) {
 	targetPath, strategy, assessment := ScanOrphanedBackupFile(backupPath)
-	PrintInfo(" Scrubbing \x1b[1m%s\x1b[0m (%s)", targetPath, assessment)
-	PrintInfo("%10s %s", strategy, backupPath)
+	common.PrintInfo(" Scrubbing \x1b[1m%s\x1b[0m (%s)", targetPath, assessment)
+	common.PrintInfo("%10s %s", strategy, backupPath)
 
 	switch strategy {
 	case "delete":
 		//target is gone - delete the backup file
 		err := os.Remove(backupPath)
 		if err != nil {
-			PrintError(err.Error())
+			common.PrintError(err.Error())
 			return
 		}
 		//if there was a .pacsave file, we can delete it too
 		pacsavePath := targetPath + ".pacsave"
 		if IsManageableFile(pacsavePath) {
-			PrintInfo("    delete %s", pacsavePath)
+			common.PrintInfo("    delete %s", pacsavePath)
 			err := os.Remove(pacsavePath)
 			if err != nil {
-				PrintError(err.Error())
+				common.PrintError(err.Error())
 				return
 			}
 		}
@@ -61,12 +65,12 @@ func HandleOrphanedBackupFile(backupPath string) {
 		//target is still there - restore the backup file
 		err := CopyFile(backupPath, targetPath)
 		if err != nil {
-			PrintError(err.Error())
+			common.PrintError(err.Error())
 			return
 		}
 		err = os.Remove(backupPath)
 		if err != nil {
-			PrintError(err.Error())
+			common.PrintError(err.Error())
 			return
 		}
 	}

@@ -25,7 +25,7 @@ import (
 	"os"
 	"strings"
 
-	"./holo"
+	"./files"
 )
 
 //Note: This line is parsed by the Makefile to get the version string. If you
@@ -40,7 +40,7 @@ func main() {
 	}
 
 	//check that it is a known command word
-	var command func(holo.ConfigFiles, []string)
+	var command func(files.ConfigFiles, []string)
 	switch os.Args[1] {
 	case "apply":
 		command = commandApply
@@ -55,7 +55,7 @@ func main() {
 	}
 
 	//scan the repo
-	configFiles, orphanedBackupFiles := holo.ScanRepo()
+	configFiles, orphanedBackupFiles := files.ScanRepo()
 	if configFiles == nil {
 		//some fatal error occurred while scanning the repo - it was already
 		//reported, so just exit
@@ -74,7 +74,7 @@ func commandHelp() {
 	fmt.Printf("\nSee `man 8 holo` for details.\n")
 }
 
-func commandApply(configFiles holo.ConfigFiles, orphanedBackupFiles []string) {
+func commandApply(configFiles files.ConfigFiles, orphanedBackupFiles []string) {
 	//parse arguments after "holo apply" (either files or "--force")
 	withForce := false
 	withFiles := false
@@ -98,20 +98,20 @@ func commandApply(configFiles holo.ConfigFiles, orphanedBackupFiles []string) {
 	//apply all files found in the repo (or only some if the args contain a limited subset)
 	for _, file := range configFiles {
 		if !withFiles || targetFiles[file.TargetPath()] {
-			holo.Apply(file, withForce)
+			files.Apply(file, withForce)
 		}
 	}
 
 	//cleanup orphaned backup files
 	for _, file := range orphanedBackupFiles {
-		targetFile := holo.NewConfigFileFromBackupPath(file).TargetPath()
+		targetFile := files.NewConfigFileFromBackupPath(file).TargetPath()
 		if !withFiles || targetFiles[targetFile] {
-			holo.HandleOrphanedBackupFile(file)
+			files.HandleOrphanedBackupFile(file)
 		}
 	}
 }
 
-func commandScan(configFiles holo.ConfigFiles, orphanedBackupFiles []string) {
+func commandScan(configFiles files.ConfigFiles, orphanedBackupFiles []string) {
 	//report scan results
 	fmt.Println()
 
@@ -128,7 +128,7 @@ func commandScan(configFiles holo.ConfigFiles, orphanedBackupFiles []string) {
 
 	//report orphaned backup files
 	for _, backupFile := range orphanedBackupFiles {
-		targetFile, strategy, assessment := holo.ScanOrphanedBackupFile(backupFile)
+		targetFile, strategy, assessment := files.ScanOrphanedBackupFile(backupFile)
 		fmt.Printf("\x1b[1m%s\x1b[0m (%s)\n", targetFile, assessment)
 		fmt.Printf("    %8s %s\n", strategy, backupFile)
 		fmt.Println()

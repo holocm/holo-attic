@@ -18,12 +18,14 @@
 *
 ********************************************************************************/
 
-package holo
+package files
 
 import (
 	"bytes"
 	"os/exec"
 	"strings"
+
+	"../common"
 )
 
 //The stuff in this file used to be inside src/holo/apply.go, but it was split
@@ -68,10 +70,10 @@ func applyScript(repoFile RepoFile, buffer *FileBuffer) (*FileBuffer, error) {
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if stderr.Len() > 0 {
-		PrintWarning("execution of %s produced error output:", repoFile.Path())
+		common.PrintWarning("execution of %s produced error output:", repoFile.Path())
 		stderrLines := strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
 		for _, stderrLine := range stderrLines {
-			PrintWarning("    %s", stderrLine)
+			common.PrintWarning("    %s", stderrLine)
 		}
 	}
 	if err != nil {

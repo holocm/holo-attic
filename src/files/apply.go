@@ -18,11 +18,13 @@
 *
 ********************************************************************************/
 
-package holo
+package files
 
 import (
 	"os"
 	"path/filepath"
+
+	"../common"
 )
 
 func Apply(file ConfigFile, withForce bool) {
@@ -34,9 +36,9 @@ func Apply(file ConfigFile, withForce bool) {
 	//step 1: will only install files from repo if there is a corresponding
 	//regular file in the target location (that file comes from the application
 	//package, the repo file from the holo metapackage)
-	PrintInfo("Working on \x1b[1m%s\x1b[0m", targetPath)
+	common.PrintInfo("Working on \x1b[1m%s\x1b[0m", targetPath)
 	if !IsManageableFile(targetPath) {
-		PrintError("  skipped: target is not a manageable file")
+		common.PrintError("  skipped: target is not a manageable file")
 		return
 	}
 
@@ -44,18 +46,18 @@ func Apply(file ConfigFile, withForce bool) {
 	//backup of the original file, the file at installPath *is* the original
 	//file which we have to backup now
 	if !IsManageableFile(backupPath) {
-		PrintInfo("  store at %s", backupPath)
+		common.PrintInfo("  store at %s", backupPath)
 
 		backupDir := filepath.Dir(backupPath)
 		err := os.MkdirAll(backupDir, 0755)
 		if err != nil {
-			PrintError("Cannot create directory %s: %s", backupDir, err.Error())
+			common.PrintError("Cannot create directory %s: %s", backupDir, err.Error())
 			return
 		}
 
 		err = CopyFile(targetPath, backupPath)
 		if err != nil {
-			PrintError("Cannot copy %s to %s: %s", targetPath, backupPath, err.Error())
+			common.PrintError("Cannot copy %s to %s: %s", targetPath, backupPath, err.Error())
 			return
 		}
 	}
@@ -64,10 +66,10 @@ func Apply(file ConfigFile, withForce bool) {
 	//package was updated and the .pacnew is the newer version of the original
 	//config file; move it to the backup location
 	if IsManageableFile(pacnewPath) {
-		PrintInfo("    update %s -> %s", pacnewPath, backupPath)
+		common.PrintInfo("    update %s -> %s", pacnewPath, backupPath)
 		err := CopyFile(pacnewPath, backupPath)
 		if err != nil {
-			PrintError("Cannot copy %s to %s: %s", pacnewPath, backupPath, err.Error())
+			common.PrintError("Cannot copy %s to %s: %s", pacnewPath, backupPath, err.Error())
 			return
 		}
 		_ = os.Remove(pacnewPath) //this can fail silently
@@ -80,11 +82,11 @@ func Apply(file ConfigFile, withForce bool) {
 	if !withForce {
 		isNewer, err := IsNewerThan(targetPath, backupPath)
 		if err != nil {
-			PrintError(err.Error())
+			common.PrintError(err.Error())
 			return
 		}
 		if isNewer {
-			PrintError("  skipped: target file has been modified by user (use --force to overwrite)")
+			common.PrintError("  skipped: target file has been modified by user (use --force to overwrite)")
 			return
 		}
 	}
@@ -93,17 +95,17 @@ func Apply(file ConfigFile, withForce bool) {
 	//application algorithm
 	buffer, err := NewFileBuffer(backupPath, targetPath)
 	if err != nil {
-		PrintError(err.Error())
+		common.PrintError(err.Error())
 		return
 	}
 
 	//step 3b: apply all the applicable repo files in order
 	repoFiles := file.RepoFiles()
 	for _, repoFile := range repoFiles {
-		PrintInfo("%10s %s", repoFile.ApplicationStrategy(), repoFile.Path())
+		common.PrintInfo("%10s %s", repoFile.ApplicationStrategy(), repoFile.Path())
 		buffer, err = GetApplyImpl(repoFile)(buffer)
 		if err != nil {
-			PrintError(err.Error())
+			common.PrintError(err.Error())
 			return
 		}
 	}
@@ -113,12 +115,12 @@ func Apply(file ConfigFile, withForce bool) {
 	//able to detect manual modifications in the next holo-apply run
 	err = buffer.Write(targetPath)
 	if err != nil {
-		PrintError(err.Error())
+		common.PrintError(err.Error())
 		return
 	}
 	err = ApplyFilePermissions(backupPath, targetPath)
 	if err != nil {
-		PrintError(err.Error())
+		common.PrintError(err.Error())
 		return
 	}
 }

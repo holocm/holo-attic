@@ -18,12 +18,14 @@
 *
 ********************************************************************************/
 
-package holo
+package files
 
 import (
 	"fmt"
 	"path/filepath"
 	"strings"
+
+	"../common"
 )
 
 //This type represents a single file in the configuration repository. The
@@ -46,7 +48,7 @@ func (file RepoFile) ConfigFile() ConfigFile {
 	}
 
 	//make path relative
-	relPath, _ := filepath.Rel(RepoDirectory(), repoFile)
+	relPath, _ := filepath.Rel(common.RepoDirectory(), repoFile)
 	//remove the disambiguation path element to get to the relPath for the ConfigFile
 	//e.g. repoFile = '/holo/repo/23-foo/etc/foo.conf'
 	//  -> relPath  = '23-foo/etc/foo.conf'

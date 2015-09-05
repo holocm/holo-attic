@@ -18,12 +18,14 @@
 *
 ********************************************************************************/
 
-package holo
+package files
 
 import (
 	"os"
 	"path/filepath"
 	"sort"
+
+	"../common"
 )
 
 //This type represents a single target file, and includes methods to calculate
@@ -36,18 +38,18 @@ type ConfigFile string
 
 func NewConfigFileFromBackupPath(backupFile string) ConfigFile {
 	//make path relative
-	relPath, _ := filepath.Rel(BackupDirectory(), backupFile)
+	relPath, _ := filepath.Rel(common.BackupDirectory(), backupFile)
 	return ConfigFile(relPath)
 }
 
 func (file ConfigFile) TargetPath() string {
 	//make path absolute
-	return filepath.Join(TargetDirectory(), string(file))
+	return filepath.Join(common.TargetDirectory(), string(file))
 }
 
 func (file ConfigFile) BackupPath() string {
 	//make path absolute
-	return filepath.Join(BackupDirectory(), string(file))
+	return filepath.Join(common.BackupDirectory(), string(file))
 }
 
 func (file ConfigFile) RepoFiles() RepoFiles {
@@ -57,7 +59,7 @@ func (file ConfigFile) RepoFiles() RepoFiles {
 	dirNames := repoSubDirectories()
 	for _, dirName := range dirNames {
 		//build absolute path
-		repoPath := filepath.Join(RepoDirectory(), dirName, string(file))
+		repoPath := filepath.Join(common.RepoDirectory(), dirName, string(file))
 
 		//check if the repo file exists
 		if IsManageableFile(repoPath) {
@@ -78,7 +80,7 @@ func (file ConfigFile) RepoFiles() RepoFiles {
 func repoSubDirectories() []string {
 	//NOTE: Any IO errors in here are silently ignored. If any subdirectory is
 	//not accessible, we just ignore it.
-	dir, err := os.Open(RepoDirectory())
+	dir, err := os.Open(common.RepoDirectory())
 	if err != nil {
 		return []string{}
 	}

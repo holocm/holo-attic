@@ -18,13 +18,15 @@
 *
 ********************************************************************************/
 
-package holo
+package files
 
 import (
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"../common"
 )
 
 //This returns a slice of all the ConfigFiles which have accompanying RepoFiles,
@@ -32,18 +34,18 @@ import (
 //ConfigFile).
 func ScanRepo() (configFiles ConfigFiles, orphanedBackupFiles []string) {
 	//check that the repo and backup directories exist
-	repoPath := RepoDirectory()
-	backupPath := BackupDirectory()
+	repoPath := common.RepoDirectory()
+	backupPath := common.BackupDirectory()
 	pathsThatMustExist := []string{repoPath, backupPath}
 
 	for _, path := range pathsThatMustExist {
 		fi, err := os.Lstat(path)
 		if err != nil {
-			PrintError("Cannot open %s: %s", path, err.Error())
+			common.PrintError("Cannot open %s: %s", path, err.Error())
 			return nil, nil
 		}
 		if !fi.IsDir() {
-			PrintError("Cannot open %s: not a directory!", path)
+			common.PrintError("Cannot open %s: not a directory!", path)
 			return nil, nil
 		}
 	}

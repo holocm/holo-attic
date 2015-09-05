@@ -18,33 +18,22 @@
 *
 ********************************************************************************/
 
-package holo
+package common
 
-import "os"
+import "fmt"
 
-func getenvOrDefault(key string, defaultValue string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	} else {
-		return value
-	}
+func msg(color, message string) {
+	fmt.Printf("\x1b[%sm\x1b[1m[holo]\x1b[0m %s\n", color, message)
 }
 
-//The target directory (usually the root directory "/") can be set with the
-//environment variable HOLO_TARGET_DIR (usually only within unit tests).
-func TargetDirectory() string {
-	return getenvOrDefault("HOLO_TARGET_DIR", "/")
+func PrintError(message string, a ...interface{}) {
+	msg("31", fmt.Sprintf(message, a...))
 }
 
-//The repo directory (usually "/holo/repo") can be set with the environment
-//variable HOLO_REPO_DIR (usually only within unit tests).
-func RepoDirectory() string {
-	return getenvOrDefault("HOLO_REPO_DIR", "/holo/repo")
+func PrintInfo(message string, a ...interface{}) {
+	msg("38", fmt.Sprintf(message, a...))
 }
 
-//The backup directory (usually "/holo/backup") can be set with the environment
-//variable HOLO_BACKUP_DIR (usually only within unit tests).
-func BackupDirectory() string {
-	return getenvOrDefault("HOLO_BACKUP_DIR", "/holo/backup")
+func PrintWarning(message string, a ...interface{}) {
+	msg("33", fmt.Sprintf(message, a...))
 }
