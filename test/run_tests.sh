@@ -54,7 +54,7 @@ run_testcase() {
 
     # use diff to check the actual run with our expectations
     for FILE in backup-tree target-tree scan-output apply-output; do
-        if diff -q expected-$FILE $FILE &>/dev/null; then true; else
+        if diff -q expected-$FILE $FILE >/dev/null; then true; else
             echo "!! The $FILE deviates from our expectation. Diff follows:"
             diff -u expected-$FILE $FILE 2>&1 | sed 's/^/    /'
             EXIT_CODE=1
@@ -80,7 +80,7 @@ else
     done
 fi
 
-if [ $TEST_EXIT_CODE == 0 ]; then
+if [ $TEST_EXIT_CODE = 0 ]; then
     echo ">> All tests completed successfully."
 else
     echo "!! Some or all tests failed. Please check the output above for more information."
