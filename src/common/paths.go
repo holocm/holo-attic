@@ -22,29 +22,36 @@ package common
 
 import "os"
 
-func getenvOrDefault(key string, defaultValue string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	} else {
-		return value
+var targetDirectory string = "/"
+var repoDirectory string = "/holo/repo"
+var backupDirectory string = "/holo/backup"
+
+func init() {
+	if value := os.Getenv("HOLO_TARGET_DIR"); value != "" {
+		targetDirectory = value
+	}
+	if value := os.Getenv("HOLO_REPO_DIR"); value != "" {
+		repoDirectory = value
+	}
+	if value := os.Getenv("HOLO_BACKUP_DIR"); value != "" {
+		backupDirectory = value
 	}
 }
 
 //The target directory (usually the root directory "/") can be set with the
 //environment variable HOLO_TARGET_DIR (usually only within unit tests).
 func TargetDirectory() string {
-	return getenvOrDefault("HOLO_TARGET_DIR", "/")
+	return targetDirectory
 }
 
 //The repo directory (usually "/holo/repo") can be set with the environment
 //variable HOLO_REPO_DIR (usually only within unit tests).
 func RepoDirectory() string {
-	return getenvOrDefault("HOLO_REPO_DIR", "/holo/repo")
+	return repoDirectory
 }
 
 //The backup directory (usually "/holo/backup") can be set with the environment
 //variable HOLO_BACKUP_DIR (usually only within unit tests).
 func BackupDirectory() string {
-	return getenvOrDefault("HOLO_BACKUP_DIR", "/holo/backup")
+	return backupDirectory
 }
