@@ -47,6 +47,12 @@ holograms as dependencies of our hologram, and put configuration files into the
 hologram. Holo only comes into play when we go beyond the capabilities of the
 package management.
 
+=for Comment
+################################################################################
+# NOTE: The parts below are synchronized with the manpage.pod. When editing    #
+#       either, make sure to apply the same changes to the other.              #
+################################################################################
+
 =head1 The configuration repository
 
 Package management does not allow multiple packages to install a file in the
