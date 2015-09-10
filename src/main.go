@@ -30,7 +30,7 @@ import (
 
 //Note: This line is parsed by the Makefile to get the version string. If you
 //change the format, adjust the Makefile too.
-var version string = "v0.3.2"
+var version string = "v0.4-pre"
 
 func main() {
 	//a command word must be given as first argument
@@ -112,25 +112,47 @@ func commandApply(configFiles files.ConfigFiles, orphanedBackupFiles []string) {
 }
 
 func commandScan(configFiles files.ConfigFiles, orphanedBackupFiles []string) {
-	//report scan results
-	fmt.Println()
-
-	//report config files with repo files
-	for _, file := range configFiles {
-		fmt.Printf("\x1b[1m%s\x1b[0m\n", file.TargetPath())
-		fmt.Printf("    store at %s\n", file.BackupPath())
-		repoFiles := file.RepoFiles()
-		for _, repoFile := range repoFiles {
-			fmt.Printf("    %8s %s\n", repoFile.ApplicationStrategy(), repoFile.Path())
+	//check args
+	args := os.Args[2:]
+	isShort := false
+	for _, arg := range args {
+		//"--short" shows only the target names, not the strategy
+		switch arg {
+		case "--short":
+			isShort = true
+		default:
+			fmt.Println("Unrecognized argument: " + arg)
+			return
 		}
+	}
+
+	//report scan results
+	if !isShort {
 		fmt.Println()
 	}
 
+	//report config files with repo files
+	for _, file := range configFiles {
+		if isShort {
+			fmt.Println(file.TargetPath())
+		} else {
+			fmt.Printf("\x1b[1m%s\x1b[0m\n", file.TargetPath())
+			fmt.Printf("    store at %s\n", file.BackupPath())
+			repoFiles := file.RepoFiles()
+			for _, repoFile := range repoFiles {
+				fmt.Printf("    %8s %s\n", repoFile.ApplicationStrategy(), repoFile.Path())
+			}
+			fmt.Println()
+		}
+	}
+
 	//report orphaned backup files
-	for _, backupFile := range orphanedBackupFiles {
-		targetFile, strategy, assessment := files.ScanOrphanedBackupFile(backupFile)
-		fmt.Printf("\x1b[1m%s\x1b[0m (%s)\n", targetFile, assessment)
-		fmt.Printf("    %8s %s\n", strategy, backupFile)
-		fmt.Println()
+	if !isShort {
+		for _, backupFile := range orphanedBackupFiles {
+			targetFile, strategy, assessment := files.ScanOrphanedBackupFile(backupFile)
+			fmt.Printf("\x1b[1m%s\x1b[0m (%s)\n", targetFile, assessment)
+			fmt.Printf("    %8s %s\n", strategy, backupFile)
+			fmt.Println()
+		}
 	}
 }

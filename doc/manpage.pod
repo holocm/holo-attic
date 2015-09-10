@@ -60,11 +60,13 @@ By default, Holo will refuse to write to configuration files that have been
 changed by the user or by other programs. Apply B<--force> to overwrite such
 changes.
 
-=item B<scan>
+=item B<scan> [I<--short>]
 
 Scan the configuration repository, and print a report of what the application
 algorithm will do with its contents. This operation does not write anything and
 thus generally does not need to be performed with elevated privileges.
+
+With B<--short>, only lists the names of target configuration files.
 
 =back
 
