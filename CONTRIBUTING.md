@@ -12,16 +12,14 @@ Branches
 --------
 
 Starting with version 0.3, Holo adopts a branching model within which the
-`master` branch is the current stable release, and development for the next
-stable release happens on the `develop` branch. Therefore, users can always
-compile the `master` branch to get the latest bugfixes, without fear of
+`stable` branch is the current stable release, and development for the next
+stable release happens on the `master` branch. Therefore, users can always
+compile the `stable` branch to get the latest bugfixes, without fear of
 unexpected instability.
 
-For developers, this means:
-
-* Bugfixes go on the `master` branch. I will take care of forward-merging them
-  into `develop` afterwards.
-* Features go on the `develop` branch.
+Bugfixes should be developed on the `stable` branch, since forward-merging to
+the development branch is always easier than cherry-picking back into the
+stable branch.
 
 Documentation
 -------------
