@@ -4,9 +4,9 @@ holo - minimal configuration management
 
 =head1 SYNOPSIS
 
-holo B<apply> [I<--force>] [I<file> ...]
+holo B<apply> [I<-f|--force>] [I<file> ...]
 
-holo B<scan>
+holo B<scan> [I<-s|--short>]
 
 holo B<--help|--version>
 
@@ -44,7 +44,7 @@ and groups.
 
 =over 4
 
-=item B<apply> [I<--force>] [I<file> ...]
+=item B<apply> [I<-f|--force>] [I<file> ...]
 
 Apply configuration from Holo's repository using the application algorithm
 described in this manpage. Also, when repository files (or target configuration
@@ -60,7 +60,7 @@ By default, Holo will refuse to write to configuration files that have been
 changed by the user or by other programs. Apply B<--force> to overwrite such
 changes.
 
-=item B<scan> [I<--short>]
+=item B<scan> [I<-s|--short>]
 
 Scan the configuration repository, and print a report of what the application
 algorithm will do with its contents. This operation does not write anything and

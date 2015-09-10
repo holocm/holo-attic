@@ -69,8 +69,8 @@ func main() {
 func commandHelp() {
 	program := os.Args[0]
 	fmt.Printf("Usage: %s <operation> [...]\nOperations:\n", program)
-	fmt.Printf("    %s apply [--force] [file(s)]\n", program)
-	fmt.Printf("    %s scan\n", program)
+	fmt.Printf("    %s apply [-f|--force] [file(s)]\n", program)
+	fmt.Printf("    %s scan [-s|--short]\n", program)
 	fmt.Printf("\nSee `man 8 holo` for details.\n")
 }
 
@@ -83,9 +83,10 @@ func commandApply(configFiles files.ConfigFiles, orphanedBackupFiles []string) {
 	args := os.Args[2:]
 	for _, arg := range args {
 		if strings.HasPrefix(arg, "-") {
-			if arg == "--force" {
+			switch arg {
+			case "-f", "--force":
 				withForce = true
-			} else {
+			default:
 				fmt.Println("Unrecognized option: " + arg)
 				return
 			}
@@ -118,7 +119,7 @@ func commandScan(configFiles files.ConfigFiles, orphanedBackupFiles []string) {
 	for _, arg := range args {
 		//"--short" shows only the target names, not the strategy
 		switch arg {
-		case "--short":
+		case "-s", "--short":
 			isShort = true
 		default:
 			fmt.Println("Unrecognized argument: " + arg)
