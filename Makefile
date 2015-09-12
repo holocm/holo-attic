@@ -16,8 +16,8 @@ check: build/holo
 	sh test/run_tests.sh
 
 install: build/holo build/holo.8
-	install -d -m 0755 "$(DESTDIR)/holo/backup"
-	install -d -m 0755 "$(DESTDIR)/holo/repo"
+	install -d -m 0755 "$(DESTDIR)/var/lib/holo/backup"
+	install -d -m 0755 "$(DESTDIR)/usr/share/holo/repo"
 	install -D -m 0755 build/holo   "$(DESTDIR)/usr/bin/holo"
 	install -D -m 0644 build/holo.8 "$(DESTDIR)/usr/share/man/man8/holo.8"
 
