@@ -18,22 +18,19 @@ run_testcase() {
 
     # clean the testcase directory
     git clean -qdXf .
-    # backup files are sometimes under source control for specific test setups;
-    # make sure that everything is clean here
-    [ -d backup/ ] && git checkout backup/
 
     # setup environment for holo run
-    mkdir -p backup/
     cp -R source/ target/
-    export HOLO_TARGET_DIR="./target/"
-    export HOLO_BACKUP_DIR="./backup/"
-    export HOLO_REPO_DIR="./repo/"
+    mkdir -p target/usr/share/holo/repo
+    mkdir -p target/var/lib/holo/backup
+    export HOLO_CHROOT_DIR="./target/"
 
     # when backup files exist, make sure their mtimes are in sync with the
     # targets (or else `holo apply` will refuse to work on them)
-    cd "$TESTCASE_DIR/backup/"
+    cd "$TESTCASE_DIR/target/var/lib/holo/backup/"
     find -type f -o -type l | while read FILE; do
-        [ -f "../target/$FILE" ] && touch -r "$FILE" "../target/$FILE"
+        REPOFILE="$TESTCASE_DIR/target/usr/share/holo/repo/$FILE"
+        [ -f "$REPOFILE" ] && touch -r "$FILE" "$REPOFILE"
     done
     cd "$TESTCASE_DIR/"
 
@@ -41,19 +38,17 @@ run_testcase() {
     ../../build/holo scan 2>&1  | ../strip-ansi-colors.sh > scan-output
     ../../build/holo apply 2>&1 | ../strip-ansi-colors.sh > apply-output
 
-    # dump the contents of the target/ directory into a single file for better diff'ing
+    # dump the contents of the target directory into a single file for better diff'ing
     # (NOTE: I concede that this is slightly messy.)
-    for DIR in target backup; do
-        cd "$TESTCASE_DIR/$DIR/"
-        find \( -type f -printf '>> %p = regular\n' -exec cat {} \; \) -o \( -type l -printf '>> %p = symlink\n' -exec readlink {} \; \) \
-            | perl -E 'local $/; print for sort split /^(?=>>)/m, <>' > "$TESTCASE_DIR/$DIR-tree"
-    done
+    cd "$TESTCASE_DIR/target/"
+    find \( -type f -printf '>> %p = regular\n' -exec cat {} \; \) -o \( -type l -printf '>> %p = symlink\n' -exec readlink {} \; \) \
+        | perl -E 'local $/; print for sort split /^(?=>>)/m, <>' > "$TESTCASE_DIR/tree"
     cd "$TESTCASE_DIR/"
 
     local EXIT_CODE=0
 
     # use diff to check the actual run with our expectations
-    for FILE in backup-tree target-tree scan-output apply-output; do
+    for FILE in tree scan-output apply-output; do
         if diff -q expected-$FILE $FILE >/dev/null; then true; else
             echo "!! The $FILE deviates from our expectation. Diff follows:"
             diff -u expected-$FILE $FILE 2>&1 | sed 's/^/    /'

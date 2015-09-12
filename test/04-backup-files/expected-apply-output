@@ -1,9 +1,9 @@
 [holo] Working on target/etc/still-existing.conf
-[holo]      apply repo/01-first/etc/still-existing.conf
+[holo]      apply target/usr/share/holo/repo/01-first/etc/still-existing.conf
 [holo]  Scrubbing target/etc/repofile-deleted.conf (all repository files were deleted)
-[holo]    restore backup/etc/repofile-deleted.conf
+[holo]    restore target/var/lib/holo/backup/etc/repofile-deleted.conf
 [holo]  Scrubbing target/etc/targetfile-deleted-with-pacsave.conf (target was deleted)
-[holo]     delete backup/etc/targetfile-deleted-with-pacsave.conf
+[holo]     delete target/var/lib/holo/backup/etc/targetfile-deleted-with-pacsave.conf
 [holo]     delete target/etc/targetfile-deleted-with-pacsave.conf.pacsave
 [holo]  Scrubbing target/etc/targetfile-deleted.conf (target was deleted)
-[holo]     delete backup/etc/targetfile-deleted.conf
+[holo]     delete target/var/lib/holo/backup/etc/targetfile-deleted.conf

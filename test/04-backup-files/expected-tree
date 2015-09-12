@@ -1,0 +1,12 @@
+>> ./etc/repofile-deleted.conf = regular
+eee
+eee
+>> ./etc/still-existing.conf = regular
+bbb
+bbb
+>> ./usr/share/holo/repo/01-first/etc/still-existing.conf = regular
+bbb
+bbb
+>> ./var/lib/holo/backup/etc/still-existing.conf = regular
+aaa
+aaa

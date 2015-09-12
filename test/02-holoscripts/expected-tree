@@ -1,0 +1,48 @@
+>> ./etc/contents = regular
+foo
+foo
+foo
+baz
+bar
+bar
+>> ./etc/link-through-link.conf = regular
+foo
+baz
+bar
+>> ./etc/link-through-plain.conf = regular
+foo
+foo
+foo
+buz
+bur
+bur
+>> ./etc/plain-through-link.conf = regular
+apple
+banana
+tomato
+>> ./etc/plain-through-plain.conf = regular
+foo
+qux
+baz
+>> ./usr/share/holo/repo/02-holoscripts/etc/link-through-link.conf.holoscript = symlink
+/usr/bin/uniq
+>> ./usr/share/holo/repo/02-holoscripts/etc/link-through-plain.conf.holoscript = regular
+#!/bin/sh
+sed s/a/u/
+>> ./usr/share/holo/repo/02-holoscripts/etc/plain-through-link.conf.holoscript = symlink
+/usr/bin/sort
+>> ./usr/share/holo/repo/02-holoscripts/etc/plain-through-plain.conf.holoscript = regular
+#!/bin/sh
+sed 's/bar/qux/'
+>> ./var/lib/holo/backup/etc/link-through-link.conf = symlink
+contents
+>> ./var/lib/holo/backup/etc/link-through-plain.conf = symlink
+contents
+>> ./var/lib/holo/backup/etc/plain-through-link.conf = regular
+tomato
+apple
+banana
+>> ./var/lib/holo/backup/etc/plain-through-plain.conf = regular
+foo
+bar
+baz

@@ -1,0 +1,74 @@
+>> ./etc/contents1 = regular
+jjj
+jjj
+>> ./etc/contents2 = regular
+mmm
+mmm
+>> ./etc/link-and-script.conf = regular
+ljj
+ljj
+>> ./etc/link-through-scripts.conf = regular
+nnn
+mmm
+mmm
+ooo
+>> ./etc/plain-and-plain.conf = regular
+ccc
+ccc
+>> ./etc/plain-and-script.conf = regular
+eee
+eee
+fff
+>> ./etc/script-and-script.conf = regular
+hhh
+ggg
+ggg
+iii
+>> ./usr/share/holo/repo/01-first/etc/link-and-script.conf = symlink
+contents1
+>> ./usr/share/holo/repo/01-first/etc/link-through-scripts.conf.holoscript = regular
+#!/bin/sh
+echo 'nnn'
+cat
+>> ./usr/share/holo/repo/01-first/etc/plain-and-plain.conf = regular
+bbb
+bbb
+>> ./usr/share/holo/repo/01-first/etc/plain-and-script.conf = regular
+eee
+eee
+>> ./usr/share/holo/repo/01-first/etc/script-and-script.conf.holoscript = regular
+#!/bin/sh
+echo 'hhh'
+cat
+>> ./usr/share/holo/repo/02-second/etc/link-and-script.conf.holoscript = regular
+#!/bin/sh
+sed 's/^j/l/'
+>> ./usr/share/holo/repo/02-second/etc/link-through-scripts.conf.holoscript = regular
+#!/bin/sh
+cat
+echo 'ooo'
+>> ./usr/share/holo/repo/02-second/etc/plain-and-plain.conf = regular
+ccc
+ccc
+>> ./usr/share/holo/repo/02-second/etc/plain-and-script.conf.holoscript = regular
+#!/bin/sh
+cat
+echo "fff"
+>> ./usr/share/holo/repo/02-second/etc/script-and-script.conf.holoscript = regular
+#!/bin/sh
+cat
+echo 'iii'
+>> ./var/lib/holo/backup/etc/link-and-script.conf = regular
+kkk
+kkk
+>> ./var/lib/holo/backup/etc/link-through-scripts.conf = symlink
+contents2
+>> ./var/lib/holo/backup/etc/plain-and-plain.conf = regular
+aaa
+aaa
+>> ./var/lib/holo/backup/etc/plain-and-script.conf = regular
+ddd
+ddd
+>> ./var/lib/holo/backup/etc/script-and-script.conf = regular
+ggg
+ggg

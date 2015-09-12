@@ -20,38 +20,37 @@
 
 package common
 
-import "os"
+import (
+	"os"
+	"path/filepath"
+)
 
 var targetDirectory string = "/"
-var repoDirectory string = "/holo/repo"
-var backupDirectory string = "/holo/backup"
+var repoDirectory string = "/usr/share/holo/repo"
+var backupDirectory string = "/var/lib/holo/backup"
 
 func init() {
-	if value := os.Getenv("HOLO_TARGET_DIR"); value != "" {
+	if value := os.Getenv("HOLO_CHROOT_DIR"); value != "" {
 		targetDirectory = value
-	}
-	if value := os.Getenv("HOLO_REPO_DIR"); value != "" {
-		repoDirectory = value
-	}
-	if value := os.Getenv("HOLO_BACKUP_DIR"); value != "" {
-		backupDirectory = value
+		repoDirectory = filepath.Join(value, repoDirectory[1:])
+		backupDirectory = filepath.Join(value, backupDirectory[1:])
 	}
 }
 
-//The target directory (usually the root directory "/") can be set with the
-//environment variable HOLO_TARGET_DIR (usually only within unit tests).
+//The TargetDirectory (usually the root directory "/") can be set with the
+//environment variable HOLO_CHROOT_DIR (usually only within unit tests).
 func TargetDirectory() string {
 	return targetDirectory
 }
 
-//The repo directory (usually "/holo/repo") can be set with the environment
-//variable HOLO_REPO_DIR (usually only within unit tests).
+//The RepoDirectory is derived from the TargetDirectory() as
+//"$target_dir/usr/share/holo/repo".
 func RepoDirectory() string {
 	return repoDirectory
 }
 
-//The backup directory (usually "/holo/backup") can be set with the environment
-//variable HOLO_BACKUP_DIR (usually only within unit tests).
+//The RepoDirectory is derived from the TargetDirectory() as
+//"$target_dir/var/lib/holo/backup".
 func BackupDirectory() string {
 	return backupDirectory
 }
