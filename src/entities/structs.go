@@ -20,19 +20,48 @@
 
 package entities
 
+import (
+	"fmt"
+	"strings"
+)
+
+type Entity interface {
+	//EntityId returns a string that uniquely identifies the entity, usually in
+	//the form "type:name". This is how the entity can be addressed as a target
+	//in the argument list foe "holo apply", e.g. "holo apply /etc/sudoers
+	//group:foo" will apply /etc/sudoers and the group "foo". Therefore, entity
+	//IDs should not contain whitespaces or characters that have a special
+	//meaning on the shell.
+	EntityId() string
+	//DefinitionFile returns the path to the file containing the definition of this entity.
+	DefinitionFile() string
+	//Attributes returns a string describing additional attributes set for this entity,
+	//alternatively an empty string.
+	Attributes() string
+}
+
 type Group struct {
-	name   string
-	gid    int
-	system bool
+	name           string
+	gid            int
+	system         bool
+	definitionFile string
 }
 
-func (g Group) Name() string   { return g.name }
-func (g Group) NumericId() int { return g.gid }
-func (g Group) System() bool   { return g.system }
+func (g Group) Name() string           { return g.name }
+func (g Group) NumericId() int         { return g.gid }
+func (g Group) System() bool           { return g.system }
+func (g Group) EntityId() string       { return "group:" + g.name }
+func (g Group) DefinitionFile() string { return g.definitionFile }
 
-//Definition represents an entity definition file (found below /usr/share/holo)
-//and the entity definitions contained within it.
-type Definition struct {
-	File   string
-	Groups []Group
+func (g Group) Attributes() string {
+	attrs := []string{}
+	if g.system {
+		attrs = append(attrs, "system group")
+	}
+	if g.gid > 0 {
+		attrs = append(attrs, fmt.Sprintf("gid: %d", g.gid))
+	}
+	return strings.Join(attrs, ", ")
 }
+
+type Entities []Entity

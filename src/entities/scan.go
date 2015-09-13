@@ -29,9 +29,9 @@ import (
 	"../common"
 )
 
-//This returns a slice of all the found EntityDefinition. If an error is encountered
+//This returns a slice of all the defined entities. If an error is encountered
 //during the scan, it will be reported on stdout, and nil is returned.
-func Scan() []Definition {
+func Scan() Entities {
 	//look in the entity directory for entity definitions
 	entityPath := common.EntityDirectory()
 	dir, err := os.Open(entityPath)
@@ -47,41 +47,60 @@ func Scan() []Definition {
 
 	//cannot declare this as "var result []Definition" because then we would
 	//return nil if there are no entity definitions, but nil indicates an error
-	result := []Definition{}
+	result := []Entity{}
+	success := true
 
 	for _, fi := range fis {
-		if fi.Mode().IsRegular() && strings.HasSuffix(fi.Name(), ".yaml") {
+		if fi.Mode().IsRegular() && strings.HasSuffix(fi.Name(), ".json") {
 			defPath := filepath.Join(entityPath, fi.Name())
-			def, err := readDefinitionFile(defPath)
-			switch {
-			case def != nil:
-				result = append(result, *def)
-			case err != nil:
+			entities, err := readDefinitionFile(defPath)
+			if err != nil {
 				common.PrintError("Cannot read %s: %s", defPath, err.Error())
-				return nil
-			default:
-				common.PrintError("Cannot read %s: unexpected error", defPath)
-				return nil
+				success = false //don't return nil immediately; report all broken files
+			} else {
+				result = append(result, entities...)
 			}
 		}
 	}
 
-	return result
+	if success {
+		//TODO: sort result
+		return result
+	} else {
+		return nil
+	}
 }
 
-func readDefinitionFile(entityFile string) (*Definition, error) {
+func readDefinitionFile(entityFile string) (Entities, error) {
 	file, err := os.Open(entityFile)
 	if err != nil {
 		return nil, err
 	}
 
+	//json.Unmarshal can only write into *exported* (i.e. upper-case) struct
+	//fields, but the fields on the Group struct are private to emphasize their
+	//readonly-ness, so we have to jump through some hoops to read these
 	var contents struct {
-		groups []Group
+		Groups []struct {
+			Name   string
+			Gid    int
+			System bool
+		}
 	}
 	err = json.NewDecoder(file).Decode(&contents)
+	if err != nil {
+		return nil, err
+	}
 
-	return &Definition{
-		File:   entityFile,
-		Groups: contents.groups,
-	}, nil
+	var result Entities
+	for _, group := range contents.Groups {
+		result = append(result, Group{
+			name:           group.Name,
+			gid:            group.Gid,
+			system:         group.System,
+			definitionFile: entityFile,
+		})
+	}
+
+	return result, nil
 }

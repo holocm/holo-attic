@@ -41,7 +41,7 @@ func main() {
 	}
 
 	//check that it is a known command word
-	var command func(files.ConfigFiles, []string, []entities.Definition)
+	var command func(files.ConfigFiles, []string, entities.Entities)
 	switch os.Args[1] {
 	case "apply":
 		command = commandApply
@@ -64,15 +64,15 @@ func main() {
 	}
 
 	//scan for entity definitions
-	entityDefinitions := entities.Scan()
-	if entityDefinitions == nil {
+	entities := entities.Scan()
+	if entities == nil {
 		//some fatal error occurred while scanning the repo - it was already
 		//reported, so just exit
 		return
 	}
 
 	//execute command
-	command(configFiles, orphanedBackupFiles, entityDefinitions)
+	command(configFiles, orphanedBackupFiles, entities)
 }
 
 func commandHelp() {
@@ -83,7 +83,7 @@ func commandHelp() {
 	fmt.Printf("\nSee `man 8 holo` for details.\n")
 }
 
-func commandApply(configFiles files.ConfigFiles, orphanedBackupFiles []string, entityDefinitions []entities.Definition) {
+func commandApply(configFiles files.ConfigFiles, orphanedBackupFiles []string, entities entities.Entities) {
 	//parse arguments after "holo apply" (either files or "--force")
 	withForce := false
 	withFiles := false
@@ -121,7 +121,7 @@ func commandApply(configFiles files.ConfigFiles, orphanedBackupFiles []string, e
 	}
 }
 
-func commandScan(configFiles files.ConfigFiles, orphanedBackupFiles []string, entityDefinitions []entities.Definition) {
+func commandScan(configFiles files.ConfigFiles, orphanedBackupFiles []string, entities entities.Entities) {
 	//check args
 	args := os.Args[2:]
 	isShort := false
@@ -162,6 +162,20 @@ func commandScan(configFiles files.ConfigFiles, orphanedBackupFiles []string, en
 			targetFile, strategy, assessment := files.ScanOrphanedBackupFile(backupFile)
 			fmt.Printf("\x1b[1m%s\x1b[0m (%s)\n", targetFile, assessment)
 			fmt.Printf("    %8s %s\n", strategy, backupFile)
+			fmt.Println()
+		}
+	}
+
+	//report declared entities
+	for _, entity := range entities {
+		if isShort {
+			fmt.Println(entity.EntityId())
+		} else {
+			fmt.Printf("\x1b[1m%s\x1b[0m\n", entity.EntityId())
+			fmt.Printf("    found in %s\n", entity.DefinitionFile())
+			if attributes := entity.Attributes(); attributes != "" {
+				fmt.Printf("          is %s\n", attributes)
+			}
 			fmt.Println()
 		}
 	}
