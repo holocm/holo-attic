@@ -50,7 +50,9 @@ func ScanRepo() (configFiles ConfigFiles, orphanedBackupFiles []string) {
 		}
 	}
 
-	var result ConfigFiles
+	//cannot declare this as "var result ConfigFiles" because then we would
+	//return nil if there are no entity definitions, but nil indicates an error
+	result := ConfigFiles{}
 	seen := make(map[string]bool) //used to avoid duplicates in result, and also to find orphaned backup files
 
 	//walk over the repo to find repo files (and thus the corresponding target files)

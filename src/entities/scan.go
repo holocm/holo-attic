@@ -45,7 +45,10 @@ func Scan() []Definition {
 		return nil
 	}
 
-	var result []Definition
+	//cannot declare this as "var result []Definition" because then we would
+	//return nil if there are no entity definitions, but nil indicates an error
+	result := []Definition{}
+
 	for _, fi := range fis {
 		if fi.Mode().IsRegular() && strings.HasSuffix(fi.Name(), ".yaml") {
 			defPath := filepath.Join(entityPath, fi.Name())
@@ -57,6 +60,7 @@ func Scan() []Definition {
 				common.PrintError("Cannot read %s: %s", defPath, err.Error())
 				return nil
 			default:
+				common.PrintError("Cannot read %s: unexpected error", defPath)
 				return nil
 			}
 		}
