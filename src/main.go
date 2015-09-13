@@ -25,6 +25,7 @@ import (
 	"os"
 	"strings"
 
+	"./entities"
 	"./files"
 )
 
@@ -40,7 +41,7 @@ func main() {
 	}
 
 	//check that it is a known command word
-	var command func(files.ConfigFiles, []string)
+	var command func(files.ConfigFiles, []string, []entities.Definition)
 	switch os.Args[1] {
 	case "apply":
 		command = commandApply
@@ -62,8 +63,16 @@ func main() {
 		return
 	}
 
+	//scan for entity definitions
+	entityDefinitions := entities.Scan()
+	if entityDefinitions == nil {
+		//some fatal error occurred while scanning the repo - it was already
+		//reported, so just exit
+		return
+	}
+
 	//execute command
-	command(configFiles, orphanedBackupFiles)
+	command(configFiles, orphanedBackupFiles, entityDefinitions)
 }
 
 func commandHelp() {
@@ -74,7 +83,7 @@ func commandHelp() {
 	fmt.Printf("\nSee `man 8 holo` for details.\n")
 }
 
-func commandApply(configFiles files.ConfigFiles, orphanedBackupFiles []string) {
+func commandApply(configFiles files.ConfigFiles, orphanedBackupFiles []string, entityDefinitions []entities.Definition) {
 	//parse arguments after "holo apply" (either files or "--force")
 	withForce := false
 	withFiles := false
@@ -112,7 +121,7 @@ func commandApply(configFiles files.ConfigFiles, orphanedBackupFiles []string) {
 	}
 }
 
-func commandScan(configFiles files.ConfigFiles, orphanedBackupFiles []string) {
+func commandScan(configFiles files.ConfigFiles, orphanedBackupFiles []string, entityDefinitions []entities.Definition) {
 	//check args
 	args := os.Args[2:]
 	isShort := false

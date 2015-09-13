@@ -26,12 +26,14 @@ import (
 )
 
 var targetDirectory string = "/"
+var entityDirectory string = "/usr/share/holo"
 var repoDirectory string = "/usr/share/holo/repo"
 var backupDirectory string = "/var/lib/holo/backup"
 
 func init() {
 	if value := os.Getenv("HOLO_CHROOT_DIR"); value != "" {
 		targetDirectory = value
+		entityDirectory = filepath.Join(value, entityDirectory[1:])
 		repoDirectory = filepath.Join(value, repoDirectory[1:])
 		backupDirectory = filepath.Join(value, backupDirectory[1:])
 	}
@@ -41,6 +43,12 @@ func init() {
 //environment variable HOLO_CHROOT_DIR (usually only within unit tests).
 func TargetDirectory() string {
 	return targetDirectory
+}
+
+//The EntityDirectory is derived from the TargetDirectory() as
+//"$target_dir/usr/share/holo".
+func EntityDirectory() string {
+	return entityDirectory
 }
 
 //The RepoDirectory is derived from the TargetDirectory() as
