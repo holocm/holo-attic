@@ -8,7 +8,7 @@ build/holo: src/main.go src/*/*.go
 # should be readily available on almost every Unix system)
 build/holo.8: doc/manpage.pod src/main.go
 	pod2man --name="holo" --section=8 --center="Configuration Management" \
-		--release="Holo $(shell grep 'var version string' src/main.go | cut -d'"' -f2)" \
+		--release="Holo $(shell grep 'var version =' src/main.go | cut -d'"' -f2)" \
 		$< $@
 
 test: check # just a synonym
