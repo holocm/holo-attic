@@ -34,11 +34,10 @@ import (
 type InputData struct {
 	Title    string
 	Contents template.HTML
-	IsIndex  bool
 }
 
 func main() {
-	//first argument is the stem of the Makefile target (e.g. "index")
+	//first argument is the stem of the Makefile target (e.g. "doc")
 	//from which all other paths are computed
 	stem := os.Args[1]
 	inputFile := "doc/website-" + stem + ".pod"
@@ -74,7 +73,6 @@ func main() {
 	inputData := InputData{
 		Title:    "Holo - Minimalistic Configuration Management", //TODO: title per page
 		Contents: template.HTML(contents),
-		IsIndex:  stem == "index",
 	}
 
 	//read output template

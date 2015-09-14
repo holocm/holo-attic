@@ -9,7 +9,7 @@
     <!-- TODO: favicon, apple-touch-icon -->
 </head>
 <body>
-    <header{{if .IsIndex}} id="pitch"{{end}}>
+    <header>
         <div id="header-container">
             <div id="header-icon" class="fixed-width">
                 <a href="index.html"><img src="img/holo-logo.svg" alt="Holo"></a>
@@ -19,21 +19,6 @@
                 <a href="https://github.com/majewsky/holo" title="Fork on GitHub"><i class="fa fa-github"></i></a>
             </div>
         </div>
-        {{if .IsIndex}}<div id="pitch-container" class="fixed-width">
-            <div id="pitch-content">
-                <table cellpadding="0" cellspacing="0"><tr>
-                    <td class="logo"><img src="img/logo.png"></td>
-                    <td class="pitch">
-                        <p>Configuration management tools are vast.</p>
-                        <p>And then there's Holo.</p>
-                    </td>
-                </tr></table>
-                <p>Holo builds on the package management of your Linux system and adds a
-                minimal set of additional features to manage your system's configuration.</p>
-                <p><a class="button" href="tour.html">See how it works</a></p>
-                <p id="plz-scroll">Or scroll down for the user documentation.</p>
-            </div>
-        </div>{{end}}
     </header>
     {{.Contents}}
     <footer>
