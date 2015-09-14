@@ -8,6 +8,12 @@ the open issues, fork the repo, start hacking and submit pull requests.
 If you have any questions concerning the code structure or internals, ask your
 question as an issue and I'll do my best to explain everything to you.
 
+Coding style
+------------
+
+Please run `gofmt` (and preferably `goimports` and
+[`golint`](https://github.com/golang/lint)) on your code before committing.
+
 Branches
 --------
 
