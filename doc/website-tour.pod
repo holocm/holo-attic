@@ -192,6 +192,6 @@ at the user documentation.
 
 =begin html
 
-<p class="follow"><a href="./">« Back to the user documentation</a></p>
+<p class="follow"><a href="./doc.html">Read the documentation »</a></p>
 
 =end html

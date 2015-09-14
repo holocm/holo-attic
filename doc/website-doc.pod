@@ -1,3 +1,15 @@
+=encoding UTF-8
+
+=head1 User documentation
+
+New to Holo? Check out our feature overview before diving into the details in here.
+
+=begin html
+
+<p class="follow"><a href="./tour.html">Take the tour »</a></p>
+
+=end html
+
 =head1 Installation
 
 The recommended method, if possible, is to install Holo as a package.
