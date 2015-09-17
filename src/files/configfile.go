@@ -28,7 +28,7 @@ import (
 	"../common"
 )
 
-//This type represents a single target file, and includes methods to calculate
+//ConfigFile represents a single target file, and includes methods to calculate
 //the corresponding backup location and repo file(s). The string stored in it
 //is the path of the target file relative to the target directory.
 //
@@ -36,22 +36,27 @@ import (
 //"etc/pacman.conf".
 type ConfigFile string
 
+//NewConfigFileFromBackupPath creates a ConfigFile instance for which the path
+//to the backup file is known.
 func NewConfigFileFromBackupPath(backupFile string) ConfigFile {
 	//make path relative
 	relPath, _ := filepath.Rel(common.BackupDirectory(), backupFile)
 	return ConfigFile(relPath)
 }
 
+//TargetPath returns the location where this config file is installed.
 func (file ConfigFile) TargetPath() string {
 	//make path absolute
 	return filepath.Join(common.TargetDirectory(), string(file))
 }
 
+//BackupPath returns the location where the backup for this config file is stored.
 func (file ConfigFile) BackupPath() string {
 	//make path absolute
 	return filepath.Join(common.BackupDirectory(), string(file))
 }
 
+//RepoFiles returns all repo files that belong to this ConfigFile.
 func (file ConfigFile) RepoFiles() RepoFiles {
 	var result RepoFiles
 
@@ -96,7 +101,7 @@ func repoSubDirectories() []string {
 	return result
 }
 
-//This type holds a slice of ConfigFile instances, and implements some methods
+//ConfigFiles holds a slice of ConfigFile instances, and implements some methods
 //to satisfy the sort.Interface interface.
 type ConfigFiles []ConfigFile
 

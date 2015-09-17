@@ -24,12 +24,13 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"../common"
 )
 
-//This returns a slice of all the defined entities. If an error is encountered
+//Scan returns a slice of all the defined entities. If an error is encountered
 //during the scan, it will be reported on stdout, and nil is returned.
 func Scan() Entities {
 	//look in the entity directory for entity definitions
@@ -66,9 +67,8 @@ func Scan() Entities {
 	if success {
 		//TODO: sort result
 		return result
-	} else {
-		return nil
 	}
+	return nil
 }
 
 func readDefinitionFile(entityFile string) (Entities, error) {
@@ -102,5 +102,6 @@ func readDefinitionFile(entityFile string) (Entities, error) {
 		})
 	}
 
+	sort.Sort(result)
 	return result, nil
 }

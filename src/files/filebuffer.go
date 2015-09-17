@@ -21,12 +21,13 @@
 package files
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 )
 
-//This type represents the contents of a file. It is used in holo.Apply() as
+//FileBuffer represents the contents of a file. It is used in holo.Apply() as
 //an intermediary product of application steps.
 type FileBuffer struct {
 	//set only for regular files
@@ -36,10 +37,6 @@ type FileBuffer struct {
 	//used by ResolveSymlink (see doc over there)
 	BasePath string
 }
-
-type FileBufferError string
-
-func (e *FileBufferError) Error() string { return string(*e) }
 
 //NewFileBuffer creates a FileBuffer object by reading the manageable file at
 //the given path. The basePath is stored in the FileBuffer for use in
@@ -77,11 +74,10 @@ func NewFileBuffer(path string, basePath string) (*FileBuffer, error) {
 	}
 
 	//other types of files are not acceptable
-	fberr := FileBufferError("not a manageable file")
 	return nil, &os.PathError{
 		Op:   "holo.NewFileBuffer",
 		Path: path,
-		Err:  &fberr,
+		Err:  errors.New("not a manageable file"),
 	}
 }
 
@@ -106,11 +102,10 @@ func (fb *FileBuffer) Write(path string) error {
 		}
 	} else {
 		if !(info.Mode().IsRegular() || IsFileInfoASymbolicLink(info)) {
-			fberr := FileBufferError("target exists and is not a manageable file")
 			return &os.PathError{
 				Op:   "holo.FileBuffer.Write",
 				Path: path,
-				Err:  &fberr,
+				Err:  errors.New("target exists and is not a manageable file"),
 			}
 		}
 	}
@@ -121,18 +116,19 @@ func (fb *FileBuffer) Write(path string) error {
 		return err
 	}
 
+	//a manageable file is either a regular file...
 	if fb.Contents != nil {
-		//a manageable file is either a regular file...
 		return ioutil.WriteFile(path, fb.Contents, 600)
-	} else {
-		//...or a symlink
-		return os.Symlink(fb.SymlinkTarget, path)
 	}
+	//...or a symlink
+	return os.Symlink(fb.SymlinkTarget, path)
 }
 
-//If the given FileBuffer contains a symlink, ResolveSymlink resolves it and
+//ResolveSymlink takes a FileBuffer that contains a symlink, resolves it and
 //returns a new FileBuffer containing the contents of the symlink target. This
-//operation is used by application strategies that require text input.
+//operation is used by application strategies that require text input. If
+//the given FileBuffer contains file contents, the same buffer is returned
+//unaltered.
 //
 //It uses the FileBuffer's BasePath to resolve relative symlinks. Since
 //file buffers are usually written to the target path of a `holo apply`
@@ -157,7 +153,6 @@ func (fb *FileBuffer) ResolveSymlink() (*FileBuffer, error) {
 	contents, err := ioutil.ReadFile(target)
 	if err != nil {
 		return nil, err
-	} else {
-		return NewFileBufferFromContents(contents, fb.BasePath), nil
 	}
+	return NewFileBufferFromContents(contents, fb.BasePath), nil
 }

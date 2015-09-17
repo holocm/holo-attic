@@ -169,9 +169,9 @@ func commandScan(configFiles files.ConfigFiles, orphanedBackupFiles []string, en
 	//report declared entities
 	for _, entity := range entities {
 		if isShort {
-			fmt.Println(entity.EntityId())
+			fmt.Println(entity.EntityID())
 		} else {
-			fmt.Printf("\x1b[1m%s\x1b[0m\n", entity.EntityId())
+			fmt.Printf("\x1b[1m%s\x1b[0m\n", entity.EntityID())
 			fmt.Printf("    found in %s\n", entity.DefinitionFile())
 			if attributes := entity.Attributes(); attributes != "" {
 				fmt.Printf("        with %s\n", attributes)

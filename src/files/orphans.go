@@ -26,18 +26,18 @@ import (
 	"../common"
 )
 
-//Some shared logic for `holo scan` and `holo apply` concerning orphaned backup
-//files. Find the corresponding target file, and assess the situation.
+//ScanOrphanedBackupFile locates a target file for a given orphaned backup file
+//and assesses the situation. This logic is grouped in one function because
+//it's used by both `holo scan` and `holo apply`.
 func ScanOrphanedBackupFile(backupPath string) (targetPath, strategy, assessment string) {
 	target := NewConfigFileFromBackupPath(backupPath).TargetPath()
 	if IsManageableFile(target) {
 		return target, "restore", "all repository files were deleted"
-	} else {
-		return target, "delete", "target was deleted"
 	}
+	return target, "delete", "target was deleted"
 }
 
-//Clean up an orphaned backup file.
+//HandleOrphanedBackupFile cleans up an orphaned backup file.
 func HandleOrphanedBackupFile(backupPath string) {
 	targetPath, strategy, assessment := ScanOrphanedBackupFile(backupPath)
 	common.PrintInfo(" Scrubbing \x1b[1m%s\x1b[0m (%s)", targetPath, assessment)

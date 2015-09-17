@@ -28,18 +28,22 @@ import (
 	"../common"
 )
 
-//This type represents a single file in the configuration repository. The
-//string stored in it is the path to the repo file (also accessible as Path()).
+//RepoFile represents a single file in the configuration repository. The string
+//stored in it is the path to the repo file (also accessible as Path()).
 type RepoFile string
 
+//NewRepoFile creates a RepoFile instance when its path in the file system is
+//known.
 func NewRepoFile(path string) RepoFile {
 	return RepoFile(path)
 }
 
+//Path returns the path to this repo file in the file system.
 func (file RepoFile) Path() string {
 	return string(file)
 }
 
+//ConfigFile returns the ConfigFile that this repo file is applied to.
 func (file RepoFile) ConfigFile() ConfigFile {
 	//the optional ".holoscript" suffix appears only on repo files
 	repoFile := file.Path()
@@ -59,15 +63,16 @@ func (file RepoFile) ConfigFile() ConfigFile {
 	return ConfigFile(relPath)
 }
 
+//ApplicationStrategy returns the human-readable name for the strategy that
+//will be employed to apply this repo file.
 func (file RepoFile) ApplicationStrategy() string {
 	if strings.HasSuffix(file.Path(), ".holoscript") {
 		return "passthru"
-	} else {
-		return "apply"
 	}
+	return "apply"
 }
 
-//This type holds a slice of RepoFile instances, and implements some methods
+//RepoFiles holds a slice of RepoFile instances, and implements some methods
 //to satisfy the sort.Interface interface.
 type RepoFiles []RepoFile
 

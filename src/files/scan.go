@@ -29,7 +29,7 @@ import (
 	"../common"
 )
 
-//This returns a slice of all the ConfigFiles which have accompanying RepoFiles,
+//ScanRepo returns a slice of all the ConfigFiles which have accompanying RepoFiles,
 //and also a string slice of all orphaned backup files (backup files without a
 //ConfigFile).
 func ScanRepo() (configFiles ConfigFiles, orphanedBackupFiles []string) {

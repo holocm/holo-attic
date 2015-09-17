@@ -26,6 +26,8 @@ import (
 	"syscall"
 )
 
+//IsManageableFile returns whether the file can be managed by Holo (i.e. is a
+//regular file or a symlink).
 func IsManageableFile(path string) bool {
 	info, err := os.Lstat(path)
 	if err != nil {
@@ -34,11 +36,12 @@ func IsManageableFile(path string) bool {
 	return info.Mode().IsRegular() || IsFileInfoASymbolicLink(info)
 }
 
+//IsFileInfoASymbolicLink returns whether the given FileInfo describes a symlink.
 func IsFileInfoASymbolicLink(fileInfo os.FileInfo) bool {
 	return (fileInfo.Mode() & os.ModeType) == os.ModeSymlink
 }
 
-//Returns true if the file at firstPath is newer than the file at secondPath.
+//IsNewerThan returns true if the first file is newer than the second file.
 func IsNewerThan(path1, path2 string) (bool, error) {
 	info1, err := os.Lstat(path1)
 	if err != nil {
@@ -61,6 +64,7 @@ func IsNewerThan(path1, path2 string) (bool, error) {
 	return info1.ModTime().After(info2.ModTime()), nil
 }
 
+//CopyFile copies a regular file or symlink, including the file metadata.
 func CopyFile(fromPath, toPath string) error {
 	info, err := os.Lstat(fromPath)
 	if err != nil {
@@ -68,9 +72,8 @@ func CopyFile(fromPath, toPath string) error {
 	}
 	if info.Mode().IsRegular() {
 		return copyFileImpl(fromPath, toPath)
-	} else {
-		return copySymlinkImpl(fromPath, toPath)
 	}
+	return copySymlinkImpl(fromPath, toPath)
 }
 
 func copyFileImpl(fromPath, toPath string) error {
@@ -109,6 +112,10 @@ func copySymlinkImpl(fromPath, toPath string) error {
 	return nil
 }
 
+//ApplyFilePermissions applies various metadata (permissions, ownership,
+//timestamps) from the first file to the second file.
+//
+//TODO: This should be called CopyFileMetadata instead.
 func ApplyFilePermissions(fromPath, toPath string) error {
 	//apply permissions, ownership, modification date from source file to target file
 	//NOTE: We cannot just pass the FileMode in WriteFile(), because its
@@ -131,8 +138,8 @@ func ApplyFilePermissions(fromPath, toPath string) error {
 		}
 
 		//apply ownership
-		stat_t := info.Sys().(*syscall.Stat_t) // UGLY
-		err = os.Chown(toPath, int(stat_t.Uid), int(stat_t.Gid))
+		stat := info.Sys().(*syscall.Stat_t) // UGLY
+		err = os.Chown(toPath, int(stat.Uid), int(stat.Gid))
 		if err != nil {
 			return err
 		}

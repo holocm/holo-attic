@@ -25,10 +25,10 @@ import (
 	"path/filepath"
 )
 
-var targetDirectory string = "/"
-var entityDirectory string = "/usr/share/holo"
-var repoDirectory string = "/usr/share/holo/repo"
-var backupDirectory string = "/var/lib/holo/backup"
+var targetDirectory = "/"
+var entityDirectory = "/usr/share/holo"
+var repoDirectory = "/usr/share/holo/repo"
+var backupDirectory = "/var/lib/holo/backup"
 
 func init() {
 	if value := os.Getenv("HOLO_CHROOT_DIR"); value != "" {
@@ -39,25 +39,25 @@ func init() {
 	}
 }
 
-//The TargetDirectory (usually the root directory "/") can be set with the
+//TargetDirectory is usually the root directory "/" and can be set with the
 //environment variable HOLO_CHROOT_DIR (usually only within unit tests).
 func TargetDirectory() string {
 	return targetDirectory
 }
 
-//The EntityDirectory is derived from the TargetDirectory() as
+//EntityDirectory is derived from the TargetDirectory() as
 //"$target_dir/usr/share/holo".
 func EntityDirectory() string {
 	return entityDirectory
 }
 
-//The RepoDirectory is derived from the TargetDirectory() as
+//RepoDirectory is derived from the TargetDirectory() as
 //"$target_dir/usr/share/holo/repo".
 func RepoDirectory() string {
 	return repoDirectory
 }
 
-//The RepoDirectory is derived from the TargetDirectory() as
+//BackupDirectory is derived from the TargetDirectory() as
 //"$target_dir/var/lib/holo/backup".
 func BackupDirectory() string {
 	return backupDirectory

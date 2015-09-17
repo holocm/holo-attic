@@ -27,6 +27,9 @@ import (
 	"../common"
 )
 
+//Apply performs the complete application algorithm for the given ConfigFile.
+//This includes taking a backup if necessary, applying all repo files, and
+//saving the result in the target path with the correct file metadata.
 func Apply(file ConfigFile, withForce bool) {
 	//determine the related paths
 	targetPath := file.TargetPath()

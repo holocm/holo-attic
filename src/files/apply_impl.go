@@ -31,9 +31,10 @@ import (
 //The stuff in this file used to be inside src/holo/apply.go, but it was split
 //to emphasize the standardized interface of application implementations.
 
+//ApplyImpl is the return type for GetApplyImpl.
 type ApplyImpl func(*FileBuffer) (*FileBuffer, error)
 
-//Given a RepoFile, return a function that applies this repo file to a file
+//GetApplyImpl returns a function that applies the given RepoFile to a file
 //buffer, as part of the `holo apply` algorithm.
 func GetApplyImpl(repoFile RepoFile) ApplyImpl {
 	var impl func(RepoFile, *FileBuffer) (*FileBuffer, error)

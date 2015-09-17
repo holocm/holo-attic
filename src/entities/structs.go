@@ -25,14 +25,16 @@ import (
 	"strings"
 )
 
+//Entity provides a common interface for configuration entities that are not
+//files, such as user accounts and user groups.
 type Entity interface {
-	//EntityId returns a string that uniquely identifies the entity, usually in
+	//EntityID returns a string that uniquely identifies the entity, usually in
 	//the form "type:name". This is how the entity can be addressed as a target
 	//in the argument list foe "holo apply", e.g. "holo apply /etc/sudoers
 	//group:foo" will apply /etc/sudoers and the group "foo". Therefore, entity
 	//IDs should not contain whitespaces or characters that have a special
 	//meaning on the shell.
-	EntityId() string
+	EntityID() string
 	//DefinitionFile returns the path to the file containing the definition of this entity.
 	DefinitionFile() string
 	//Attributes returns a string describing additional attributes set for this entity,
@@ -40,6 +42,8 @@ type Entity interface {
 	Attributes() string
 }
 
+//Group represents a UNIX group (as registered in /etc/group). It implements
+//the Entity interface and is handled accordingly.
 type Group struct {
 	name           string
 	gid            int
@@ -47,12 +51,22 @@ type Group struct {
 	definitionFile string
 }
 
-func (g Group) Name() string           { return g.name }
-func (g Group) NumericId() int         { return g.gid }
-func (g Group) System() bool           { return g.system }
-func (g Group) EntityId() string       { return "group:" + g.name }
+//Name returns the group name (the first field in /etc/group).
+func (g Group) Name() string { return g.name }
+
+//NumericID returns the GID (the third field in /etc/group).
+func (g Group) NumericID() int { return g.gid }
+
+//System returns true if the group shall be created as a system group.
+func (g Group) System() bool { return g.system }
+
+//EntityID implements the Entity interface for Group.
+func (g Group) EntityID() string { return "group:" + g.name }
+
+//DefinitionFile implements the Entity interface for Group.
 func (g Group) DefinitionFile() string { return g.definitionFile }
 
+//Attributes implements the Entity interface for Group.
 func (g Group) Attributes() string {
 	attrs := []string{}
 	if g.system {
@@ -64,4 +78,10 @@ func (g Group) Attributes() string {
 	return strings.Join(attrs, ", ")
 }
 
+//Entities holds a slice of Entity instances, and implements some methods to
+//satisfy the sort.Interface interface.
 type Entities []Entity
+
+func (e Entities) Len() int           { return len(e) }
+func (e Entities) Less(i, j int) bool { return e[i].DefinitionFile() < e[j].DefinitionFile() }
+func (e Entities) Swap(i, j int)      { e[i], e[j] = e[j], e[i] }

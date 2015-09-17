@@ -26,14 +26,17 @@ func msg(color, message string) {
 	fmt.Printf("\x1b[%sm\x1b[1m[holo]\x1b[0m %s\n", color, message)
 }
 
+//PrintError formats the given error message on stdout, similar to fmt.Printf.
 func PrintError(message string, a ...interface{}) {
 	msg("31", fmt.Sprintf(message, a...))
 }
 
+//PrintInfo formats the given info message on stdout, similar to fmt.Printf.
 func PrintInfo(message string, a ...interface{}) {
 	msg("38", fmt.Sprintf(message, a...))
 }
 
+//PrintWarning formats the given warning message on stdout, similar to fmt.Printf.
 func PrintWarning(message string, a ...interface{}) {
 	msg("33", fmt.Sprintf(message, a...))
 }
