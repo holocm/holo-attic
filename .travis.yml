@@ -3,4 +3,11 @@ language: go
 go:
     - 1.5
 
-script: make && make check
+install:
+    - go get -u github.com/golang/lint/golint
+    - go get -u github.com/GeertJohan/fgt
+
+script:
+    - make && make check
+    - fgt gofmt -l $(find src -name \*.go)
+    - fgt golint src/...
