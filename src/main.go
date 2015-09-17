@@ -174,7 +174,7 @@ func commandScan(configFiles files.ConfigFiles, orphanedBackupFiles []string, en
 			fmt.Printf("\x1b[1m%s\x1b[0m\n", entity.EntityId())
 			fmt.Printf("    found in %s\n", entity.DefinitionFile())
 			if attributes := entity.Attributes(); attributes != "" {
-				fmt.Printf("          is %s\n", attributes)
+				fmt.Printf("        with %s\n", attributes)
 			}
 			fmt.Println()
 		}

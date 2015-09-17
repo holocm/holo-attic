@@ -56,7 +56,7 @@ func (g Group) DefinitionFile() string { return g.definitionFile }
 func (g Group) Attributes() string {
 	attrs := []string{}
 	if g.system {
-		attrs = append(attrs, "system group")
+		attrs = append(attrs, "type: system")
 	}
 	if g.gid > 0 {
 		attrs = append(attrs, fmt.Sprintf("gid: %d", g.gid))
