@@ -22,9 +22,19 @@ package common
 
 import (
 	"bytes"
+	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 )
+
+var mock = false
+
+func init() {
+	if value := os.Getenv("HOLO_MOCK"); value == "1" {
+		mock = true
+	}
+}
 
 //ExecProgram is a wrapper around exec.Command that reports any stderr output
 //of the child process automatically.
@@ -43,4 +53,16 @@ func ExecProgram(stdin []byte, command string, arguments ...string) (output []by
 		}
 	}
 	return stdout.Bytes(), err
+}
+
+//ExecProgramOrMock works like ExecProgram, but when the environment variable
+//HOLO_MOCK=1 is set, it will only print the command name and return success
+//without executing the command.
+func ExecProgramOrMock(stdin []byte, command string, arguments ...string) (output []byte, err error) {
+	if mock {
+		fmt.Printf("MOCK: %s %s\n", command, strings.Join(arguments, " "))
+		return []byte{}, nil
+	}
+	o, e := ExecProgram(stdin, command, arguments...)
+	return o, e
 }

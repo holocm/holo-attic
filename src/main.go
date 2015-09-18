@@ -86,8 +86,8 @@ func commandHelp() {
 func commandApply(configFiles files.ConfigFiles, orphanedBackupFiles []string, entities entities.Entities) {
 	//parse arguments after "holo apply" (either files or "--force")
 	withForce := false
-	withFiles := false
-	targetFiles := make(map[string]bool)
+	withTargets := false
+	targets := make(map[string]bool)
 
 	args := os.Args[2:]
 	for _, arg := range args {
@@ -100,14 +100,14 @@ func commandApply(configFiles files.ConfigFiles, orphanedBackupFiles []string, e
 				return
 			}
 		} else {
-			targetFiles[arg] = true
-			withFiles = true
+			targets[arg] = true
+			withTargets = true
 		}
 	}
 
 	//apply all files found in the repo (or only some if the args contain a limited subset)
 	for _, file := range configFiles {
-		if !withFiles || targetFiles[file.TargetPath()] {
+		if !withTargets || targets[file.TargetPath()] {
 			files.Apply(file, withForce)
 		}
 	}
@@ -115,8 +115,15 @@ func commandApply(configFiles files.ConfigFiles, orphanedBackupFiles []string, e
 	//cleanup orphaned backup files
 	for _, file := range orphanedBackupFiles {
 		targetFile := files.NewConfigFileFromBackupPath(file).TargetPath()
-		if !withFiles || targetFiles[targetFile] {
+		if !withTargets || targets[targetFile] {
 			files.HandleOrphanedBackupFile(file)
+		}
+	}
+
+	//apply all declared entities (or only some if the args contain a limites subset)
+	for _, entity := range entities {
+		if !withTargets || targets[entity.EntityID()] {
+			entity.Apply(withForce)
 		}
 	}
 }

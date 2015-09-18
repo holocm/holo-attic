@@ -1,0 +1,12 @@
+
+group:existing
+    found in target/usr/share/holo/01-groups.json
+
+group:new
+    found in target/usr/share/holo/01-groups.json
+        with type: system
+
+group:wronggid
+    found in target/usr/share/holo/01-groups.json
+        with gid: 42
+

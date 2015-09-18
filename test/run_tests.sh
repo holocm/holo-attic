@@ -24,6 +24,7 @@ run_testcase() {
     mkdir -p target/usr/share/holo/repo
     mkdir -p target/var/lib/holo/backup
     export HOLO_CHROOT_DIR="./target/"
+    export HOLO_MOCK=1
 
     # when backup files exist, make sure their mtimes are in sync with the
     # targets (or else `holo apply` will refuse to work on them)
@@ -35,8 +36,11 @@ run_testcase() {
     cd "$TESTCASE_DIR/"
 
     # run holo
-    ../../build/holo scan 2>&1  | ../strip-ansi-colors.sh > scan-output
-    ../../build/holo apply 2>&1 | ../strip-ansi-colors.sh > apply-output
+    ../../build/holo scan          2>&1 | ../strip-ansi-colors.sh > scan-output
+    ../../build/holo apply         2>&1 | ../strip-ansi-colors.sh > apply-output
+    # if "holo apply" that certain operations will only be performed with --force, do so now
+    grep -q -- --force apply-output && \
+    ../../build/holo apply --force 2>&1 | ../strip-ansi-colors.sh > apply-force-output
 
     # dump the contents of the target directory into a single file for better diff'ing
     # (NOTE: I concede that this is slightly messy.)
@@ -48,11 +52,13 @@ run_testcase() {
     local EXIT_CODE=0
 
     # use diff to check the actual run with our expectations
-    for FILE in tree scan-output apply-output; do
-        if diff -q expected-$FILE $FILE >/dev/null; then true; else
-            echo "!! The $FILE deviates from our expectation. Diff follows:"
-            diff -u expected-$FILE $FILE 2>&1 | sed 's/^/    /'
-            EXIT_CODE=1
+    for FILE in tree scan-output apply-output apply-force-output; do
+        if [ -f $FILE ]; then
+            if diff -q expected-$FILE $FILE >/dev/null; then true; else
+                echo "!! The $FILE deviates from our expectation. Diff follows:"
+                diff -u expected-$FILE $FILE 2>&1 | sed 's/^/    /'
+                EXIT_CODE=1
+            fi
         fi
     done
 

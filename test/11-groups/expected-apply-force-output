@@ -1,0 +1,7 @@
+[holo] Working on group:existing
+[holo] Working on group:new
+[holo]     create group with type: system
+MOCK: groupadd --system new
+[holo] Working on group:wronggid
+[holo]        fix GID: 102, expected 42
+MOCK: groupmod --gid 42 wronggid

@@ -1,0 +1,7 @@
+{
+    "groups": [
+        { "name": "new", "system": true },
+        { "name": "existing" },
+        { "name": "wronggid", "gid": 42 }
+    ]
+}

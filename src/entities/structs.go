@@ -20,11 +20,6 @@
 
 package entities
 
-import (
-	"fmt"
-	"strings"
-)
-
 //Entity provides a common interface for configuration entities that are not
 //files, such as user accounts and user groups.
 type Entity interface {
@@ -40,42 +35,8 @@ type Entity interface {
 	//Attributes returns a string describing additional attributes set for this entity,
 	//alternatively an empty string.
 	Attributes() string
-}
-
-//Group represents a UNIX group (as registered in /etc/group). It implements
-//the Entity interface and is handled accordingly.
-type Group struct {
-	name           string
-	gid            int
-	system         bool
-	definitionFile string
-}
-
-//Name returns the group name (the first field in /etc/group).
-func (g Group) Name() string { return g.name }
-
-//NumericID returns the GID (the third field in /etc/group).
-func (g Group) NumericID() int { return g.gid }
-
-//System returns true if the group shall be created as a system group.
-func (g Group) System() bool { return g.system }
-
-//EntityID implements the Entity interface for Group.
-func (g Group) EntityID() string { return "group:" + g.name }
-
-//DefinitionFile implements the Entity interface for Group.
-func (g Group) DefinitionFile() string { return g.definitionFile }
-
-//Attributes implements the Entity interface for Group.
-func (g Group) Attributes() string {
-	attrs := []string{}
-	if g.system {
-		attrs = append(attrs, "type: system")
-	}
-	if g.gid > 0 {
-		attrs = append(attrs, fmt.Sprintf("gid: %d", g.gid))
-	}
-	return strings.Join(attrs, ", ")
+	//Apply performs the complete application algorithm for the givne Entity.
+	Apply(withForce bool)
 }
 
 //Entities holds a slice of Entity instances, and implements some methods to
@@ -83,5 +44,5 @@ func (g Group) Attributes() string {
 type Entities []Entity
 
 func (e Entities) Len() int           { return len(e) }
-func (e Entities) Less(i, j int) bool { return e[i].DefinitionFile() < e[j].DefinitionFile() }
+func (e Entities) Less(i, j int) bool { return e[i].EntityID() < e[j].EntityID() }
 func (e Entities) Swap(i, j int)      { e[i], e[j] = e[j], e[i] }
