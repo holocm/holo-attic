@@ -20,13 +20,7 @@
 
 package files
 
-import (
-	"bytes"
-	"os/exec"
-	"strings"
-
-	"../common"
-)
+import "../common"
 
 //The stuff in this file used to be inside src/holo/apply.go, but it was split
 //to emphasize the standardized interface of application implementations.
@@ -64,23 +58,11 @@ func applyScript(repoFile RepoFile, buffer *FileBuffer) (*FileBuffer, error) {
 
 	//run command, fetch result file into buffer (not into the targetPath
 	//directly, in order not to corrupt the file there if the script run fails)
-	var stdout, stderr bytes.Buffer
-	cmd := exec.Command(repoFile.Path())
-	cmd.Stdin = bytes.NewBuffer(buffer.Contents)
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	err = cmd.Run()
-	if stderr.Len() > 0 {
-		common.PrintWarning("execution of %s produced error output:", repoFile.Path())
-		stderrLines := strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
-		for _, stderrLine := range stderrLines {
-			common.PrintWarning("    %s", stderrLine)
-		}
-	}
+	output, err := common.ExecProgram(buffer.Contents, repoFile.Path())
 	if err != nil {
 		return nil, err
 	}
 
 	//result is the stdout of the script
-	return NewFileBufferFromContents(stdout.Bytes(), buffer.BasePath), nil
+	return NewFileBufferFromContents(output, buffer.BasePath), nil
 }
