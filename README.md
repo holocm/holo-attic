@@ -38,5 +38,4 @@ package available.
 
 ## Documentation
 
-User documentation, including installation instructions, is now available at
-[holotools.org](http://holotools.org).
+User documentation is now available at [holotools.org](http://holotools.org).
