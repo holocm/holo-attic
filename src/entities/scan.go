@@ -48,7 +48,7 @@ func Scan() Entities {
 
 	//cannot declare this as "var result []Definition" because then we would
 	//return nil if there are no entity definitions, but nil indicates an error
-	result := []Entity{}
+	result := Entities{}
 	success := true
 
 	for _, fi := range fis {
@@ -65,7 +65,7 @@ func Scan() Entities {
 	}
 
 	if success {
-		//TODO: sort result
+		sort.Sort(result)
 		return result
 	}
 	return nil
@@ -102,6 +102,5 @@ func readDefinitionFile(entityFile string) (Entities, error) {
 		})
 	}
 
-	sort.Sort(result)
 	return result, nil
 }

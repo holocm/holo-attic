@@ -22,7 +22,6 @@ package entities
 
 import (
 	"fmt"
-	"io/ioutil"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -96,26 +95,21 @@ func (g Group) Apply(withForce bool) {
 	}
 }
 
-func (g Group) checkExists() (exists bool, gid int, err error) {
-	//read /etc/group
-	contents, err := ioutil.ReadFile(filepath.Join(common.TargetDirectory(), "etc/group"))
+func (g Group) checkExists() (exists bool, gid int, e error) {
+	//fetch entry from /etc/group
+	line, err := common.Getent(filepath.Join(common.TargetDirectory(), "etc/group"), g.name)
 	if err != nil {
 		return false, 0, err
 	}
-
-	//find the line that defines this group
-	lines := strings.Split(strings.TrimSpace(string(contents)), "\n")
-	for _, line := range lines {
-		fields := strings.Split(strings.TrimSpace(line), ":")
-		if fields[0] == g.name {
-			//group found - check GID field
-			gid, err := strconv.Atoi(fields[2])
-			return true, gid, err
-		}
+	if line == "" {
+		//there is no such group yet
+		return false, 0, nil
 	}
 
-	//there is no group with that name
-	return false, 0, nil
+	//read fields in entry
+	fields := strings.Split(strings.TrimSpace(line), ":")
+	actualGid, err := strconv.Atoi(fields[2])
+	return true, actualGid, err
 }
 
 func (g Group) callGroupadd() {
