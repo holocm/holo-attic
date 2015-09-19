@@ -85,15 +85,17 @@ fix that after the fact. For now, let's install our configuration in a
 different location:
 
     $ pacman -Qlqp configure-bashdocserver-1.0.0-2-any.tar.xz
-    /holo/
-    /holo/repo/
-    /holo/repo/10-bashdocserver/
-    /holo/repo/10-bashdocserver/etc/
-    /holo/repo/10-bashdocserver/etc/nginx/
-    /holo/repo/10-bashdocserver/etc/nginx/nginx.conf
+    /usr/
+    /usr/share/
+    /usr/share/holo/
+    /usr/share/holo/repo/
+    /usr/share/holo/repo/10-bashdocserver/
+    /usr/share/holo/repo/10-bashdocserver/etc/
+    /usr/share/holo/repo/10-bashdocserver/etc/nginx/
+    /usr/share/holo/repo/10-bashdocserver/etc/nginx/nginx.conf
 
 The configuration has been moved to Holo's configuration repository below
-F</holo/repo>. (Don't worry about the C<10-bashdocserver> bit for now, we'll
+F</usr/share/holo/repo>. (Don't worry about the C<10-bashdocserver> bit for now, we'll
 see why it's useful in the next example.) We also need Holo as a dependency for
 our configuration package:
 
@@ -107,7 +109,7 @@ configuration from Holo's repository:
 
     $ sudo holo apply
     [holo] Working on /etc/nginx/nginx.conf
-    [holo]      apply /holo/repo/10-bashdocserver/etc/nginx/nginx.conf
+    [holo]      apply /usr/share/holo/repo/10-bashdocserver/etc/nginx/nginx.conf
 
 We can usually skip this last step since packages can include
 post-install/upgrade/remove routines where we can call C<holo apply>, as shown
@@ -141,12 +143,14 @@ configuration files, but also scripts that modify the configuration file
 (identified by the C<.holoscript> extension):
 
     $ pacman -Qlqp configure-bashdocserver-extra-1.0.0-1-any.tar.xz
-    /holo/
-    /holo/repo/
-    /holo/repo/20-alternate-port/
-    /holo/repo/20-alternate-port/etc/
-    /holo/repo/20-alternate-port/etc/nginx/
-    /holo/repo/20-alternate-port/etc/nginx/nginx.conf.holoscript
+    /usr/
+    /usr/share/
+    /usr/share/holo/
+    /usr/share/holo/repo/
+    /usr/share/holo/repo/20-alternate-port/
+    /usr/share/holo/repo/20-alternate-port/etc/
+    /usr/share/holo/repo/20-alternate-port/etc/nginx/
+    /usr/share/holo/repo/20-alternate-port/etc/nginx/nginx.conf.holoscript
 
 A holoscript receives the original configuration file on stdin and prints the
 modified version on stdout. In this case, we modify the C<listen 80> directive.
@@ -160,11 +164,11 @@ from the previous configuration package.
 
     $ sudo holo apply
     [holo] Working on /etc/nginx/nginx.conf
-    [holo]      apply /holo/repo/10-bashdocserver/etc/nginx/nginx.conf
-    [holo]   passthru /holo/repo/20-alternate-port/etc/nginx/nginx.conf.holoscript
+    [holo]      apply /usr/share/holo/repo/10-bashdocserver/etc/nginx/nginx.conf
+    [holo]   passthru /usr/share/holo/repo/20-alternate-port/etc/nginx/nginx.conf.holoscript
 
 The order in which repository files are applied is defined by the directory
-names below F</holo/repo> (C<10-bashdocserver> and C<20-alternate-port>), which
+names below F</usr/share/holo/repo> (C<10-bashdocserver> and C<20-alternate-port>), which
 we call I<disambiguators>.
 
 Holoscripts can also be used on their own, without a plain configuration
@@ -182,7 +186,7 @@ configuration installed by the application package.
 This tiny:
 
     $ ls -lh /usr/bin/holo
-    -rwxr-xr-x 1 root root 2.0M 29. Aug 01:10 /usr/bin/holo
+    -rwxr-xr-x 1 root root 3.3M 20. Sep 01:42 /usr/bin/holo
     $ ldd /usr/bin/holo
           not a dynamic executable
 
