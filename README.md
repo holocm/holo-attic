@@ -40,5 +40,3 @@ package available.
 
 User documentation, including installation instructions, is now available at
 [holotools.org](http://holotools.org).
-
-Tip: If you open that site and cannot find any documentation, try scrolling down. ;)
