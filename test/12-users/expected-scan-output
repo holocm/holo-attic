@@ -1,0 +1,32 @@
+
+user:existing
+    found in target/usr/share/holo/01-users.json
+        with uid: 1002, home: /home/existing, login group: users, groups: network,video,audio, login shell: /bin/zsh
+
+user:minimal
+    found in target/usr/share/holo/01-users.json
+
+user:new
+    found in target/usr/share/holo/01-users.json
+        with uid: 1001, home: /home/new, login group: users, groups: network,video,audio, login shell: /bin/zsh
+
+user:wronggroup
+    found in target/usr/share/holo/01-users.json
+        with login group: users
+
+user:wronggroups
+    found in target/usr/share/holo/01-users.json
+        with groups: network
+
+user:wronghome
+    found in target/usr/share/holo/01-users.json
+        with home: /home/wronghome
+
+user:wrongshell
+    found in target/usr/share/holo/01-users.json
+        with login shell: /bin/zsh
+
+user:wronguid
+    found in target/usr/share/holo/01-users.json
+        with uid: 1003
+

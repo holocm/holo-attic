@@ -57,12 +57,24 @@ func ExecProgram(stdin []byte, command string, arguments ...string) (output []by
 
 //ExecProgramOrMock works like ExecProgram, but when the environment variable
 //HOLO_MOCK=1 is set, it will only print the command name and return success
-//without executing the command.
+//and empty stdout without executing the command.
 func ExecProgramOrMock(stdin []byte, command string, arguments ...string) (output []byte, err error) {
 	if mock {
-		fmt.Printf("MOCK: %s %s\n", command, strings.Join(arguments, " "))
+		fmt.Printf("MOCK: %s\n", shellEscapeArgs(append([]string{command}, arguments...)))
 		return []byte{}, nil
 	}
 	o, e := ExecProgram(stdin, command, arguments...)
 	return o, e
+}
+
+func shellEscapeArgs(arguments []string) string {
+	//a puny caricature of an actual shell-escape
+	var escapedArgs []string
+	for _, arg := range arguments {
+		if arg == "" || strings.Contains(arg, " ") {
+			arg = fmt.Sprintf("'%s'", arg)
+		}
+		escapedArgs = append(escapedArgs, arg)
+	}
+	return strings.Join(escapedArgs, " ")
 }

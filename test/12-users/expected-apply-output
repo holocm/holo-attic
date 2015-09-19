@@ -1,0 +1,17 @@
+[holo] Working on user:existing
+[holo] Working on user:minimal
+[holo]     create user 
+MOCK: useradd minimal
+[holo] Working on user:new
+[holo]     create user with uid: 1001, home: /home/new, login group: users, groups: network,video,audio, login shell: /bin/zsh
+MOCK: useradd --uid 1001 --comment 'New User' --home-dir /home/new --gid users --groups network,video,audio --shell /bin/zsh new
+[holo] Working on user:wronggroup
+[holo]        has login group: nobody, expected users (use --force to overwrite)
+[holo] Working on user:wronggroups
+[holo]        has groups: video, expected network (use --force to overwrite)
+[holo] Working on user:wronghome
+[holo]        has home directory: /var/lib/wronghome, expected /home/wronghome (use --force to overwrite)
+[holo] Working on user:wrongshell
+[holo]        has login shell: /bin/bash, expected /bin/zsh (use --force to overwrite)
+[holo] Working on user:wronguid
+[holo]        has UID: 2003, expected 1003 (use --force to overwrite)

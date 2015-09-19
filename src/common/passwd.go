@@ -25,27 +25,30 @@ import (
 	"strings"
 )
 
-//Getent returns an entry from a UNIX user/group database (e.g. /etc/passwd
-//or /etc/group) for the given key (usually the name of the user or group in
-//question). If no entry exists, an empty string is returned.
-func Getent(databaseFile string, key string) (string, error) {
+//Getent reads entries from a UNIX user/group database (e.g. /etc/passwd
+//or /etc/group) and returns the first entry matching the given predicate.
+//For example, to locate the user with name "foo":
+//
+//    fields, err := Getent("/etc/passwd", func(fields []string) bool {
+//        return fields[0] == "foo"
+//    })
+func Getent(databaseFile string, predicate func([]string) bool) ([]string, error) {
 	//read database file
 	contents, err := ioutil.ReadFile(databaseFile)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	//the line that we're looking for has the key as the first field, and keys
-	//are separated by colons
-	prefix := key + ":"
-	//find the line with the given key
+	//each entry is one line
 	lines := strings.Split(strings.TrimSpace(string(contents)), "\n")
 	for _, line := range lines {
-		if strings.HasPrefix(line, prefix) {
-			return line, nil
+		//fields inside the entries are separated by colons
+		fields := strings.Split(strings.TrimSpace(line), ":")
+		if predicate(fields) {
+			return fields, nil
 		}
 	}
 
-	//there is no group with that name
-	return "", nil
+	//no entry matches
+	return nil, nil
 }

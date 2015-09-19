@@ -21,6 +21,7 @@
 package entities
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strconv"
@@ -65,23 +66,24 @@ func (g Group) Apply(withForce bool) {
 	//check if we have that group already
 	groupExists, actualGid, err := g.checkExists()
 	if err != nil {
-		common.PrintError("Error encountered while reading /etc/group: %s", err.Error())
+		common.PrintError("Cannot read group database: %s", err.Error())
 		return
 	}
 
 	//check if the actual properties diverge from our definition
 	if groupExists {
-		errors := []string{}
+		differences := []string{}
 		if g.gid > 0 && g.gid != actualGid {
-			errors = append(errors, fmt.Sprintf("GID: %d, expected %d", actualGid, g.gid))
+			differences = append(differences, fmt.Sprintf("GID: %d, expected %d", actualGid, g.gid))
 		}
 
-		if len(errors) != 0 {
+		if len(differences) != 0 {
+			diffString := strings.Join(differences, "; ")
 			if withForce {
-				common.PrintInfo("       fix %s", strings.Join(errors, ", "))
+				common.PrintInfo("       fix %s", diffString)
 				g.callGroupmod()
 			} else {
-				common.PrintWarning("       has %s (use --force to overwrite)", strings.Join(errors, ", "))
+				common.PrintWarning("       has %s (use --force to overwrite)", diffString)
 			}
 		}
 	} else {
@@ -96,18 +98,23 @@ func (g Group) Apply(withForce bool) {
 }
 
 func (g Group) checkExists() (exists bool, gid int, e error) {
+	groupFile := filepath.Join(common.TargetDirectory(), "etc/group")
+
 	//fetch entry from /etc/group
-	line, err := common.Getent(filepath.Join(common.TargetDirectory(), "etc/group"), g.name)
+	fields, err := common.Getent(groupFile, func(fields []string) bool { return fields[0] == g.name })
 	if err != nil {
 		return false, 0, err
 	}
-	if line == "" {
-		//there is no such group yet
+	//is there such a group?
+	if fields == nil {
 		return false, 0, nil
+	}
+	//is the group entry intact?
+	if len(fields) < 4 {
+		return true, 0, errors.New("invalid entry in /etc/group (not enough fields)")
 	}
 
 	//read fields in entry
-	fields := strings.Split(strings.TrimSpace(line), ":")
 	actualGid, err := strconv.Atoi(fields[2])
 	return true, actualGid, err
 }

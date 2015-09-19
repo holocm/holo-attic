@@ -22,6 +22,7 @@ package entities
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -78,13 +79,23 @@ func readDefinitionFile(entityFile string) (Entities, error) {
 	}
 
 	//json.Unmarshal can only write into *exported* (i.e. upper-case) struct
-	//fields, but the fields on the Group struct are private to emphasize their
-	//readonly-ness, so we have to jump through some hoops to read these
+	//fields, but the fields on the Group/User structs are private to emphasize
+	//their readonly-ness, so we have to jump through some hoops to read these
 	var contents struct {
 		Groups []struct {
 			Name   string
 			Gid    int
 			System bool
+		}
+		Users []struct {
+			Name     string
+			FullName string
+			UID      int
+			System   bool
+			Home     string
+			Group    string
+			Groups   []string
+			Shell    string
 		}
 	}
 	err = json.NewDecoder(file).Decode(&contents)
@@ -93,11 +104,30 @@ func readDefinitionFile(entityFile string) (Entities, error) {
 	}
 
 	var result Entities
-	for _, group := range contents.Groups {
+	for idx, group := range contents.Groups {
+		if group.Name == "" {
+			return nil, fmt.Errorf("groups[%d] is missing required 'name' attribute", idx)
+		}
 		result = append(result, Group{
 			name:           group.Name,
 			gid:            group.Gid,
 			system:         group.System,
+			definitionFile: entityFile,
+		})
+	}
+	for idx, user := range contents.Users {
+		if user.Name == "" {
+			return nil, fmt.Errorf("users[%d] is missing required 'name' attribute", idx)
+		}
+		result = append(result, User{
+			name:           user.Name,
+			fullName:       user.FullName,
+			uid:            user.UID,
+			system:         user.System,
+			homeDirectory:  user.Home,
+			group:          user.Group,
+			groups:         user.Groups,
+			shell:          user.Shell,
 			definitionFile: entityFile,
 		})
 	}
