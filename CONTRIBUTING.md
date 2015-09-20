@@ -17,11 +17,10 @@ Please run `gofmt` (and preferably `goimports` and
 Branches
 --------
 
-Starting with version 0.3, Holo adopts a branching model within which the
-`stable` branch is the current stable release, and development for the next
-stable release happens on the `master` branch. Therefore, users can always
-compile the `stable` branch to get the latest bugfixes, without fear of
-unexpected instability.
+Within Holo's branching model the `stable` branch is the current stable
+release, and development for the next stable release happens on the `master`
+branch. Therefore, users can always compile the `stable` branch to get the
+latest bugfixes, without fear of unexpected instability.
 
 Bugfixes should be developed on the `stable` branch, since forward-merging to
 the development branch is always easier than cherry-picking back into the
@@ -32,7 +31,7 @@ Documentation
 
 Documentation is written in POD (Perl's documentation format), since that
 format has converters to manpage and HTML readily available on all
-distributions (through the pod2man and pod2html executables included with
+distributions (through the `pod2man` and `pod2html` executables included with
 Perl). Also I know a lot of Perl and thus was already familiar with POD.
 
 The manpage lives at `doc/manpage.pod` and is built with:
