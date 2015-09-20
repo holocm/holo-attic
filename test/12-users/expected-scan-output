@@ -1,14 +1,14 @@
 
 user:existing
     found in target/usr/share/holo/01-users.json
-        with uid: 1002, home: /home/existing, login group: users, groups: network,video,audio, login shell: /bin/zsh
+        with uid: 1002, home: /home/existing, login group: users, groups: network,video,audio, login shell: /bin/zsh, comment: Existing User
 
 user:minimal
     found in target/usr/share/holo/01-users.json
 
 user:new
     found in target/usr/share/holo/01-users.json
-        with uid: 1001, home: /home/new, login group: users, groups: network,video,audio, login shell: /bin/zsh
+        with uid: 1001, home: /home/new, login group: users, groups: network,video,audio, login shell: /bin/zsh, comment: New User
 
 user:wronggroup
     found in target/usr/share/holo/01-users.json

@@ -88,14 +88,14 @@ func readDefinitionFile(entityFile string) (Entities, error) {
 			System bool
 		}
 		Users []struct {
-			Name     string
-			FullName string
-			UID      int
-			System   bool
-			Home     string
-			Group    string
-			Groups   []string
-			Shell    string
+			Name    string
+			Comment string
+			UID     int
+			System  bool
+			Home    string
+			Group   string
+			Groups  []string
+			Shell   string
 		}
 	}
 	err = json.NewDecoder(file).Decode(&contents)
@@ -121,7 +121,7 @@ func readDefinitionFile(entityFile string) (Entities, error) {
 		}
 		result = append(result, User{
 			name:           user.Name,
-			fullName:       user.FullName,
+			comment:        user.Comment,
 			uid:            user.UID,
 			system:         user.System,
 			homeDirectory:  user.Home,

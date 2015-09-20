@@ -3,7 +3,7 @@
 [holo]     create user 
 MOCK: useradd minimal
 [holo] Working on user:new
-[holo]     create user with uid: 1001, home: /home/new, login group: users, groups: network,video,audio, login shell: /bin/zsh
+[holo]     create user with uid: 1001, home: /home/new, login group: users, groups: network,video,audio, login shell: /bin/zsh, comment: New User
 MOCK: useradd --uid 1001 --comment 'New User' --home-dir /home/new --gid users --groups network,video,audio --shell /bin/zsh new
 [holo] Working on user:wronggroup
 [holo]        has login group: nobody, expected users (use --force to overwrite)

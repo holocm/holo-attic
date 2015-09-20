@@ -1,7 +1,7 @@
 { "users": [
     {
         "name": "new",
-        "fullname": "New User",
+        "comment": "New User",
         "uid": 1001,
         "system": false,
         "home": "/home/new",
@@ -12,7 +12,7 @@
     { "name": "minimal" },
     {
         "name": "existing",
-        "fullname": "Existing User",
+        "comment": "Existing User",
         "uid": 1002,
         "system": false,
         "home": "/home/existing",

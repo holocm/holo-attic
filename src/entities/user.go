@@ -35,7 +35,7 @@ import (
 //implements the Entity interface and is handled accordingly.
 type User struct {
 	name           string   //the user name (the first field in /etc/passwd)
-	fullName       string   //the full name (sometimes also called "comment"; the fifth field in /etc/passwd)
+	comment        string   //the full name (sometimes also called "comment"; the fifth field in /etc/passwd)
 	uid            int      //the user ID (the third field in /etc/passwd), or 0 if no specific UID is enforced
 	system         bool     //whether the group is a system group (this influences the GID selection if gid = 0)
 	homeDirectory  string   //path to the user's home directory (or empty to use the default)
@@ -72,6 +72,9 @@ func (u User) Attributes() string {
 	if u.shell != "" {
 		attrs = append(attrs, "login shell: "+u.shell)
 	}
+	if u.comment != "" {
+		attrs = append(attrs, "comment: "+u.comment)
+	}
 	return strings.Join(attrs, ", ")
 }
 
@@ -91,8 +94,8 @@ func (u User) Apply(withForce bool) {
 	//check if the actual properties diverge from our definition
 	if userExists {
 		differences := []string{}
-		if u.fullName != "" && u.fullName != actualUser.fullName {
-			differences = append(differences, fmt.Sprintf("fullName: %s, expected %s", actualUser.fullName, u.fullName))
+		if u.comment != "" && u.comment != actualUser.comment {
+			differences = append(differences, fmt.Sprintf("comment: %s, expected %s", actualUser.comment, u.comment))
 		}
 		if u.uid > 0 && u.uid != actualUser.uid {
 			differences = append(differences, fmt.Sprintf("UID: %d, expected %d", actualUser.uid, u.uid))
@@ -203,7 +206,7 @@ func (u User) checkExists() (exists bool, currentUser *User, e error) {
 	return true, &User{
 		//NOTE: Some fields (name, system, definitionFile) are not set because
 		//they are not relevant for the algorithm.
-		fullName:      fields[4],
+		comment:       fields[4],
 		uid:           actualUID,
 		homeDirectory: fields[5],
 		group:         groupName,
@@ -221,8 +224,8 @@ func (u User) callUseradd() {
 	if u.uid > 0 {
 		args = append(args, "--uid", strconv.Itoa(u.uid))
 	}
-	if u.fullName != "" {
-		args = append(args, "--comment", u.fullName)
+	if u.comment != "" {
+		args = append(args, "--comment", u.comment)
 	}
 	if u.homeDirectory != "" {
 		args = append(args, "--home-dir", u.homeDirectory)
@@ -251,8 +254,8 @@ func (u User) callUsermod() {
 	if u.uid > 0 {
 		args = append(args, "--uid", strconv.Itoa(u.uid))
 	}
-	if u.fullName != "" {
-		args = append(args, "--comment", u.fullName)
+	if u.comment != "" {
+		args = append(args, "--comment", u.comment)
 	}
 	if u.homeDirectory != "" {
 		args = append(args, "--home", u.homeDirectory)
