@@ -197,4 +197,77 @@ Second, the owner, group, permissions and timestamps of the target configuration
 are always copied from this backup, and thus match the corresponding metadata of
 the default configuration.
 
+=head1 Management of UNIX user accounts and groups
+
+Holograms can install JSON files into F</usr/share/holo> that describe UNIX
+user accounts and groups that shall be created during C<holo apply> runs.
+For example:
+
+    $ cat /usr/share/holo/01-example.json
+    {
+        "groups": [
+            { "name": "foo" },
+            { "name": "bar", "system": true }
+        ],
+        "users": [
+            { "name": "foo", "group": "foo" },
+            { "name": "qux", "home": "/var/lib/qux", "system": true }
+        ]
+    }
+    $ sudo holo apply
+    [holo] Working on group:bar
+    [holo]     create group with type: system
+    [holo] Working on group:foo
+    [holo]     create group
+    [holo] Working on user:foo
+    [holo]     create user with group: foo
+    [holo] Working on user:qux
+    [holo]     create user with type: system, home directory: /var/lib/qux
+
+Behind the scenes, this uses the C<shadow> tools (C<useradd>, C<usermod>,
+C<groupadd> and C<groupmod>), so the above is exactly equivalent to
+
+    $ sudo groupadd --system bar
+    $ sudo groupadd foo
+    $ sudo useradd --gid foo foo
+    $ sudo useradd --system --home-dir /var/lib/qux qux
+
+In the JSON definition files, the following attributes are accepted for groups:
+
+* `name` (string; the group name)
+* `system` (bool; if true, gives `--system` to `groupadd`)
+* `gid` (integer; given to `groupadd` as `--gid`)
+
+And the following attributes are accepted for users:
+
+* `name` (string; the user name)
+* `comment` (string; given to `useradd` as `--comment`)
+* `system` (bool; if true, gives `--system` to `useradd`)
+* `uid` (integer; given to `useradd` as `--uid`)
+* `group` (string; given to `useradd` as `--gid`)
+* `groups` (array of strings; given to `useradd` as `--groups`)
+* `home` (string; given to `useradd` as `--home-dir`)
+* `shell` (string; given to `useradd` as `--shell`)
+
+In either case, `name` is the only required attribute.
+
+In contrast to files, where Holo operates very confidently (and only refuses
+operation when target files were modified manually), users and groups are
+treated more carefully. First, whenever an existing user account or group does
+not exactly match the definition in the JSON file, Holo will not touch it
+unless instructed to apply `--force`:
+
+    $ sudo holo apply user:qux
+    [holo] Working on user:qux
+    [holo]        has home directory: /var/qux, expected /var/lib/qux (use --force to overwrite)
+    $ sudo holo apply --force user:qux
+    [holo] Working on user:qux
+    [holo]        fix home directory: /var/qux, expected /var/lib/qux
+
+Second, when a hologram is deleted, Holo will never automatically clean up
+users or groups (as it does for configuration files), since there might still
+be files belonging to the users/groups in question. Recommended best practice
+is to have the hologram print a message in its post-remove routine instructing
+the administrator to clean up lingering users/groups manually.
+
 =cut
