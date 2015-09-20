@@ -259,20 +259,59 @@ C<groupadd> and C<groupmod>), so the above is exactly equivalent to
 
 In the JSON definition files, the following attributes are accepted for groups:
 
-* `name` (string; the group name)
-* `system` (bool; if true, gives `--system` to `groupadd`)
-* `gid` (integer; given to `groupadd` as `--gid`)
+=over 4
+
+=item C<name>
+
+(string) the group name
+
+=item C<system>
+
+(bool) if true, gives C<--system> to C<groupadd>
+
+=item C<gid>
+
+(integer) given to C<groupadd> as C<--gid>
+
+=back
 
 And the following attributes are accepted for users:
 
-* `name` (string; the user name)
-* `comment` (string; given to `useradd` as `--comment`)
-* `system` (bool; if true, gives `--system` to `useradd`)
-* `uid` (integer; given to `useradd` as `--uid`)
-* `group` (string; given to `useradd` as `--gid`)
-* `groups` (array of strings; given to `useradd` as `--groups`)
-* `home` (string; given to `useradd` as `--home-dir`)
-* `shell` (string; given to `useradd` as `--shell`)
+=over 4
+
+=item C<name>
+
+(string) the user name
+
+=item C<comment>
+
+(string) given to C<useradd> as C<--comment>
+
+=item C<system>
+
+(bool) if true, gives C<--system> to C<useradd>
+
+=item C<uid>
+
+(integer) given to C<useradd> as C<--uid>
+
+=item C<group>
+
+(string) given to C<useradd> as C<--gid>
+
+=item C<groups>
+
+(array of strings) given to C<useradd> as C<--groups>
+
+=item C<home>
+
+(string) given to C<useradd> as C<--home-dir>
+
+=item C<shell>
+
+(string) given to C<useradd> as C<--shell>
+
+=back
 
 In either case, `name` is the only required attribute.
 
