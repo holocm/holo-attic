@@ -22,9 +22,15 @@ selections for all systems or for certain types of systems.
 
 ## Installation
 
-You need [Go](https://golang.org) to compile Holo and [Perl](https://perl.org)
-to run the unit tests. Both are available as packages for any major Linux
-distribution. Once you're all set, the classical
+Holo depends on the following other packages:
+
+* [Go](https://golang.org) is needed to compile Holo.
+* [Perl](https://perl.org) is used for the unit tests.
+* [shadow](https://pkg-shadow.alioth.debian.org/) is used to create and modify
+  user accounts and groups, and is only needed at runtime.
+
+All dependencies are available as packages for any major Linux distribution.
+Once you're all set, the classical
 
 ```
 make
