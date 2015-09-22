@@ -15,7 +15,7 @@ test: check # just a synonym
 check: build/holo
 	sh test/run_tests.sh
 
-install: build/holo build/holo.8
+install: build/holo build/holo.8 utils/completion.bash utils/completion.zsh
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo"
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo/backup"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo"
@@ -23,6 +23,7 @@ install: build/holo build/holo.8
 	install -D -m 0755 build/holo   "$(DESTDIR)/usr/bin/holo"
 	install -D -m 0644 build/holo.8 "$(DESTDIR)/usr/share/man/man8/holo.8"
 	install -D -m 0644 util/completion.bash "$(DESTDIR)/usr/share/bash-completion/completions/holo"
+	install -D -m 0644 util/completion.zsh  "$(DESTDIR)/usr/share/zsh/site-functions/_holo"
 
 # the website is generated with pod2html (also from Perl) and a HTML template;
 # everything is mushed together using a small helper program
