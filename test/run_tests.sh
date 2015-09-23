@@ -25,6 +25,7 @@ run_testcase() {
     mkdir -p target/var/lib/holo/backup
     export HOLO_CHROOT_DIR="./target/"
     export HOLO_MOCK=1
+    export HOLO_CURRENT_DISTRIBUTION=unittest
 
     # when backup files exist, make sure their mtimes are in sync with the
     # targets (or else `holo apply` will refuse to work on them)

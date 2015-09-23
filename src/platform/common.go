@@ -27,6 +27,8 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	"../common"
 )
 
 //Impl provides integration points with a distribution's toolchain.
@@ -48,15 +50,34 @@ type Impl interface {
 
 var impl Impl
 
-func init() {
-	//TODO
-	impl = archImpl{}
-}
-
 //Implementation returns the most suitable platform implementation for the
 //current system.
 func Implementation() Impl {
 	return impl
+}
+
+func init() {
+	//get list of distribution IDs
+	dists := getCurrentDistribution()
+	//convert into hash for easier lookup
+	isDist := make(map[string]bool)
+	for _, dist := range dists {
+		isDist[dist] = true
+	}
+
+	//which distribution are we running on?
+	switch {
+	case isDist["arch"]:
+		impl = archImpl{}
+	case isDist["unittest"]:
+		//set via HOLO_CURRENT_DISTRIBUTION=unittest only
+		impl = genericImpl{}
+	default:
+		common.PrintError("Running on an unrecognized distribution. Distribution IDs: %s", strings.Join(dists, ","))
+		common.PrintWarning("Please report this error at <https://github.com/majewsky/holo/issues/new>")
+		common.PrintWarning("and include the contents of your /etc/os-release file.")
+		impl = genericImpl{}
+	}
 }
 
 //Returns a list of distribution IDs, drawing on the ID= and ID_LIKE= fields of
