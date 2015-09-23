@@ -1,0 +1,108 @@
+/*******************************************************************************
+*
+*   Copyright 2015 Stefan Majewsky <majewsky@gmx.net>
+*
+*   This program is free software; you can redistribute it and/or modify it
+*   under the terms of the GNU General Public License as published by the Free
+*   Software Foundation; either version 2 of the License, or (at your option)
+*   any later version.
+*
+*   This program is distributed in the hope that it will be useful, but WITHOUT
+*   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+*   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+*   more details.
+*
+*   You should have received a copy of the GNU General Public License along
+*   with this program; if not, write to the Free Software Foundation, Inc.,
+*   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+*
+********************************************************************************/
+
+//Package platform implements integration points with the platform that Holo is
+//running (most notably the package manager).
+package platform
+
+import (
+	"io/ioutil"
+	"os"
+	"regexp"
+	"strings"
+)
+
+//Platform provides integration points with a distribution's toolchain.
+type Platform interface {
+	//FindUpdatedTargetBase is called as part of the repo file application
+	//algorithm. If the system package manager updates a file which has been
+	//modified by Holo, it will usually place the new stock configuration next
+	//to the targetPath (usually with a special suffix). If such a file exists,
+	//this method must return its name, so that Holo can pick it up and use it
+	//as a new base configuration.
+	FindUpdatedTargetBase(targetPath string) string
+	//AdditionalCleanupTargets is called as part of the orphan handling.
+	//When an application package is removed, but one of its configuration
+	//files has been modified by Holo, the system package manager will usually
+	//retain a copy next to the targetPath (usually with a special suffix). If
+	//such a file exists, this method must return its name, so that Holo can
+	//clean it up.
+	AdditionalCleanupTargets(targetPath string) []string
+}
+
+var platform Platform
+
+func init() {
+}
+
+//Returns a list of distribution IDs, drawing on the ID= and ID_LIKE= fields of
+//os-release(5).
+func getCurrentDistribution() []string {
+	//check if a unit test override is active
+	if value := os.Getenv("HOLO_CURRENT_DISTRIBUTION"); value != "" {
+		return []string{value}
+	}
+
+	//read /etc/os-release, fall back to /usr/lib/os-release if not available
+	bytes, err := ioutil.ReadFile("/etc/os-release")
+	if err != nil {
+		if os.IsNotExist(err) {
+			bytes, err = ioutil.ReadFile("/usr/lib/os-release")
+		}
+	}
+	if err != nil {
+		panic("Cannot read os-release: " + err.Error())
+	}
+
+	//parse os-release syntax (a harshly limited subset of shell script)
+	variables := make(map[string]string)
+	lines := strings.Split(string(bytes), "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		//ignore comments
+		if line == "" || line[0] == '#' {
+			continue
+		}
+		//line format is key=value
+		if !strings.Contains(line, "=") {
+			continue
+		}
+		split := strings.SplitN(line, "=", 2)
+		key, value := split[0], split[1]
+		//value may be enclosed in quotes
+		switch {
+		case strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\""):
+			value = strings.TrimPrefix(strings.TrimSuffix(value, "\""), "\"")
+		case strings.HasPrefix(value, "'") && strings.HasSuffix(value, "'"):
+			value = strings.TrimPrefix(strings.TrimSuffix(value, "'"), "'")
+		}
+		//special characters may be escaped
+		value = regexp.MustCompile(`\\(.)`).ReplaceAllString(value, "$1")
+		//store assignment
+		variables[key] = value
+	}
+
+	//the distribution IDs we're looking for are in ID= (single value) or ID_LIKE= (space-separated list)
+	result := []string{variables["ID"]}
+	if idLike, ok := variables["ID_LIKE"]; ok {
+		result = append(result, strings.Split(idLike, " ")...)
+	}
+	return result
+}
