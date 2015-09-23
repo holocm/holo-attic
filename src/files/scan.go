@@ -62,7 +62,7 @@ func ScanRepo() (configFiles ConfigFiles, orphanedBackupFiles []string) {
 			return err
 		}
 		//only look at manageable files (regular files or symlinks)
-		if !(repoFileInfo.Mode().IsRegular() || IsFileInfoASymbolicLink(repoFileInfo)) {
+		if !(repoFileInfo.Mode().IsRegular() || common.IsFileInfoASymbolicLink(repoFileInfo)) {
 			return nil
 		}
 		//only look at files within subdirectories (files in the repo directory
@@ -89,7 +89,7 @@ func ScanRepo() (configFiles ConfigFiles, orphanedBackupFiles []string) {
 			return err
 		}
 		//only look at manageable files (regular files or symlinks)
-		if !(backupFileInfo.Mode().IsRegular() || IsFileInfoASymbolicLink(backupFileInfo)) {
+		if !(backupFileInfo.Mode().IsRegular() || common.IsFileInfoASymbolicLink(backupFileInfo)) {
 			return nil
 		}
 

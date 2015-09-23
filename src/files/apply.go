@@ -40,7 +40,7 @@ func Apply(file ConfigFile, withForce bool) {
 	//regular file in the target location (that file comes from the application
 	//package, the repo file from the holo metapackage)
 	common.PrintInfo("Working on \x1b[1m%s\x1b[0m", targetPath)
-	if !IsManageableFile(targetPath) {
+	if !common.IsManageableFile(targetPath) {
 		common.PrintError("  skipped: target is not a manageable file")
 		return
 	}
@@ -48,7 +48,7 @@ func Apply(file ConfigFile, withForce bool) {
 	//step 2: we know that a file exists at installPath; if we don't have a
 	//backup of the original file, the file at installPath *is* the original
 	//file which we have to backup now
-	if !IsManageableFile(backupPath) {
+	if !common.IsManageableFile(backupPath) {
 		common.PrintInfo("  store at %s", backupPath)
 
 		backupDir := filepath.Dir(backupPath)
@@ -58,7 +58,7 @@ func Apply(file ConfigFile, withForce bool) {
 			return
 		}
 
-		err = CopyFile(targetPath, backupPath)
+		err = common.CopyFile(targetPath, backupPath)
 		if err != nil {
 			common.PrintError("Cannot copy %s to %s: %s", targetPath, backupPath, err.Error())
 			return
@@ -68,9 +68,9 @@ func Apply(file ConfigFile, withForce bool) {
 	//step 2.5: if a .pacnew file exists next to the targetPath, the base
 	//package was updated and the .pacnew is the newer version of the original
 	//config file; move it to the backup location
-	if IsManageableFile(pacnewPath) {
+	if common.IsManageableFile(pacnewPath) {
 		common.PrintInfo("    update %s -> %s", pacnewPath, backupPath)
-		err := CopyFile(pacnewPath, backupPath)
+		err := common.CopyFile(pacnewPath, backupPath)
 		if err != nil {
 			common.PrintError("Cannot copy %s to %s: %s", pacnewPath, backupPath, err.Error())
 			return
@@ -83,7 +83,7 @@ func Apply(file ConfigFile, withForce bool) {
 	//the user made any changes to config files governed by holo (this check is
 	//overridden by the --force option)
 	if !withForce {
-		isNewer, err := IsNewerThan(targetPath, backupPath)
+		isNewer, err := common.IsNewerThan(targetPath, backupPath)
 		if err != nil {
 			common.PrintError(err.Error())
 			return
@@ -121,7 +121,7 @@ func Apply(file ConfigFile, withForce bool) {
 		common.PrintError(err.Error())
 		return
 	}
-	err = ApplyFilePermissions(backupPath, targetPath)
+	err = common.ApplyFilePermissions(backupPath, targetPath)
 	if err != nil {
 		common.PrintError(err.Error())
 		return

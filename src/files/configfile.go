@@ -67,12 +67,12 @@ func (file ConfigFile) RepoFiles() RepoFiles {
 		repoPath := filepath.Join(common.RepoDirectory(), dirName, string(file))
 
 		//check if the repo file exists
-		if IsManageableFile(repoPath) {
+		if common.IsManageableFile(repoPath) {
 			result = append(result, NewRepoFile(repoPath))
 		} else {
 			//it may have an optional ".holoscript" suffix
 			repoPath2 := repoPath + ".holoscript"
-			if IsManageableFile(repoPath2) {
+			if common.IsManageableFile(repoPath2) {
 				result = append(result, NewRepoFile(repoPath2))
 			}
 		}

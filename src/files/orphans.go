@@ -31,7 +31,7 @@ import (
 //it's used by both `holo scan` and `holo apply`.
 func ScanOrphanedBackupFile(backupPath string) (targetPath, strategy, assessment string) {
 	target := NewConfigFileFromBackupPath(backupPath).TargetPath()
-	if IsManageableFile(target) {
+	if common.IsManageableFile(target) {
 		return target, "restore", "all repository files were deleted"
 	}
 	return target, "delete", "target was deleted"
@@ -53,7 +53,7 @@ func HandleOrphanedBackupFile(backupPath string) {
 		}
 		//if there was a .pacsave file, we can delete it too
 		pacsavePath := targetPath + ".pacsave"
-		if IsManageableFile(pacsavePath) {
+		if common.IsManageableFile(pacsavePath) {
 			common.PrintInfo("    delete %s", pacsavePath)
 			err := os.Remove(pacsavePath)
 			if err != nil {
@@ -63,7 +63,7 @@ func HandleOrphanedBackupFile(backupPath string) {
 		}
 	case "restore":
 		//target is still there - restore the backup file
-		err := CopyFile(backupPath, targetPath)
+		err := common.CopyFile(backupPath, targetPath)
 		if err != nil {
 			common.PrintError(err.Error())
 			return
