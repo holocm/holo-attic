@@ -24,6 +24,7 @@ import (
 	"os"
 
 	"../common"
+	"../platform"
 )
 
 //ScanOrphanedBackupFile locates a target file for a given orphaned backup file
@@ -51,11 +52,13 @@ func HandleOrphanedBackupFile(backupPath string) {
 			common.PrintError(err.Error())
 			return
 		}
-		//if there was a .pacsave file, we can delete it too
-		pacsavePath := targetPath + ".pacsave"
-		if common.IsManageableFile(pacsavePath) {
-			common.PrintInfo("    delete %s", pacsavePath)
-			err := os.Remove(pacsavePath)
+		//if the package management left behind additional cleanup targets
+		//(most likely a backup of our custom configuration), we can delete
+		//these too
+		cleanupTargets := platform.Implementation().AdditionalCleanupTargets(targetPath)
+		for _, otherFile := range cleanupTargets {
+			common.PrintInfo("    delete %s", otherFile)
+			err := os.Remove(otherFile)
 			if err != nil {
 				common.PrintError(err.Error())
 				return

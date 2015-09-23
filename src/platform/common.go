@@ -29,8 +29,8 @@ import (
 	"strings"
 )
 
-//Platform provides integration points with a distribution's toolchain.
-type Platform interface {
+//Impl provides integration points with a distribution's toolchain.
+type Impl interface {
 	//FindUpdatedTargetBase is called as part of the repo file application
 	//algorithm. If the system package manager updates a file which has been
 	//modified by Holo, it will usually place the new stock configuration next
@@ -38,18 +38,25 @@ type Platform interface {
 	//this method must return its name, so that Holo can pick it up and use it
 	//as a new base configuration.
 	FindUpdatedTargetBase(targetPath string) string
-	//AdditionalCleanupTargets is called as part of the orphan handling.
-	//When an application package is removed, but one of its configuration
-	//files has been modified by Holo, the system package manager will usually
-	//retain a copy next to the targetPath (usually with a special suffix). If
-	//such a file exists, this method must return its name, so that Holo can
-	//clean it up.
+	//AdditionalCleanupTargets is called as part of the orphan handling. When
+	//an application package is removed, but one of its configuration files has
+	//been modified by Holo, the system package manager will usually retain a
+	//copy next to the targetPath (usually with a special suffix). If such a
+	//file exists, this method must return its name, for Holo to clean it up.
 	AdditionalCleanupTargets(targetPath string) []string
 }
 
-var platform Platform
+var impl Impl
 
 func init() {
+	//TODO
+	impl = archImpl{}
+}
+
+//Implementation returns the most suitable platform implementation for the
+//current system.
+func Implementation() Impl {
+	return impl
 }
 
 //Returns a list of distribution IDs, drawing on the ID= and ID_LIKE= fields of

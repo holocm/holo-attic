@@ -25,6 +25,7 @@ import (
 	"path/filepath"
 
 	"../common"
+	"../platform"
 )
 
 //Apply performs the complete application algorithm for the given ConfigFile.
@@ -34,7 +35,6 @@ func Apply(file ConfigFile, withForce bool) {
 	//determine the related paths
 	targetPath := file.TargetPath()
 	backupPath := file.BackupPath()
-	pacnewPath := targetPath + ".pacnew"
 
 	//step 1: will only install files from repo if there is a corresponding
 	//regular file in the target location (that file comes from the application
@@ -65,17 +65,18 @@ func Apply(file ConfigFile, withForce bool) {
 		}
 	}
 
-	//step 2.5: if a .pacnew file exists next to the targetPath, the base
-	//package was updated and the .pacnew is the newer version of the original
-	//config file; move it to the backup location
-	if common.IsManageableFile(pacnewPath) {
-		common.PrintInfo("    update %s -> %s", pacnewPath, backupPath)
-		err := common.CopyFile(pacnewPath, backupPath)
+	//step 2.5: if an updated version of the stock configuration file exists
+	//next to the targetPath, move it to the backup location and use it as the
+	//basis for step 3
+	updatePath := platform.Implementation().FindUpdatedTargetBase(targetPath)
+	if updatePath != "" {
+		common.PrintInfo("    update %s -> %s", updatePath, backupPath)
+		err := common.CopyFile(updatePath, backupPath)
 		if err != nil {
-			common.PrintError("Cannot copy %s to %s: %s", pacnewPath, backupPath, err.Error())
+			common.PrintError("Cannot copy %s to %s: %s", updatePath, backupPath, err.Error())
 			return
 		}
-		_ = os.Remove(pacnewPath) //this can fail silently
+		_ = os.Remove(updatePath) //this can fail silently
 	}
 
 	//step 3: apply the repo files *if* the version at targetPath is the one
