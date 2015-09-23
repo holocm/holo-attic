@@ -13,7 +13,7 @@ build/holo.8: doc/manpage.pod src/main.go
 
 test: check # just a synonym
 check: build/holo
-	sh test/run_tests.sh
+	bash test/run_tests.sh
 
 install: build/holo build/holo.8 utils/completion.bash utils/completion.zsh
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo"
