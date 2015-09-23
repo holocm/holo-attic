@@ -26,6 +26,8 @@ run_testcase() {
     export HOLO_CHROOT_DIR="./target/"
     export HOLO_MOCK=1
     export HOLO_CURRENT_DISTRIBUTION=unittest
+    # the test may define a custom environment, mostly for $HOLO_CURRENT_DISTRIBUTION
+    [ -f env.sh ] && source ./env.sh
 
     # when backup files exist, make sure their mtimes are in sync with the
     # targets (or else `holo apply` will refuse to work on them)

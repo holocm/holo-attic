@@ -6,9 +6,6 @@ target/etc/still-existing.conf
 target/etc/repofile-deleted.conf (all repository files were deleted)
      restore target/var/lib/holo/backup/etc/repofile-deleted.conf
 
-target/etc/targetfile-deleted-with-pacsave.conf (target was deleted)
-      delete target/var/lib/holo/backup/etc/targetfile-deleted-with-pacsave.conf
-
 target/etc/targetfile-deleted.conf (target was deleted)
       delete target/var/lib/holo/backup/etc/targetfile-deleted.conf
 

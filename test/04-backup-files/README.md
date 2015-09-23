@@ -7,8 +7,6 @@ orphaned backup files.
   assume that the application package and all holograms using that application
   have been uninstalled, and delete the backup file (which came from the now
   uninstalled application package).
-* `/etc/targetfile-deleted-with-pacsave.conf` is the same, but we simulate that
-  the package manager saved the config file with a `.pacsave` suffix while
   uninstalling the application package. This file should be cleaned up, too.
 * `/etc/repofile-deleted.conf` has no repo files, but the config file is still
   present. We assume that the application package is still installed, but the
