@@ -1,0 +1,5 @@
+
+target/etc/targetfile-with-rpmnew.conf
+    store at target/var/lib/holo/backup/etc/targetfile-with-rpmnew.conf
+    passthru target/usr/share/holo/repo/01-first/etc/targetfile-with-rpmnew.conf.holoscript
+

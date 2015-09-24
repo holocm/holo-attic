@@ -1,0 +1,10 @@
+>> ./etc/targetfile-with-rpmnew.conf = regular
+d
+e
+f
+>> ./usr/share/holo/repo/01-first/etc/targetfile-with-rpmnew.conf.holoscript = symlink
+/usr/bin/sort
+>> ./var/lib/holo/backup/etc/targetfile-with-rpmnew.conf = regular
+d
+f
+e

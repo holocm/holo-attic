@@ -69,6 +69,8 @@ func init() {
 	switch {
 	case isDist["arch"]:
 		impl = archImpl{}
+	case isDist["fedora"], isDist["suse"]:
+		impl = rpmImpl{}
 	case isDist["unittest"]:
 		//set via HOLO_CURRENT_DISTRIBUTION=unittest only
 		impl = genericImpl{}

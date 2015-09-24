@@ -1,0 +1,3 @@
+[holo] Working on target/etc/targetfile-with-rpmnew.conf
+[holo]     update target/etc/targetfile-with-rpmnew.conf.rpmnew -> target/var/lib/holo/backup/etc/targetfile-with-rpmnew.conf
+[holo]   passthru target/usr/share/holo/repo/01-first/etc/targetfile-with-rpmnew.conf.holoscript
