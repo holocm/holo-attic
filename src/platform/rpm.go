@@ -33,9 +33,15 @@ func (p rpmImpl) FindUpdatedTargetBase(targetPath string) string {
 	return ""
 }
 
+func (p rpmImpl) FindConfigBackup(targetPath string) string {
+	rpmsavePath := targetPath + ".rpmsave"
+	if common.IsManageableFile(rpmsavePath) {
+		return rpmsavePath
+	}
+	return ""
+}
+
 func (p rpmImpl) AdditionalCleanupTargets(targetPath string) []string {
-	//there seems to be no RPM equivalent to Arch's .pacsave
-	//(.rpmsave is *not* the same thing, it's a reverse variant of
-	//.rpmnew that doesn't seem to be commonly used anymore)
+	//not used by RPM
 	return []string{}
 }

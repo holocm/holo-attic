@@ -28,6 +28,10 @@ func (p genericImpl) FindUpdatedTargetBase(targetPath string) string {
 	return ""
 }
 
+func (p genericImpl) FindConfigBackup(targetPath string) string {
+	return ""
+}
+
 func (p genericImpl) AdditionalCleanupTargets(targetPath string) []string {
 	return nil
 }

@@ -33,6 +33,11 @@ func (p archImpl) FindUpdatedTargetBase(targetPath string) string {
 	return ""
 }
 
+func (p archImpl) FindConfigBackup(targetPath string) string {
+	//not used by pacman
+	return ""
+}
+
 func (p archImpl) AdditionalCleanupTargets(targetPath string) []string {
 	pacsavePath := targetPath + ".pacsave"
 	if common.IsManageableFile(pacsavePath) {
