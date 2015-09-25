@@ -65,26 +65,45 @@ func Apply(file ConfigFile, withForce bool) {
 		}
 	}
 
-	//step 2.5: if an updated version of the stock configuration file exists
-	//next to the targetPath, move it to the backup location and use it as the
-	//basis for step 3
-	updatePath := platform.Implementation().FindUpdatedTargetBase(targetPath)
-	if updatePath != "" {
-		common.PrintInfo("    update %s -> %s", updatePath, backupPath)
-		err := common.CopyFile(updatePath, backupPath)
+	//step 3: check if a system update installed a new version of the stock
+	//configuration
+	updateBackupPath := platform.Implementation().FindConfigBackup(targetPath)
+	lastInstalledTargetPath := targetPath
+	if updateBackupPath != "" {
+		//case 1: yes, the targetPath is an updated stock configuration and the
+		//old targetPath (last written by Holo) was moved to updateBackupPath
+		//(this code path is used for .rpmsave and .dpkg-old files)
+		common.PrintInfo("    update %s -> %s", targetPath, backupPath)
+		err := common.CopyFile(targetPath, backupPath)
 		if err != nil {
-			common.PrintError("Cannot copy %s to %s: %s", updatePath, backupPath, err.Error())
+			common.PrintError("Cannot copy %s to %s: %s", targetPath, backupPath, err.Error())
 			return
 		}
-		_ = os.Remove(updatePath) //this can fail silently
+		//since the target file that we wrote last time has been moved to a
+		//different place, we need to use the changed path for the mtime check
+		//in the next step
+		lastInstalledTargetPath = updateBackupPath
+	} else {
+		updatePath := platform.Implementation().FindUpdatedTargetBase(targetPath)
+		if updatePath != "" {
+			//case 2: yes, an updated stock configuration is available at updatePath
+			//(this code path is used for .rpmnew, .dpkg-dist and .pacnew files)
+			common.PrintInfo("    update %s -> %s", updatePath, backupPath)
+			err := common.CopyFile(updatePath, backupPath)
+			if err != nil {
+				common.PrintError("Cannot copy %s to %s: %s", updatePath, backupPath, err.Error())
+				return
+			}
+			_ = os.Remove(updatePath) //this can fail silently
+		}
 	}
 
-	//step 3: apply the repo files *if* the version at targetPath is the one
+	//step 4: apply the repo files *if* the version at targetPath is the one
 	//installed by the package (which can be found at backupPath); complain if
 	//the user made any changes to config files governed by holo (this check is
 	//overridden by the --force option)
 	if !withForce {
-		isNewer, err := common.IsNewerThan(targetPath, backupPath)
+		isNewer, err := common.IsNewerThan(lastInstalledTargetPath, backupPath)
 		if err != nil {
 			common.PrintError(err.Error())
 			return
@@ -95,7 +114,7 @@ func Apply(file ConfigFile, withForce bool) {
 		}
 	}
 
-	//step 3a: load the backup file into a buffer as the start for the
+	//step 4a: load the backup file into a buffer as the start for the
 	//application algorithm
 	buffer, err := NewFileBuffer(backupPath, targetPath)
 	if err != nil {
@@ -103,7 +122,7 @@ func Apply(file ConfigFile, withForce bool) {
 		return
 	}
 
-	//step 3b: apply all the applicable repo files in order
+	//step 4b: apply all the applicable repo files in order
 	repoFiles := file.RepoFiles()
 	for _, repoFile := range repoFiles {
 		common.PrintInfo("%10s %s", repoFile.ApplicationStrategy(), repoFile.Path())
@@ -114,7 +133,7 @@ func Apply(file ConfigFile, withForce bool) {
 		}
 	}
 
-	//step 3c: write the result buffer to the target location and copy
+	//step 4c: write the result buffer to the target location and copy
 	//permissions/timestamps from backup file to target file, in order to be
 	//able to detect manual modifications in the next holo-apply run
 	err = buffer.Write(targetPath)
@@ -126,5 +145,12 @@ func Apply(file ConfigFile, withForce bool) {
 	if err != nil {
 		common.PrintError(err.Error())
 		return
+	}
+
+	//step 5: cleanup the updateBackupPath now that we successfully generated a
+	//new version of the desired target
+	if updateBackupPath != "" {
+		common.PrintInfo("    delete %s", updateBackupPath)
+		_ = os.Remove(updateBackupPath) //this can fail silently
 	}
 }
