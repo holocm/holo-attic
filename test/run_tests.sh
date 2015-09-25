@@ -33,8 +33,20 @@ run_testcase() {
     # targets (or else `holo apply` will refuse to work on them)
     cd "$TESTCASE_DIR/target/var/lib/holo/backup/"
     find -type f -o -type l | while read FILE; do
-        REPOFILE="$TESTCASE_DIR/target/usr/share/holo/repo/$FILE"
-        [ -f "$REPOFILE" ] && touch -r "$FILE" "$REPOFILE"
+        # if an .rpmsave or .dpkg-old file exists for the current target, it is
+        # relevant for the mtime check instead of the target
+        OTHER_FILE="$TESTCASE_DIR/target/${FILE}.rpmsave"
+        if [ -f "$OTHER_FILE" ]; then
+            touch -r "$FILE" "$OTHER_FILE"
+        else
+            OTHER_FILE="$TESTCASE_DIR/target/${FILE}.dpkg-old"
+            if [ -f "$OTHER_FILE" ]; then
+                touch -r "$FILE" "$OTHER_FILE"
+            else
+                OTHER_FILE="$TESTCASE_DIR/target/$FILE"
+                [ -f "$OTHER_FILE" ] && touch -r "$FILE" "$OTHER_FILE"
+            fi
+        fi
     done
     cd "$TESTCASE_DIR/"
 
