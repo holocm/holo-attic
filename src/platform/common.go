@@ -77,6 +77,8 @@ func init() {
 	switch {
 	case isDist["arch"]:
 		impl = archImpl{}
+	case isDist["debian"]:
+		impl = dpkgImpl{}
 	case isDist["fedora"], isDist["suse"]:
 		impl = rpmImpl{}
 	case isDist["unittest"]:

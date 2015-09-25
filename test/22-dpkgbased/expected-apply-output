@@ -1,0 +1,7 @@
+[holo] Working on target/etc/targetfile-with-dpkg-dist.conf
+[holo]     update target/etc/targetfile-with-dpkg-dist.conf.dpkg-dist -> target/var/lib/holo/backup/etc/targetfile-with-dpkg-dist.conf
+[holo]   passthru target/usr/share/holo/repo/01-first/etc/targetfile-with-dpkg-dist.conf.holoscript
+[holo] Working on target/etc/targetfile-with-dpkg-old.conf
+[holo]     update target/etc/targetfile-with-dpkg-old.conf -> target/var/lib/holo/backup/etc/targetfile-with-dpkg-old.conf
+[holo]   passthru target/usr/share/holo/repo/01-first/etc/targetfile-with-dpkg-old.conf.holoscript
+[holo]     delete target/etc/targetfile-with-dpkg-old.conf.dpkg-old
