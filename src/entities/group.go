@@ -33,17 +33,23 @@ import (
 //Group represents a UNIX group (as registered in /etc/group). It implements
 //the Entity interface and is handled accordingly.
 type Group struct {
-	name           string //the group name (the first field in /etc/group)
-	gid            int    //the GID (the third field in /etc/group), or 0 if no specific GID is enforced
-	system         bool   //whether the group is a system group (this influences the GID selection if gid = 0)
-	definitionFile string //path to the file defining this entity
+	name            string   //the group name (the first field in /etc/group)
+	gid             int      //the GID (the third field in /etc/group), or 0 if no specific GID is enforced
+	system          bool     //whether the group is a system group (this influences the GID selection if gid = 0)
+	definitionFiles []string //path to the files defining this entity
+
+	broken bool //whether the entity definition is invalid (default: false)
 }
+
+//for the Entity interface
+func (g Group) isValid() bool { return !g.broken }
+func (g Group) setInvalid()   { g.broken = true }
 
 //EntityID implements the Entity interface for Group.
 func (g Group) EntityID() string { return "group:" + g.name }
 
 //DefinitionFile implements the Entity interface for Group.
-func (g Group) DefinitionFile() string { return g.definitionFile }
+func (g Group) DefinitionFiles() []string { return g.definitionFiles }
 
 //Attributes implements the Entity interface for Group.
 func (g Group) Attributes() string {

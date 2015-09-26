@@ -34,22 +34,28 @@ import (
 //User represents a UNIX user account (as registered in /etc/passwd). It
 //implements the Entity interface and is handled accordingly.
 type User struct {
-	name           string   //the user name (the first field in /etc/passwd)
-	comment        string   //the full name (sometimes also called "comment"; the fifth field in /etc/passwd)
-	uid            int      //the user ID (the third field in /etc/passwd), or 0 if no specific UID is enforced
-	system         bool     //whether the group is a system group (this influences the GID selection if gid = 0)
-	homeDirectory  string   //path to the user's home directory (or empty to use the default)
-	group          string   //the name of the user's initial login group (or empty to use the default)
-	groups         []string //the names of supplementary groups which the user is also a member of
-	shell          string   //path to the user's login shell (or empty to use the default)
-	definitionFile string   //path to the file defining this entity
+	name            string   //the user name (the first field in /etc/passwd)
+	comment         string   //the full name (sometimes also called "comment"; the fifth field in /etc/passwd)
+	uid             int      //the user ID (the third field in /etc/passwd), or 0 if no specific UID is enforced
+	system          bool     //whether the group is a system group (this influences the GID selection if gid = 0)
+	homeDirectory   string   //path to the user's home directory (or empty to use the default)
+	group           string   //the name of the user's initial login group (or empty to use the default)
+	groups          []string //the names of supplementary groups which the user is also a member of
+	shell           string   //path to the user's login shell (or empty to use the default)
+	definitionFiles []string //path to the file defining this entity
+
+	broken bool //whether the entity definition is invalid (default: false)
 }
+
+//for the Entity interface
+func (u User) isValid() bool { return !u.broken }
+func (u User) setInvalid()   { u.broken = true }
 
 //EntityID implements the Entity interface for User.
 func (u User) EntityID() string { return "user:" + u.name }
 
 //DefinitionFile implements the Entity interface for User.
-func (u User) DefinitionFile() string { return u.definitionFile }
+func (u User) DefinitionFiles() []string { return u.definitionFiles }
 
 //Attributes implements the Entity interface for User.
 func (u User) Attributes() string {

@@ -31,12 +31,19 @@ type Entity interface {
 	//meaning on the shell.
 	EntityID() string
 	//DefinitionFile returns the path to the file containing the definition of this entity.
-	DefinitionFile() string
+	DefinitionFiles() []string
 	//Attributes returns a string describing additional attributes set for this entity,
 	//alternatively an empty string.
 	Attributes() string
 	//Apply performs the complete application algorithm for the givne Entity.
 	Apply(withForce bool)
+
+	//isValid is used inside the scanning algorithm to filter entities with
+	//broken definitions, which shall be skipped during `holo apply`.
+	isValid() bool
+	//setInvalid is used inside the scnaning algorithm to mark entities with
+	//broken definitions, which shall be skipped during `holo apply`.
+	setInvalid()
 }
 
 //Entities holds a slice of Entity instances, and implements some methods to
