@@ -1,0 +1,17 @@
+{
+    "groups": [
+        { "name": "stacked", "gid": 1001, "system": true }
+    ],
+    "users": [
+        {
+            "name": "stacked",
+            "comment": "Stacked User",
+            "system": true,
+            "uid": 1001,
+            "group": "stacked",
+            "groups": [ "foo", "baz" ],
+            "home": "/home/stacked",
+            "shell": "/bin/bash"
+        }
+    ]
+}

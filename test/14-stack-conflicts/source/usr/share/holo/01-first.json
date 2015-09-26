@@ -1,0 +1,19 @@
+{
+    "groups": [
+        { "name": "stacked", "gid": 1000, "system": false },
+        { "nam": "typo", "gid": 1005 }
+    ],
+    "users": [
+        { "nam": "typo", "uid": 1005 },
+        {
+            "name": "stacked",
+            "comment": "Unstackable User",
+            "system": false,
+            "uid": 1000,
+            "group": "users",
+            "groups": [ "foo", "bar" ],
+            "home": "/var/lib/stacked",
+            "shell": "/usr/bin/zsh"
+        }
+    ]
+}

@@ -1,0 +1,9 @@
+[holo] Failed to read target/usr/share/holo/01-first.json because of multiple errors:
+[holo]     groups[1] is missing required 'name' attribute
+[holo]     users[0] is missing required 'name' attribute
+[holo] Failed to read target/usr/share/holo/02-second.json because of multiple errors:
+[holo]     conflicting GID for group 'stacked' (existing: 1000, new: 1001)
+[holo]     conflicting UID for user 'stacked' (existing: 1000, new: 1001)
+[holo]     conflicting home directory for user 'stacked' (existing: /var/lib/stacked, new: /home/stacked)
+[holo]     conflicting login group for user 'stacked' (existing: users, new: stacked)
+[holo]     conflicting login shell for user 'stacked' (existing: /usr/bin/zsh, new: /bin/bash)
