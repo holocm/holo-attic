@@ -1,0 +1,8 @@
+{
+    "groups": [
+        { "name": "stacked" }
+    ],
+    "users": [
+        { "name": "stacked", "groups": [ "foo", "bar" ] }
+    ]
+}

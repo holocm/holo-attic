@@ -284,7 +284,7 @@ func mergeUserDefinition(def userDefinition, user *User) []error {
 				break
 			}
 		}
-		if !missing {
+		if missing {
 			user.groups = append(user.groups, group)
 		}
 	}
