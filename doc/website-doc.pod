@@ -309,4 +309,18 @@ be files belonging to the users/groups in question. Recommended best practice
 is to have the hologram print a message in its post-remove routine instructing
 the administrator to clean up lingering users/groups manually.
 
+Like for configuration files, multiple holograms can contribute to a single
+entity. But when multiple definitions for one entity are stacked on top of
+each other, they are not allowed to contradict itself. For example, if two
+holograms define different home directories, this will be considered an error,
+since both holograms might rely on their respective home directory settings.
+
+    $ cat /usr/share/holo/01-first.json
+    { "users: [ { "name": "foo", "home": "/home/foo" } ] }
+    $ cat /usr/share/holo/02-second.json
+    { "users: [ { "name": "foo", "home": "/var/lib/foo" } ] }
+    $ holo scan
+    [holo] Failed to read /usr/share/holo/02-second.json:
+    [holo]     conflicting home directory for user 'foo' (existing: /home/foo, new: /var/lib/foo)
+
 =cut
