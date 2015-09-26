@@ -48,7 +48,7 @@ func (g Group) setInvalid()   { g.broken = true }
 //EntityID implements the Entity interface for Group.
 func (g Group) EntityID() string { return "group:" + g.name }
 
-//DefinitionFile implements the Entity interface for Group.
+//DefinitionFiles implements the Entity interface for Group.
 func (g Group) DefinitionFiles() []string { return g.definitionFiles }
 
 //Attributes implements the Entity interface for Group.

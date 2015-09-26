@@ -54,7 +54,7 @@ func (u User) setInvalid()   { u.broken = true }
 //EntityID implements the Entity interface for User.
 func (u User) EntityID() string { return "user:" + u.name }
 
-//DefinitionFile implements the Entity interface for User.
+//DefinitionFiles implements the Entity interface for User.
 func (u User) DefinitionFiles() []string { return u.definitionFiles }
 
 //Attributes implements the Entity interface for User.
