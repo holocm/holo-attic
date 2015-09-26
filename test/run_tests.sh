@@ -19,36 +19,20 @@ run_testcase() {
     # clean the testcase directory
     git clean -qdXf .
 
-    # setup environment for holo run
+    # setup chroot for holo run
     cp -R source/ target/
     mkdir -p target/usr/share/holo/repo
     mkdir -p target/var/lib/holo/backup
+    # if some files are unexpectedly older than others, we might run into
+    # indeterministic "target has been modified by user" errors
+    find "$TESTCASE_DIR/target/" -type f -exec touch -r "$TESTCASE_DIR/../README.md" {} +
+
+    # setup environment for holo run
     export HOLO_CHROOT_DIR="./target/"
     export HOLO_MOCK=1
     export HOLO_CURRENT_DISTRIBUTION=unittest
     # the test may define a custom environment, mostly for $HOLO_CURRENT_DISTRIBUTION
     [ -f env.sh ] && source ./env.sh
-
-    # when backup files exist, make sure their mtimes are in sync with the
-    # targets (or else `holo apply` will refuse to work on them)
-    cd "$TESTCASE_DIR/target/var/lib/holo/backup/"
-    find -type f -o -type l | while read FILE; do
-        # if an .rpmsave or .dpkg-old file exists for the current target, it is
-        # relevant for the mtime check instead of the target
-        OTHER_FILE="$TESTCASE_DIR/target/${FILE}.rpmsave"
-        if [ -f "$OTHER_FILE" ]; then
-            touch -r "$FILE" "$OTHER_FILE"
-        else
-            OTHER_FILE="$TESTCASE_DIR/target/${FILE}.dpkg-old"
-            if [ -f "$OTHER_FILE" ]; then
-                touch -r "$FILE" "$OTHER_FILE"
-            else
-                OTHER_FILE="$TESTCASE_DIR/target/$FILE"
-                [ -f "$OTHER_FILE" ] && touch -r "$FILE" "$OTHER_FILE"
-            fi
-        fi
-    done
-    cd "$TESTCASE_DIR/"
 
     # run holo
     ../../build/holo scan          2>&1 | ../strip-ansi-colors.sh > scan-output
