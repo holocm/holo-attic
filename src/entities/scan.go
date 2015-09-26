@@ -64,13 +64,9 @@ func Scan() Entities {
 		err := readDefinitionFile(path, &groups, &users)
 		if len(err) > 0 {
 			success = false //don't return nil immediately; report all broken files
-			if len(err) == 1 {
-				common.PrintError("Failed to read %s: %s", path, err[0].Error())
-			} else {
-				common.PrintError("Failed to read %s because of multiple errors:", path)
-				for _, suberr := range err {
-					common.PrintError("    %s", suberr.Error())
-				}
+			common.PrintError("Failed to read %s:", path)
+			for _, suberr := range err {
+				common.PrintError("    %s", suberr.Error())
 			}
 		}
 	}
