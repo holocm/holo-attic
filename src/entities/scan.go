@@ -23,10 +23,13 @@ package entities
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/BurntSushi/toml"
 
 	"../common"
 )
@@ -49,12 +52,32 @@ func Scan() Entities {
 
 	//collect all definition files, sort by name
 	var paths []string
+	var deprecatedFormatPaths []string
 	for _, fi := range fis {
-		if fi.Mode().IsRegular() && strings.HasSuffix(fi.Name(), ".json") {
-			paths = append(paths, filepath.Join(entityPath, fi.Name()))
+		if fi.Mode().IsRegular() {
+			path := filepath.Join(entityPath, fi.Name())
+			switch {
+			case strings.HasSuffix(fi.Name(), ".json"):
+				deprecatedFormatPaths = append(deprecatedFormatPaths, path)
+				fallthrough
+			case strings.HasSuffix(fi.Name(), ".toml"):
+				paths = append(paths, path)
+			default:
+				//ignore files of unrecognized formats
+			}
 		}
 	}
 	sort.Strings(paths)
+
+	//warn that JSON support is deprecated and will be removed in the next release
+	if len(deprecatedFormatPaths) > 0 {
+		sort.Strings(deprecatedFormatPaths)
+		common.PrintWarning("JSON entity definitions are deprecated and will be removed in the next release.")
+		common.PrintWarning("Migrate the following files to the TOML format:")
+		for _, path := range deprecatedFormatPaths {
+			common.PrintWarning("    %s", path)
+		}
+	}
 
 	//parse entity definitions
 	groups := make(map[string]*Group)
@@ -107,22 +130,43 @@ type userDefinition struct {
 }
 
 func readDefinitionFile(entityFile string, groups *map[string]*Group, users *map[string]*User) []error {
-	file, err := os.Open(entityFile)
-	if err != nil {
-		return []error{err}
+	//unmarshal contents of entityFile into this struct
+	var contents struct {
+		Group []groupDefinition
+		User  []userDefinition
 	}
 
-	//unmarshal JSON
-	//json.Unmarshal can only write into *exported* (i.e. upper-case) struct
-	//fields, but the fields on the Group/User structs are private to emphasize
-	//their readonly-ness, so we have to jump through some hoops to read these
-	var contents struct {
-		Groups []groupDefinition
-		Users  []userDefinition
-	}
-	err = json.NewDecoder(file).Decode(&contents)
-	if err != nil {
-		return []error{err}
+	if strings.HasSuffix(entityFile, ".json") {
+		//unmarshal JSON (uses different array keys)
+		var jsonContents struct {
+			Groups []groupDefinition
+			Users  []userDefinition
+		}
+		file, err := os.Open(entityFile)
+		if err != nil {
+			return []error{err}
+		}
+		err = json.NewDecoder(file).Decode(&jsonContents)
+		if err != nil {
+			return []error{err}
+		}
+		contents = struct {
+			Group []groupDefinition
+			User  []userDefinition
+		}{
+			Group: jsonContents.Groups,
+			User:  jsonContents.Users,
+		}
+	} else {
+		//unmarshall TOML
+		blob, err := ioutil.ReadFile(entityFile)
+		if err != nil {
+			return []error{err}
+		}
+		_, err = toml.Decode(string(blob), &contents)
+		if err != nil {
+			return []error{err}
+		}
 	}
 
 	//when checking the entity definitions, report all errors at once
@@ -132,7 +176,7 @@ func readDefinitionFile(entityFile string, groups *map[string]*Group, users *map
 	//the definition is stacked on an earlier one (BUT: we only allow changes
 	//that are compatible with the original definition; for example, users may
 	//be extended with additional groups, but its UID may not be changed)
-	for idx, groupDef := range contents.Groups {
+	for idx, groupDef := range contents.Group {
 		if groupDef.Name == "" {
 			errors = append(errors, fmt.Errorf("groups[%d] is missing required 'name' attribute", idx))
 			continue
@@ -153,7 +197,7 @@ func readDefinitionFile(entityFile string, groups *map[string]*Group, users *map
 		}
 	}
 
-	for idx, userDef := range contents.Users {
+	for idx, userDef := range contents.User {
 		if userDef.Name == "" {
 			errors = append(errors, fmt.Errorf("users[%d] is missing required 'name' attribute", idx))
 			continue

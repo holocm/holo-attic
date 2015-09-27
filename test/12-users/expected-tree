@@ -65,29 +65,56 @@ wrongshell:x:1005:100::/home/wrongshell:/bin/bash
 >> ./usr/share/holo/01-users.json = regular
 { "users": [
     {
-        "name": "new",
-        "comment": "New User",
+        "name": "jsonisdeprecated",
+        "comment": "JSON is deprecated",
         "uid": 1001,
         "system": false,
-        "home": "/home/new",
+        "home": "/home/jsonisdeprecated",
         "group": "users",
         "groups": ["network","video","audio"],
         "shell": "/bin/zsh"
-    },
-    { "name": "minimal" },
-    {
-        "name": "existing",
-        "comment": "Existing User",
-        "uid": 1002,
-        "system": false,
-        "home": "/home/existing",
-        "group": "users",
-        "groups": ["network","video","audio"],
-        "shell": "/bin/zsh"
-    },
-    { "name": "wronguid", "uid": 1003 },
-    { "name": "wronghome", "home": "/home/wronghome" },
-    { "name": "wronggroup", "group": "users" },
-    { "name": "wronggroups", "groups": ["network"] },
-    { "name": "wrongshell", "shell": "/bin/zsh" }
+    }
 ]}
+>> ./usr/share/holo/01-users.toml = regular
+[[user]]
+name    = "new"
+comment = "New User"
+uid     = 1001
+system  = false
+home    = "/home/new"
+group   = "users"
+groups  = [ "network", "video", "audio" ]
+shell   = "/bin/zsh"
+
+[[user]]
+name    = "existing"
+comment = "Existing User"
+uid     = 1002
+system  = false
+home    = "/home/existing"
+group   = "users"
+groups  = [ "network", "video", "audio" ]
+shell   = "/bin/zsh"
+
+[[user]]
+name    = "minimal"
+
+[[user]]
+name    = "wronguid"
+uid     = 1003
+
+[[user]]
+name    = "wronghome"
+home    = "/home/wronghome"
+
+[[user]]
+name    = "wronggroup"
+group   = "users"
+
+[[user]]
+name    = "wronggroups"
+groups  = ["network"]
+
+[[user]]
+name    = "wrongshell"
+shell   = "/bin/zsh"

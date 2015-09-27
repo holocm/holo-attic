@@ -1,28 +1,12 @@
 { "users": [
     {
-        "name": "new",
-        "comment": "New User",
+        "name": "jsonisdeprecated",
+        "comment": "JSON is deprecated",
         "uid": 1001,
         "system": false,
-        "home": "/home/new",
+        "home": "/home/jsonisdeprecated",
         "group": "users",
         "groups": ["network","video","audio"],
         "shell": "/bin/zsh"
-    },
-    { "name": "minimal" },
-    {
-        "name": "existing",
-        "comment": "Existing User",
-        "uid": 1002,
-        "system": false,
-        "home": "/home/existing",
-        "group": "users",
-        "groups": ["network","video","audio"],
-        "shell": "/bin/zsh"
-    },
-    { "name": "wronguid", "uid": 1003 },
-    { "name": "wronghome", "home": "/home/wronghome" },
-    { "name": "wronggroup", "group": "users" },
-    { "name": "wronggroups", "groups": ["network"] },
-    { "name": "wrongshell", "shell": "/bin/zsh" }
+    }
 ]}

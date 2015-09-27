@@ -56,30 +56,25 @@ systemd-timesync:x:192:192:systemd-timesync:/:/usr/bin/nologin
 systemd-network:x:193:193:systemd-network:/:/usr/bin/nologin
 systemd-bus-proxy:x:194:194:systemd-bus-proxy:/:/usr/bin/nologin
 systemd-resolve:x:195:195:systemd-resolve:/:/usr/bin/nologin
->> ./usr/share/holo/01-first.json = regular
-{
-    "groups": [
-        { "name": "stacked" }
-    ],
-    "users": [
-        { "name": "stacked", "groups": [ "foo", "bar" ] }
-    ]
-}
->> ./usr/share/holo/02-second.json = regular
-{
-    "groups": [
-        { "name": "stacked", "gid": 1001, "system": true }
-    ],
-    "users": [
-        {
-            "name": "stacked",
-            "comment": "Stacked User",
-            "system": true,
-            "uid": 1001,
-            "group": "stacked",
-            "groups": [ "foo", "baz" ],
-            "home": "/home/stacked",
-            "shell": "/bin/bash"
-        }
-    ]
-}
+>> ./usr/share/holo/01-first.toml = regular
+[[group]]
+name   = "stacked"
+
+[[user]]
+name   = "stacked"
+groups = [ "foo", "bar" ]
+>> ./usr/share/holo/02-second.toml = regular
+[[group]]
+name    = "stacked"
+gid     = 1001
+system  = true
+
+[[user]]
+name    = "stacked"
+comment = "Stacked User"
+system  = true
+uid     = 1001
+group   = "stacked"
+groups  = [ "foo", "baz" ]
+home    = "/home/stacked"
+shell   = "/bin/bash"

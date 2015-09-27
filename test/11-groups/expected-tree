@@ -15,8 +15,17 @@ wronggid:x:102:
 >> ./usr/share/holo/01-groups.json = regular
 {
     "groups": [
-        { "name": "new", "system": true },
-        { "name": "existing" },
-        { "name": "wronggid", "gid": 42 }
+        { "name": "jsonisdeprecated", "system": true, "gid": 43 }
     ]
 }
+>> ./usr/share/holo/01-groups.toml = regular
+[[group]]
+name = "new"
+system = true
+
+[[group]]
+name = "existing"
+
+[[group]]
+name = "wronggid"
+gid = 42

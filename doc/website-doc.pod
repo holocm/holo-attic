@@ -199,21 +199,29 @@ the default configuration.
 
 =head1 Management of UNIX user accounts and groups
 
-Holograms can install JSON files into F</usr/share/holo> that describe UNIX
+Holograms can install TOML files into F</usr/share/holo> that describe UNIX
 user accounts and groups that shall be created during C<holo apply> runs.
+(Previous releases used JSON files, which are still recognized, but deprecated.)
 For example:
 
-    $ cat /usr/share/holo/01-example.json
-    {
-        "groups": [
-            { "name": "foo" },
-            { "name": "bar", "system": true }
-        ],
-        "users": [
-            { "name": "foo", "group": "foo" },
-            { "name": "qux", "home": "/var/lib/qux", "system": true }
-        ]
-    }
+    $ cat /usr/share/holo/01-example.toml
+
+    [[group]]
+    name   = "foo"
+
+    [[group]]
+    name   = "bar"
+    system = true
+
+    [[user]]
+    name   = "foo"
+    group  = "foo"
+
+    [[user]]
+    name   = "qux"
+    home   = "/var/lib/qux"
+    system = true
+
     $ sudo holo apply
     [holo] Working on group:bar
     [holo]     create group with type: system
@@ -232,7 +240,7 @@ C<groupadd> and C<groupmod>), so the above is exactly equivalent to
     $ sudo useradd --gid foo foo
     $ sudo useradd --system --home-dir /var/lib/qux qux
 
-In the JSON definition files, the following attributes are accepted for groups:
+In the TOML definition files, the following attributes are accepted for groups:
 
 =over 4
 
@@ -293,7 +301,7 @@ In either case, `name` is the only required attribute.
 In contrast to files, where Holo operates very confidently (and only refuses
 operation when target files were modified manually), users and groups are
 treated more carefully. First, whenever an existing user account or group does
-not exactly match the definition in the JSON file, Holo will not touch it
+not exactly match the definition in the TOML file, Holo will not touch it
 unless instructed to apply `--force`:
 
     $ sudo holo apply user:qux
@@ -315,12 +323,20 @@ each other, they are not allowed to contradict itself. For example, if two
 holograms define different home directories, this will be considered an error,
 since both holograms might rely on their respective home directory settings.
 
-    $ cat /usr/share/holo/01-first.json
-    { "users: [ { "name": "foo", "home": "/home/foo" } ] }
-    $ cat /usr/share/holo/02-second.json
-    { "users: [ { "name": "foo", "home": "/var/lib/foo" } ] }
+    $ cat /usr/share/holo/01-first.toml
+
+    [[user]]
+    name = "foo"
+    home = "/home/foo"
+
+    $ cat /usr/share/holo/02-second.toml
+
+    [[user]]
+    name = "foo"
+    home = "/var/lib/foo"
+
     $ holo scan
-    [holo] Failed to read /usr/share/holo/02-second.json:
+    [holo] Failed to read /usr/share/holo/02-second.toml:
     [holo]     conflicting home directory for user 'foo' (existing: /home/foo, new: /var/lib/foo)
 
 =cut
