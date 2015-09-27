@@ -1,6 +1,6 @@
 # Holo - minimalistic config management
 
-[![Build Status](https://travis-ci.org/majewsky/holo.svg?branch=master)](https://travis-ci.org/majewsky/holo)
+[![Build Status](https://travis-ci.org/holocm/holo.svg?branch=master)](https://travis-ci.org/holocm/holo)
 
 Today's DevOps is all about configuration management tools like Chef and
 Puppet, humongous software suites that intend to manage your system

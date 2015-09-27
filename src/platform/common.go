@@ -86,7 +86,7 @@ func init() {
 		impl = genericImpl{}
 	default:
 		common.PrintError("Running on an unrecognized distribution. Distribution IDs: %s", strings.Join(dists, ","))
-		common.PrintWarning("Please report this error at <https://github.com/majewsky/holo/issues/new>")
+		common.PrintWarning("Please report this error at <https://github.com/holocm/holo/issues/new>")
 		common.PrintWarning("and include the contents of your /etc/os-release file.")
 		impl = genericImpl{}
 	}

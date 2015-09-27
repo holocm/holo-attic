@@ -32,7 +32,7 @@ build/holo-makewebsite: doc/makewebsite.go
 
 .PHONY: prepare-website-repo
 prepare-website-repo:
-	@[ -d website/.git ] || git clone https://github.com/majewsky/majewsky.github.io website/
+	@[ -d website/.git ] || git clone https://github.com/holocm/holocm.github.io website/
 
 website/%.html: doc/website-%.pod doc/template.html build/holo-makewebsite prepare-website-repo
 	build/holo-makewebsite $*

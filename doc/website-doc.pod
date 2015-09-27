@@ -23,16 +23,16 @@ Arch Linux users can use the L<AUR package|https://aur.archlinux.org/packages/ho
 =item *
 
 If you have packaged Holo for your distribution, please
-L<send me a link|https://github.com/majewsky/holo/issues/new> that I can add to
+L<send me a link|https://github.com/holocm/holo/issues/new> that I can add to
 this list.
 
 =back
 
 Alternatively, to install from source, clone the
-L<Git repository|https://github.com/majewsky/holo>
+L<Git repository|https://github.com/holocm/holo>
 and build the master branch:
 
-    $ git clone https://github.com/majewsky/holo
+    $ git clone https://github.com/holocm/holo
     $ cd holo
     $ make
     $ make check
