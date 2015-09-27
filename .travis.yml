@@ -10,4 +10,7 @@ install:
 script:
     - make && make check
     - fgt gofmt -l $(find src -name \*.go)
-    - fgt golint src/...
+    #- fgt golint src/...
+    # The simple form above does not work anymore, since we need to
+    # skip src/internal.
+    - fgt find src -type d \( -name internal -prune -o -exec golint {} \; \)
