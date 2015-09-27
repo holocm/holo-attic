@@ -15,7 +15,7 @@ test: check # just a synonym
 check: build/holo
 	bash test/run_tests.sh
 
-install: build/holo build/holo.8 utils/completion.bash utils/completion.zsh
+install: build/holo build/holo.8 util/completion.bash util/completion.zsh
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo"
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo/backup"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo"
