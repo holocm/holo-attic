@@ -33,25 +33,8 @@ Holo depends on the following other packages:
 * [shadow](https://pkg-shadow.alioth.debian.org/) is used to create and modify
   user accounts and groups, and is only needed at runtime.
 
-These dependencies are available as packages for any major Linux distribution.
-Holo also uses a separate Go library, which you can fetch with
-
-```
-go get -u github.com/BurntSushi/toml
-```
-
-if your `$GOPATH` is set up correctly. If you don't know what a `$GOPATH` is,
-do the following to fetch it into a subdirectory of this repository:
-
-```
-cd /path/to/this/repo
-mkdir .gopath
-export GOPATH=$PWD/.gopath
-go get -u github.com/BurntSushi/toml
-```
-
-Then use the same `$GOPATH` setting during `make`. Once you're all set, the
-classical
+All dependencies are available as packages for any major Linux distribution.
+Once you're all set, the classical
 
 ```
 make

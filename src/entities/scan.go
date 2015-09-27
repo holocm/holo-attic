@@ -29,9 +29,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/BurntSushi/toml"
-
 	"../common"
+	"../internal/toml"
 )
 
 //Scan returns a slice of all the defined entities. If an error is encountered
