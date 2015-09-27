@@ -22,6 +22,10 @@ selections for all systems or for certain types of systems.
 
 ## Installation
 
+It is recommended to install to Holo as a package.
+The [website](http://holotools.org) lists distributions that have a Holo
+package available.
+
 Holo depends on the following other packages:
 
 * [Go](https://golang.org) is needed to compile Holo.
@@ -29,8 +33,25 @@ Holo depends on the following other packages:
 * [shadow](https://pkg-shadow.alioth.debian.org/) is used to create and modify
   user accounts and groups, and is only needed at runtime.
 
-All dependencies are available as packages for any major Linux distribution.
-Once you're all set, the classical
+These dependencies are available as packages for any major Linux distribution.
+Holo also uses a separate Go library, which you can fetch with
+
+```
+go get -u github.com/BurntSushi/toml
+```
+
+if your `$GOPATH` is set up correctly. If you don't know what a `$GOPATH` is,
+do the following to fetch it into a subdirectory of this repository:
+
+```
+cd /path/to/this/repo
+mkdir .gopath
+export GOPATH=$PWD/.gopath
+go get -u github.com/BurntSushi/toml
+```
+
+Then use the same `$GOPATH` setting during `make`. Once you're all set, the
+classical
 
 ```
 make
@@ -38,9 +59,7 @@ make check
 sudo make install
 ```
 
-will do the trick. It is, however, recommended to install to Holo as a package.
-The [website](http://holotools.org) lists distributions that have a Holo
-package available.
+will do the trick.
 
 ## Documentation
 
