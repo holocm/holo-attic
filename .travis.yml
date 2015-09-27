@@ -4,6 +4,7 @@ go:
     - 1.5
 
 install:
+    - go get -u github.com/BurntSushi/toml
     - go get -u github.com/golang/lint/golint
     - go get -u github.com/GeertJohan/fgt
 
