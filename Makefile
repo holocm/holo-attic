@@ -18,7 +18,7 @@ check: build/holo
 install: build/holo build/holo.8 util/completion.bash util/completion.zsh
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo"
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo/backup"
-	install -d -m 0755 "$(DESTDIR)/var/lib/holo/computed"
+	install -d -m 0755 "$(DESTDIR)/var/lib/holo/provisioned"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo/repo"
 	install -D -m 0755 build/holo   "$(DESTDIR)/usr/bin/holo"

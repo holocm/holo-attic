@@ -102,19 +102,19 @@ func Apply(file ConfigFile, withForce bool) {
 	//installed by the package (which can be found at backupPath); complain if
 	//the user made any changes to config files governed by holo (this check is
 	//overridden by the --force option)
-	computedPath := file.ComputedPath()
-	if !withForce && common.IsManageableFile(computedPath) {
+	provisionedPath := file.ProvisionedPath()
+	if !withForce && common.IsManageableFile(provisionedPath) {
 		targetBuffer, err := NewFileBuffer(lastInstalledTargetPath, targetPath)
 		if err != nil {
 			common.PrintError(err.Error())
 			return
 		}
-		lastComputedBuffer, err := NewFileBuffer(computedPath, targetPath)
+		lastProvisionedBuffer, err := NewFileBuffer(provisionedPath, targetPath)
 		if err != nil {
 			common.PrintError(err.Error())
 			return
 		}
-		if !targetBuffer.EqualTo(lastComputedBuffer) {
+		if !targetBuffer.EqualTo(lastProvisionedBuffer) {
 			common.PrintError("  skipped: target file has been modified by user (use --force to overwrite)")
 			return
 		}
@@ -139,20 +139,20 @@ func Apply(file ConfigFile, withForce bool) {
 		}
 	}
 
-	//step 4c: save a copy of the computed config file to check for manual
+	//step 4c: save a copy of the provisioned config file to check for manual
 	//modifications in the next Apply() run
-	computedDir := filepath.Dir(computedPath)
-	err = os.MkdirAll(computedDir, 0755)
+	provisionedDir := filepath.Dir(provisionedPath)
+	err = os.MkdirAll(provisionedDir, 0755)
 	if err != nil {
-		common.PrintError("Cannot write %s: %s", computedPath, err.Error())
+		common.PrintError("Cannot write %s: %s", provisionedPath, err.Error())
 		return
 	}
-	err = buffer.Write(computedPath, true) // true = create if missing
+	err = buffer.Write(provisionedPath, true) // true = create if missing
 	if err != nil {
 		common.PrintError(err.Error())
 		return
 	}
-	err = common.ApplyFilePermissions(backupPath, computedPath)
+	err = common.ApplyFilePermissions(backupPath, provisionedPath)
 	if err != nil {
 		common.PrintError(err.Error())
 		return

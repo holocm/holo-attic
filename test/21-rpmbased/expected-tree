@@ -16,9 +16,9 @@ e
 bbb
 bbb
 bbb
->> ./var/lib/holo/computed/etc/targetfile-with-rpmnew.conf = regular
+>> ./var/lib/holo/provisioned/etc/targetfile-with-rpmnew.conf = regular
 d
 e
 f
->> ./var/lib/holo/computed/etc/targetfile-with-rpmsave.conf = regular
+>> ./var/lib/holo/provisioned/etc/targetfile-with-rpmsave.conf = regular
 bbb

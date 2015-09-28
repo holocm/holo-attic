@@ -46,9 +46,9 @@ func HandleOrphanedBackupFile(backupPath string) {
 
 	switch strategy {
 	case "delete":
-		//target is gone - delete the computed target and the backup file
-		computedPath := NewConfigFileFromBackupPath(backupPath).ComputedPath()
-		err := os.Remove(computedPath)
+		//target is gone - delete the provisioned target and the backup file
+		provisionedPath := NewConfigFileFromBackupPath(backupPath).ProvisionedPath()
+		err := os.Remove(provisionedPath)
 		if err != nil && !os.IsNotExist(err) {
 			common.PrintError(err.Error())
 			return
@@ -77,9 +77,9 @@ func HandleOrphanedBackupFile(backupPath string) {
 			common.PrintError(err.Error())
 			return
 		}
-		//target is not managed by Holo anymore, so delete the computed target and the backup file
-		computedPath := NewConfigFileFromBackupPath(backupPath).ComputedPath()
-		err = os.Remove(computedPath)
+		//target is not managed by Holo anymore, so delete the provisioned target and the backup file
+		provisionedPath := NewConfigFileFromBackupPath(backupPath).ProvisionedPath()
+		err = os.Remove(provisionedPath)
 		if err != nil && !os.IsNotExist(err) {
 			common.PrintError(err.Error())
 			return
@@ -91,5 +91,5 @@ func HandleOrphanedBackupFile(backupPath string) {
 		}
 	}
 
-	//TODO: cleanup empty directories below BackupDirectory() and ComputedDirectory()
+	//TODO: cleanup empty directories below BackupDirectory() and ProvisionedDirectory()
 }

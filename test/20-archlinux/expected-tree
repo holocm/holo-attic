@@ -8,7 +8,7 @@ f
 d
 f
 e
->> ./var/lib/holo/computed/etc/targetfile-with-pacnew.conf = regular
+>> ./var/lib/holo/provisioned/etc/targetfile-with-pacnew.conf = regular
 d
 e
 f
