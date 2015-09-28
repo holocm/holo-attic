@@ -10,3 +10,6 @@ bbb
 >> ./var/lib/holo/backup/etc/still-existing.conf = regular
 aaa
 aaa
+>> ./var/lib/holo/computed/etc/still-existing.conf = regular
+bbb
+bbb

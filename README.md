@@ -34,15 +34,14 @@ Holo depends on the following other packages:
   user accounts and groups, and is only needed at runtime.
 
 All dependencies are available as packages for any major Linux distribution.
-Once you're all set, the classical
+Once you're all set, the build is done with
 
 ```
+git submodule update --init --recursive
 make
 make check
 sudo make install
 ```
-
-will do the trick.
 
 ## Documentation
 

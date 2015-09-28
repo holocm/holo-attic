@@ -23,6 +23,7 @@ run_testcase() {
     cp -R source/ target/
     mkdir -p target/usr/share/holo/repo
     mkdir -p target/var/lib/holo/backup
+    mkdir -p target/var/lib/holo/computed
     # if some files are unexpectedly older than others, we might run into
     # indeterministic "target has been modified by user" errors
     find "$TESTCASE_DIR/target/" -type f -exec touch -r "$TESTCASE_DIR/../README.md" {} +

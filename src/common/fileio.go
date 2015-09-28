@@ -41,29 +41,6 @@ func IsFileInfoASymbolicLink(fileInfo os.FileInfo) bool {
 	return (fileInfo.Mode() & os.ModeType) == os.ModeSymlink
 }
 
-//IsNewerThan returns true if the first file is newer than the second file.
-func IsNewerThan(path1, path2 string) (bool, error) {
-	info1, err := os.Lstat(path1)
-	if err != nil {
-		return false, err
-	}
-	info2, err := os.Lstat(path2)
-	if err != nil {
-		return false, err
-	}
-
-	//Usually, we rely on the mtime to tell if the file path1 has been modified
-	//after being created from the file at path2 (see copyFileImpl). This relies
-	//on manually applying the mtime from path2 to path1 in ApplyFilePermissions.
-	//But since Unix does not allow to update the mtime on symlinks, ignore the
-	//mtime of symlinks.
-	if IsFileInfoASymbolicLink(info1) {
-		return false, nil
-	}
-
-	return info1.ModTime().After(info2.ModTime()), nil
-}
-
 //CopyFile copies a regular file or symlink, including the file metadata.
 func CopyFile(fromPath, toPath string) error {
 	info, err := os.Lstat(fromPath)
@@ -112,10 +89,8 @@ func copySymlinkImpl(fromPath, toPath string) error {
 	return nil
 }
 
-//ApplyFilePermissions applies various metadata (permissions, ownership,
-//timestamps) from the first file to the second file.
-//
-//TODO: This should be called CopyFileMetadata instead.
+//ApplyFilePermissions applies permission flags and ownership
+//from the first file to the second file.
 func ApplyFilePermissions(fromPath, toPath string) error {
 	//apply permissions, ownership, modification date from source file to target file
 	//NOTE: We cannot just pass the FileMode in WriteFile(), because its
@@ -140,12 +115,6 @@ func ApplyFilePermissions(fromPath, toPath string) error {
 		//apply ownership
 		stat := info.Sys().(*syscall.Stat_t) // UGLY
 		err = os.Chown(toPath, int(stat.Uid), int(stat.Gid))
-		if err != nil {
-			return err
-		}
-
-		//apply timestamps
-		err = os.Chtimes(toPath, info.ModTime(), info.ModTime())
 		if err != nil {
 			return err
 		}

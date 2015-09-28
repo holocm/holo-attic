@@ -29,6 +29,7 @@ var targetDirectory = "/"
 var entityDirectory = "/usr/share/holo"
 var repoDirectory = "/usr/share/holo/repo"
 var backupDirectory = "/var/lib/holo/backup"
+var computedDirectory = "/var/lib/holo/computed"
 
 func init() {
 	if value := os.Getenv("HOLO_CHROOT_DIR"); value != "" {
@@ -36,6 +37,7 @@ func init() {
 		entityDirectory = filepath.Join(value, entityDirectory[1:])
 		repoDirectory = filepath.Join(value, repoDirectory[1:])
 		backupDirectory = filepath.Join(value, backupDirectory[1:])
+		computedDirectory = filepath.Join(value, computedDirectory[1:])
 	}
 }
 
@@ -61,4 +63,10 @@ func RepoDirectory() string {
 //"$target_dir/var/lib/holo/backup".
 func BackupDirectory() string {
 	return backupDirectory
+}
+
+//ComputedDirectory is derived from the TargetDirectory() as
+//"$target_dir/var/lib/holo/backup".
+func ComputedDirectory() string {
+	return computedDirectory
 }

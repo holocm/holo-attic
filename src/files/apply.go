@@ -102,13 +102,19 @@ func Apply(file ConfigFile, withForce bool) {
 	//installed by the package (which can be found at backupPath); complain if
 	//the user made any changes to config files governed by holo (this check is
 	//overridden by the --force option)
-	if !withForce {
-		isNewer, err := common.IsNewerThan(lastInstalledTargetPath, backupPath)
+	computedPath := file.ComputedPath()
+	if !withForce && common.IsManageableFile(computedPath) {
+		targetBuffer, err := NewFileBuffer(lastInstalledTargetPath, targetPath)
 		if err != nil {
 			common.PrintError(err.Error())
 			return
 		}
-		if isNewer {
+		lastComputedBuffer, err := NewFileBuffer(computedPath, targetPath)
+		if err != nil {
+			common.PrintError(err.Error())
+			return
+		}
+		if !targetBuffer.EqualTo(lastComputedBuffer) {
 			common.PrintError("  skipped: target file has been modified by user (use --force to overwrite)")
 			return
 		}
@@ -133,10 +139,28 @@ func Apply(file ConfigFile, withForce bool) {
 		}
 	}
 
-	//step 4c: write the result buffer to the target location and copy
-	//permissions/timestamps from backup file to target file, in order to be
-	//able to detect manual modifications in the next holo-apply run
-	err = buffer.Write(targetPath)
+	//step 4c: save a copy of the computed config file to check for manual
+	//modifications in the next Apply() run
+	computedDir := filepath.Dir(computedPath)
+	err = os.MkdirAll(computedDir, 0755)
+	if err != nil {
+		common.PrintError("Cannot write %s: %s", computedPath, err.Error())
+		return
+	}
+	err = buffer.Write(computedPath, true) // true = create if missing
+	if err != nil {
+		common.PrintError(err.Error())
+		return
+	}
+	err = common.ApplyFilePermissions(backupPath, computedPath)
+	if err != nil {
+		common.PrintError(err.Error())
+		return
+	}
+
+	//step 4d: write the result buffer to the target location and copy
+	//owners/permissions from backup file to target file
+	err = buffer.Write(targetPath, false) // false = fail if target is missing
 	if err != nil {
 		common.PrintError(err.Error())
 		return

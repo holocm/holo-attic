@@ -13,9 +13,9 @@ orphaned backup files.
   installed target is no longer valid after removing the holograms that act on
   it, so we restore the backup file to the target location.
 
-In this testcase, a `backup` directory is under source control, representing
-the state of the backup directory before the `holo apply` run that we're
-looking at. (Since we're testing the effects of package removal, we assume that
+In this testcase, a `/var/lib/holo` directory is under source control,
+representing the state of Holo before the `holo apply` run that we're looking
+at. (Since we're testing the effects of package removal, we assume that
 `holo apply` has been run before.)
 
 The backup for `/etc/still-existing.conf` is also under source control, to

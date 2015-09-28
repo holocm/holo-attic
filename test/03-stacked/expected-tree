@@ -72,3 +72,23 @@ ddd
 >> ./var/lib/holo/backup/etc/script-and-script.conf = regular
 ggg
 ggg
+>> ./var/lib/holo/computed/etc/link-and-script.conf = regular
+ljj
+ljj
+>> ./var/lib/holo/computed/etc/link-through-scripts.conf = regular
+nnn
+mmm
+mmm
+ooo
+>> ./var/lib/holo/computed/etc/plain-and-plain.conf = regular
+ccc
+ccc
+>> ./var/lib/holo/computed/etc/plain-and-script.conf = regular
+eee
+eee
+fff
+>> ./var/lib/holo/computed/etc/script-and-script.conf = regular
+hhh
+ggg
+ggg
+iii

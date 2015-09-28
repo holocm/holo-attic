@@ -21,6 +21,7 @@
 package files
 
 import (
+	"bytes"
 	"errors"
 	"io/ioutil"
 	"os"
@@ -94,11 +95,11 @@ func NewFileBufferFromContents(fileContents []byte, basePath string) *FileBuffer
 	}
 }
 
-func (fb *FileBuffer) Write(path string) error {
-	//(check that we're not attempting to overwrite unmanageable files
+func (fb *FileBuffer) Write(path string, createIfMissing bool) error {
+	//(check that we're not attempting to overwrite unmanagea, createIfMissing boolble files
 	info, err := os.Lstat(path)
 	if err != nil {
-		if !os.IsNotExist(err) {
+		if os.IsNotExist(err) && !createIfMissing {
 			//abort because the target location is not accessible
 			return err
 		}
@@ -114,7 +115,7 @@ func (fb *FileBuffer) Write(path string) error {
 
 	//before writing to the target, remove what was there before
 	err = os.Remove(path)
-	if err != nil {
+	if err != nil && !os.IsNotExist(err) {
 		return err
 	}
 
@@ -157,4 +158,12 @@ func (fb *FileBuffer) ResolveSymlink() (*FileBuffer, error) {
 		return nil, err
 	}
 	return NewFileBufferFromContents(contents, fb.BasePath), nil
+}
+
+//EqualTo returns whether two file buffers have the same content (or link target).
+func (fb *FileBuffer) EqualTo(other *FileBuffer) bool {
+	if fb.Contents != nil {
+		return bytes.Equal(fb.Contents, other.Contents)
+	}
+	return fb.SymlinkTarget == other.SymlinkTarget
 }

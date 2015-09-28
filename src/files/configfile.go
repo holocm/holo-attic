@@ -56,6 +56,13 @@ func (file ConfigFile) BackupPath() string {
 	return filepath.Join(common.BackupDirectory(), string(file))
 }
 
+//ComputedPath returns the location where a duplicate of the last computed
+//content for this config file is stored.
+func (file ConfigFile) ComputedPath() string {
+	//make path absolute
+	return filepath.Join(common.ComputedDirectory(), string(file))
+}
+
 //RepoFiles returns all repo files that belong to this ConfigFile.
 func (file ConfigFile) RepoFiles() RepoFiles {
 	var result RepoFiles

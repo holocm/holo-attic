@@ -46,3 +46,22 @@ banana
 foo
 bar
 baz
+>> ./var/lib/holo/computed/etc/link-through-link.conf = regular
+foo
+baz
+bar
+>> ./var/lib/holo/computed/etc/link-through-plain.conf = regular
+foo
+foo
+foo
+buz
+bur
+bur
+>> ./var/lib/holo/computed/etc/plain-through-link.conf = regular
+apple
+banana
+tomato
+>> ./var/lib/holo/computed/etc/plain-through-plain.conf = regular
+foo
+qux
+baz

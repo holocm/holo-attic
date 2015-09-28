@@ -35,3 +35,13 @@ ggg
 >> ./var/lib/holo/backup/etc/plain-over-plain.conf = regular
 eee
 eee
+>> ./var/lib/holo/computed/etc/link-over-link.conf = symlink
+ddd
+>> ./var/lib/holo/computed/etc/link-over-plain.conf = symlink
+ccc
+>> ./var/lib/holo/computed/etc/plain-over-link.conf = regular
+bbb
+bbb
+>> ./var/lib/holo/computed/etc/plain-over-plain.conf = regular
+aaa
+aaa
