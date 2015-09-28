@@ -23,7 +23,7 @@ selections for all systems or for certain types of systems.
 ## Installation
 
 It is recommended to install to Holo as a package.
-The [website](http://holotools.org) lists distributions that have a Holo
+The [website](http://holocm.org) lists distributions that have a Holo
 package available.
 
 Holo depends on the following other packages:
@@ -45,4 +45,4 @@ sudo make install
 
 ## Documentation
 
-User documentation is now available at [holotools.org](http://holotools.org).
+User documentation is now available at [holocm.org](http://holocm.org).
