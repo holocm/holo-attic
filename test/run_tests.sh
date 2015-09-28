@@ -16,10 +16,8 @@ run_testcase() {
     # set cwd!
     cd "$TESTCASE_DIR"
 
-    # clean the testcase directory
-    git clean -qdXf .
-
     # setup chroot for holo run
+    rm -rf -- target/
     cp -R source/ target/
     mkdir -p target/usr/share/holo/repo
     mkdir -p target/var/lib/holo/backup
