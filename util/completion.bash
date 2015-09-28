@@ -11,6 +11,10 @@ _holo() {
         # autocomplete for "holo apply" - argument is either a target or -f/--force
         COMPREPLY=( $(compgen -W "$(holo scan --short) -f --force" -- "$CURRENT_WORD") )
         return 0
+    elif [ "${COMP_WORDS[1]}" = "apply" ]; then
+        # autocomplete for "holo diff" - argument is a target
+        COMPREPLY=( $(compgen -W "$(holo scan --short)" -- "$CURRENT_WORD") )
+        return 0
     elif [ "${COMP_WORDS[1]}" = "scan" ]; then
         # autocomplete for "holo scan" - argument is one of -s/--short
         COMPREPLY=( $(compgen -W "-s --short" -- "$CURRENT_WORD") )

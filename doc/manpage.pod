@@ -4,7 +4,9 @@ holo - minimal configuration management
 
 =head1 SYNOPSIS
 
-holo B<apply> [I<-f|--force>] [I<file> ...]
+holo B<apply> [I<-f|--force>] [I<target> ...]
+
+holo B<diff> [I<file> ...]
 
 holo B<scan> [I<-s|--short>]
 
@@ -44,7 +46,7 @@ and groups.
 
 =over 4
 
-=item B<apply> [I<-f|--force>] [I<file> ...]
+=item B<apply> [I<-f|--force>] [I<target> ...]
 
 Apply configuration from Holo's repository using the application algorithm
 described in this manpage. Also, when repository files (or target configuration
@@ -59,6 +61,15 @@ as arguments, apply configuration only to these target files.
 By default, Holo will refuse to write to configuration files that have been
 changed by the user or by other programs. Apply B<--force> to overwrite such
 changes.
+
+=item B<diff> [I<file> ...]
+
+Print a B<diff(1)> between the last provisioned version of each managed
+configuration file and the actual contents of the target file.
+
+If files are listed as arguments, diff only these files. If some of these
+arguments are files not managed by Holo, a diff from C</dev/null> will be
+shown.
 
 =item B<scan> [I<-s|--short>]
 

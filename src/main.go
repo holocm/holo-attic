@@ -25,6 +25,7 @@ import (
 	"os"
 	"strings"
 
+	"./common"
 	"./entities"
 	"./files"
 )
@@ -45,6 +46,8 @@ func main() {
 	switch os.Args[1] {
 	case "apply":
 		command = commandApply
+	case "diff":
+		command = commandDiff
 	case "scan":
 		command = commandScan
 	case "version", "--version":
@@ -78,7 +81,8 @@ func main() {
 func commandHelp() {
 	program := os.Args[0]
 	fmt.Printf("Usage: %s <operation> [...]\nOperations:\n", program)
-	fmt.Printf("    %s apply [-f|--force] [file(s)]\n", program)
+	fmt.Printf("    %s apply [-f|--force] [target(s)]\n", program)
+	fmt.Printf("    %s diff [file(s)]\n", program)
 	fmt.Printf("    %s scan [-s|--short]\n", program)
 	fmt.Printf("\nSee `man 8 holo` for details.\n")
 }
@@ -187,6 +191,30 @@ func commandScan(configFiles files.ConfigFiles, orphanedBackupFiles []string, en
 				fmt.Printf("        with %s\n", attributes)
 			}
 			fmt.Println()
+		}
+	}
+}
+
+func commandDiff(configFiles files.ConfigFiles, _ []string, _ entities.Entities) {
+	//which targets have been selected?
+	if len(os.Args) == 2 {
+		//no arguments given -> diff all known config files
+		for _, configFile := range configFiles {
+			output, err := configFile.RenderDiff()
+			if err != nil {
+				common.PrintError("Could not diff %s: %s\n", configFile.TargetPath(), err.Error())
+			}
+			os.Stdout.Write(output)
+		}
+	} else {
+		args := os.Args[2:]
+		for _, targetPath := range args {
+			configFile := files.NewConfigFileFromTargetPath(targetPath)
+			output, err := configFile.RenderDiff()
+			if err != nil {
+				common.PrintError("Could not diff %s: %s\n", targetPath, err.Error())
+			}
+			os.Stdout.Write(output)
 		}
 	}
 }

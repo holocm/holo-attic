@@ -6,6 +6,7 @@ typeset -A opt_args
     local -a _commands
     _commands=(
         'apply:Apply available configuration to some or all targets'
+        'diff:Diff some or all target files against the last provisioned version'
         'scan:Scan for configuration targets'
     )
     _describe -t commands 'holo command' _commands
@@ -31,6 +32,9 @@ typeset -A opt_args
                 _arguments : \
                     {-f,--force}'[overwrite manual changes on targets]' \
                     '*:target:_holo_target'
+                ;;
+            diff)
+                _holo_target
                 ;;
             scan)
                 local -a _options

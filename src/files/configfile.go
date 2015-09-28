@@ -44,6 +44,14 @@ func NewConfigFileFromBackupPath(backupFile string) ConfigFile {
 	return ConfigFile(relPath)
 }
 
+//NewConfigFileFromTargetPath creates a ConfigFile instance for which the path
+//to the target file is known.
+func NewConfigFileFromTargetPath(targetFile string) ConfigFile {
+	//make path relative
+	relPath, _ := filepath.Rel(common.TargetDirectory(), targetFile)
+	return ConfigFile(relPath)
+}
+
 //TargetPath returns the location where this config file is installed.
 func (file ConfigFile) TargetPath() string {
 	//make path absolute
