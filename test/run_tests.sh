@@ -22,9 +22,11 @@ run_testcase() {
     mkdir -p target/usr/share/holo/repo
     mkdir -p target/var/lib/holo/backup
     mkdir -p target/var/lib/holo/provisioned
-    # if some files are unexpectedly older than others, we might run into
-    # indeterministic "target has been modified by user" errors
-    find "$TESTCASE_DIR/target/" -type f -exec touch -r "$TESTCASE_DIR/../README.md" {} +
+
+    # consistent file modes in the target/ directory (for test reproducability)
+    find target/ -type f                     -exec chmod 0644 {} +
+    find target/ -type f -name \*.holoscript -exec chmod 0755 {} +
+    find target/ -type d                     -exec chmod 0755 {} +
 
     # setup environment for holo run
     export HOLO_CHROOT_DIR="./target/"
