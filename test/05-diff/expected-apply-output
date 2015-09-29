@@ -1,0 +1,12 @@
+[holo] Working on target/etc/file-deleted.conf
+[holo]   skipped: target file has been deleted by user (use --force to overwrite)
+[holo] Working on target/etc/file-modified.conf
+[holo]   skipped: target file has been modified by user (use --force to overwrite)
+[holo] Working on target/etc/file-to-symlink.conf
+[holo]   skipped: target file has been modified by user (use --force to overwrite)
+[holo] Working on target/etc/symlink-deleted.conf
+[holo]   skipped: target file has been deleted by user (use --force to overwrite)
+[holo] Working on target/etc/symlink-modified.conf
+[holo]   skipped: target file has been modified by user (use --force to overwrite)
+[holo] Working on target/etc/symlink-to-file.conf
+[holo]   skipped: target file has been modified by user (use --force to overwrite)
