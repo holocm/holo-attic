@@ -195,11 +195,16 @@ func commandScan(configFiles files.ConfigFiles, orphanedBackupFiles []string, en
 	}
 }
 
-func commandDiff(configFiles files.ConfigFiles, _ []string, _ entities.Entities) {
+func commandDiff(configFiles files.ConfigFiles, orphanedBackupFiles []string, _ entities.Entities) {
 	//which targets have been selected?
 	if len(os.Args) == 2 {
-		//no arguments given -> diff all known config files
-		for _, configFile := range configFiles {
+		//no arguments given -> diff all known config files, including those
+		//where repo files have been deleted
+		allConfigFiles := configFiles[:]
+		for _, backupFile := range orphanedBackupFiles {
+			allConfigFiles = append(allConfigFiles, files.NewConfigFileFromBackupPath(backupFile))
+		}
+		for _, configFile := range allConfigFiles {
 			output, err := configFile.RenderDiff()
 			if err != nil {
 				common.PrintError("Could not diff %s: %s\n", configFile.TargetPath(), err.Error())
