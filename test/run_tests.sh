@@ -35,6 +35,7 @@ run_testcase() {
 
     # run holo
     ../../build/holo scan          2>&1 | ../strip-ansi-colors.sh > scan-output
+    ../../build/holo diff          2>&1 | ../strip-ansi-colors.sh > diff-output
     ../../build/holo apply         2>&1 | ../strip-ansi-colors.sh > apply-output
     # if "holo apply" that certain operations will only be performed with --force, do so now
     grep -q -- --force apply-output && \
@@ -50,7 +51,7 @@ run_testcase() {
     local EXIT_CODE=0
 
     # use diff to check the actual run with our expectations
-    for FILE in tree scan-output apply-output apply-force-output; do
+    for FILE in tree scan-output diff-output apply-output apply-force-output; do
         if [ -f $FILE ]; then
             if diff -q expected-$FILE $FILE >/dev/null; then true; else
                 echo "!! The $FILE deviates from our expectation. Diff follows:"
