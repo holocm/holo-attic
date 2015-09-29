@@ -36,18 +36,25 @@ func Apply(file ConfigFile, withForce bool) {
 	targetPath := file.TargetPath()
 	backupPath := file.BackupPath()
 
-	//step 1: will only install files from repo if there is a corresponding
-	//regular file in the target location (that file comes from the application
-	//package, the repo file from the holo metapackage)
+	//step 1: will only install files from repo if:
+	//option 1: there is a corresponding regular file in the target location
+	//(that file comes from the application package, the repo file from the
+	//holo metapackage)
+	//option 2: the target file was deleted, but we have a backup that we can start from
 	common.PrintInfo("Working on \x1b[1m%s\x1b[0m", targetPath)
 	if !common.IsManageableFile(targetPath) {
-		common.PrintError("  skipped: target is not a manageable file")
-		return
+		if !common.IsManageableFile(backupPath) {
+			common.PrintError("  skipped: target is not a manageable file")
+			return
+		}
+		if !withForce {
+			common.PrintError("  skipped: target file has been deleted by user (use --force to overwrite)")
+			return
+		}
 	}
 
-	//step 2: we know that a file exists at installPath; if we don't have a
-	//backup of the original file, the file at installPath *is* the original
-	//file which we have to backup now
+	//step 2: if we don't have a backup of the original file, the file at
+	//targetPath *is* the original file which we have to backup now
 	if !common.IsManageableFile(backupPath) {
 		common.PrintInfo("  store at %s", backupPath)
 
@@ -147,7 +154,7 @@ func Apply(file ConfigFile, withForce bool) {
 		common.PrintError("Cannot write %s: %s", provisionedPath, err.Error())
 		return
 	}
-	err = buffer.Write(provisionedPath, true) // true = create if missing
+	err = buffer.Write(provisionedPath)
 	if err != nil {
 		common.PrintError(err.Error())
 		return
@@ -160,7 +167,7 @@ func Apply(file ConfigFile, withForce bool) {
 
 	//step 4d: write the result buffer to the target location and copy
 	//owners/permissions from backup file to target file
-	err = buffer.Write(targetPath, false) // false = fail if target is missing
+	err = buffer.Write(targetPath)
 	if err != nil {
 		common.PrintError(err.Error())
 		return

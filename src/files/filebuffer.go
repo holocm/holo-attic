@@ -95,15 +95,14 @@ func NewFileBufferFromContents(fileContents []byte, basePath string) *FileBuffer
 	}
 }
 
-func (fb *FileBuffer) Write(path string, createIfMissing bool) error {
+func (fb *FileBuffer) Write(path string) error {
 	//(check that we're not attempting to overwrite unmanagea, createIfMissing boolble files
 	info, err := os.Lstat(path)
-	if err != nil {
-		if os.IsNotExist(err) && !createIfMissing {
-			//abort because the target location is not accessible
-			return err
-		}
-	} else {
+	if err != nil && !os.IsNotExist(err) {
+		//abort because the target location could not be statted
+		return err
+	}
+	if err == nil {
 		if !(info.Mode().IsRegular() || common.IsFileInfoASymbolicLink(info)) {
 			return &os.PathError{
 				Op:   "holo.FileBuffer.Write",
