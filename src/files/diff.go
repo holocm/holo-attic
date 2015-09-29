@@ -21,6 +21,7 @@
 package files
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"regexp"
@@ -65,31 +66,36 @@ func (configFile *ConfigFile) RenderDiff() ([]byte, error) {
 	//part 2: different file types -> act similarly to `git diff` and print a
 	//deletion diff, followed by a creation diff
 	if fromType != toType {
+		var result []byte
 		switch fromType {
-		//note: "case fileMissing" was already handled above
+		case fileMissing:
+			//do nothing, the create diff is sufficient
 		case fileRegular:
 			//use `diff` with toPath = /dev/null, fabricate a suitable header
-			return makeRegularDeleteDiff(fromPath, toPath, toInfo.Mode()), nil
+			result = makeRegularDeleteDiff(fromPath, toPath, fromInfo.Mode())
 		case fileSymlink:
 			//fabricate the complete diff output
 			linkTarget, err := os.Readlink(fromPath)
 			if err != nil {
 				return nil, err
 			}
-			return makeSymlinkDeleteDiff(linkTarget, toPath), nil
+			result = makeSymlinkDeleteDiff(linkTarget, toPath)
 		}
 		switch toType {
+		case fileMissing:
+			//do nothing, the delete diff is sufficient
 		case fileRegular:
 			//use `diff` with fromPath = /dev/null, fabricate a suitable header
-			return makeRegularCreateDiff(toPath, toPath, toInfo.Mode()), nil
+			result = append(result, makeRegularCreateDiff(toPath, toPath, toInfo.Mode())...)
 		case fileSymlink:
 			//fabricate the complete diff output
 			linkTarget, err := os.Readlink(toPath)
 			if err != nil {
 				return nil, err
 			}
-			return makeSymlinkCreateDiff(linkTarget, toPath), nil
+			result = append(result, makeSymlinkCreateDiff(linkTarget, toPath)...)
 		}
+		return result, nil
 	}
 
 	//part 3: both files are symlinks - fabricate a modification diff
@@ -136,18 +142,26 @@ func getDiffBody(fromPath, toPath string) []byte {
 }
 
 func makeRegularCreateDiff(path, reportedPath string, mode os.FileMode) []byte {
+	reportedPath = strings.TrimPrefix(reportedPath, "/")
 	header := []byte(strings.Join([]string{
-		fmt.Sprintf("diff --git a%s b%s\n", reportedPath, reportedPath),
+		fmt.Sprintf("diff --git a/%s b/%s\n", reportedPath, reportedPath),
 		fmt.Sprintf("new file mode 100%o\n", int(mode)),
 		"--- /dev/null\n",
-		fmt.Sprintf("+++ b%s\n", reportedPath),
+		fmt.Sprintf("+++ b/%s\n", reportedPath),
 	}, ""))
 	return append(header, getDiffBody("/dev/null", path)...)
 }
 
 func makeRegularModifyDiff(fromPath, toPath, reportedPath string, fromMode os.FileMode, toMode os.FileMode) []byte {
+	//is there a diff?
+	diffBody := getDiffBody(fromPath, toPath)
+	if len(bytes.TrimSpace(diffBody)) == 0 {
+		return []byte(nil)
+	}
+	//build header
+	reportedPath = strings.TrimPrefix(reportedPath, "/")
 	headers := []string{
-		fmt.Sprintf("diff --git a%s b%s\n", reportedPath, reportedPath),
+		fmt.Sprintf("diff --git a/%s b/%s\n", reportedPath, reportedPath),
 	}
 	if fromMode != toMode {
 		headers = append(headers,
@@ -156,31 +170,33 @@ func makeRegularModifyDiff(fromPath, toPath, reportedPath string, fromMode os.Fi
 		)
 	}
 	headers = append(headers,
-		fmt.Sprintf("--- a%s\n", reportedPath),
-		fmt.Sprintf("+++ b%s\n", reportedPath),
+		fmt.Sprintf("--- a/%s\n", reportedPath),
+		fmt.Sprintf("+++ b/%s\n", reportedPath),
 	)
 	header := []byte(strings.Join(headers, ""))
-	return append(header, getDiffBody(fromPath, toPath)...)
+	return append(header, diffBody...)
 }
 
 func makeRegularDeleteDiff(path, reportedPath string, mode os.FileMode) []byte {
+	reportedPath = strings.TrimPrefix(reportedPath, "/")
 	header := []byte(strings.Join([]string{
-		fmt.Sprintf("diff --git a%s b%s\n", reportedPath, reportedPath),
+		fmt.Sprintf("diff --git a/%s b/%s\n", reportedPath, reportedPath),
 		fmt.Sprintf("deleted file mode 100%o\n", int(mode)),
-		fmt.Sprintf("--- a%s\n", reportedPath),
+		fmt.Sprintf("--- a/%s\n", reportedPath),
 		"+++ /dev/null\n",
 	}, ""))
 	return append(header, getDiffBody(path, "/dev/null")...)
 }
 
 func makeSymlinkCreateDiff(linkTarget, reportedPath string) []byte {
+	reportedPath = strings.TrimPrefix(reportedPath, "/")
 	//NOTE: This function makes the reasonable assumption that
 	//      !strings.Contains(linkTarget, "\n").
 	return []byte(strings.Join([]string{
-		fmt.Sprintf("diff --git a%s b%s\n", reportedPath, reportedPath),
+		fmt.Sprintf("diff --git a/%s b/%s\n", reportedPath, reportedPath),
 		"new file mode 120000\n",
 		"--- /dev/null\n",
-		fmt.Sprintf("+++ b%s\n", reportedPath),
+		fmt.Sprintf("+++ b/%s\n", reportedPath),
 		"@@ -0,0 +1 @@\n",
 		fmt.Sprintf("+%s\n", linkTarget),
 		"\\ No newline at end of file\n",
@@ -188,12 +204,13 @@ func makeSymlinkCreateDiff(linkTarget, reportedPath string) []byte {
 }
 
 func makeSymlinkModifyDiff(fromLinkTarget, toLinkTarget, reportedPath string) []byte {
+	reportedPath = strings.TrimPrefix(reportedPath, "/")
 	//NOTE: This function makes the reasonable assumption that
 	//      !strings.Contains(linkTarget, "\n").
 	return []byte(strings.Join([]string{
-		fmt.Sprintf("diff --git a%s b%s\n", reportedPath, reportedPath),
-		fmt.Sprintf("--- a%s\n", reportedPath),
-		fmt.Sprintf("+++ b%s\n", reportedPath),
+		fmt.Sprintf("diff --git a/%s b/%s\n", reportedPath, reportedPath),
+		fmt.Sprintf("--- a/%s\n", reportedPath),
+		fmt.Sprintf("+++ b/%s\n", reportedPath),
 		"@@ -1 +1 @@\n",
 		fmt.Sprintf("-%s\n", fromLinkTarget),
 		"\\ No newline at end of file\n",
@@ -203,12 +220,13 @@ func makeSymlinkModifyDiff(fromLinkTarget, toLinkTarget, reportedPath string) []
 }
 
 func makeSymlinkDeleteDiff(linkTarget, reportedPath string) []byte {
+	reportedPath = strings.TrimPrefix(reportedPath, "/")
 	//NOTE: This function makes the reasonable assumption that
 	//      !strings.Contains(linkTarget, "\n").
 	return []byte(strings.Join([]string{
-		fmt.Sprintf("diff --git a%s b%s\n", reportedPath, reportedPath),
+		fmt.Sprintf("diff --git a/%s b/%s\n", reportedPath, reportedPath),
 		"deleted file mode 120000\n",
-		fmt.Sprintf("--- a%s\n", reportedPath),
+		fmt.Sprintf("--- a/%s\n", reportedPath),
 		"+++ /dev/null\n",
 		"@@ -1 +0,0 @@\n",
 		fmt.Sprintf("-%s\n", linkTarget),
