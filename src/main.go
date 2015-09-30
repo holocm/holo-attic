@@ -32,7 +32,8 @@ import (
 
 //Note: This line is parsed by the Makefile to get the version string. If you
 //change the format, adjust the Makefile too.
-var version = "v0.5"
+var version = "v0.6.0"
+var codename = "Providence"
 
 func main() {
 	//a command word must be given as first argument
@@ -51,7 +52,7 @@ func main() {
 	case "scan":
 		command = commandScan
 	case "version", "--version":
-		fmt.Println(version)
+		fmt.Printf("%s \"%s\"\n", version, codename)
 		return
 	default:
 		commandHelp()
