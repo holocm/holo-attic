@@ -1,13 +1,6 @@
-[holo] JSON entity definitions are deprecated and will be removed in the next release.
-[holo] Migrate the following files to the TOML format:
-[holo]     target/usr/share/holo/01-groups.json
 
 group:existing
     found in target/usr/share/holo/01-groups.toml
-
-group:jsonisdeprecated
-    found in target/usr/share/holo/01-groups.json
-        with type: system, gid: 43
 
 group:new
     found in target/usr/share/holo/01-groups.toml

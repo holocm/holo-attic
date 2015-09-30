@@ -201,7 +201,6 @@ the default configuration.
 
 Holograms can install TOML files into F</usr/share/holo> that describe UNIX
 user accounts and groups that shall be created during C<holo apply> runs.
-(Previous releases used JSON files, which are still recognized, but deprecated.)
 For example:
 
     $ cat /usr/share/holo/01-example.toml

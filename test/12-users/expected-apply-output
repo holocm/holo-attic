@@ -1,10 +1,4 @@
-[holo] JSON entity definitions are deprecated and will be removed in the next release.
-[holo] Migrate the following files to the TOML format:
-[holo]     target/usr/share/holo/01-users.json
 [holo] Working on user:existing
-[holo] Working on user:jsonisdeprecated
-[holo]     create user with uid: 1001, home: /home/jsonisdeprecated, login group: users, groups: network,video,audio, login shell: /bin/zsh, comment: JSON is deprecated
-MOCK: useradd --uid 1001 --comment 'JSON is deprecated' --home-dir /home/jsonisdeprecated --gid users --groups network,video,audio --shell /bin/zsh jsonisdeprecated
 [holo] Working on user:minimal
 [holo]     create user 
 MOCK: useradd minimal

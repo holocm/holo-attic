@@ -21,7 +21,6 @@
 package entities
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -51,14 +50,10 @@ func Scan() Entities {
 
 	//collect all definition files, sort by name
 	var paths []string
-	var deprecatedFormatPaths []string
 	for _, fi := range fis {
 		if fi.Mode().IsRegular() {
 			path := filepath.Join(entityPath, fi.Name())
 			switch {
-			case strings.HasSuffix(fi.Name(), ".json"):
-				deprecatedFormatPaths = append(deprecatedFormatPaths, path)
-				fallthrough
 			case strings.HasSuffix(fi.Name(), ".toml"):
 				paths = append(paths, path)
 			default:
@@ -67,16 +62,6 @@ func Scan() Entities {
 		}
 	}
 	sort.Strings(paths)
-
-	//warn that JSON support is deprecated and will be removed in the next release
-	if len(deprecatedFormatPaths) > 0 {
-		sort.Strings(deprecatedFormatPaths)
-		common.PrintWarning("JSON entity definitions are deprecated and will be removed in the next release.")
-		common.PrintWarning("Migrate the following files to the TOML format:")
-		for _, path := range deprecatedFormatPaths {
-			common.PrintWarning("    %s", path)
-		}
-	}
 
 	//parse entity definitions
 	groups := make(map[string]*Group)
@@ -109,7 +94,7 @@ func Scan() Entities {
 	return entities
 }
 
-//json.Unmarshal can only write into *exported* (i.e. upper-case) struct
+//toml.Decode can only write into *exported* (i.e. upper-case) struct
 //fields, but the fields on the Group/User structs are private to emphasize
 //their readonly-ness, so we need separate struct definitions here
 type groupDefinition struct {
@@ -134,38 +119,13 @@ func readDefinitionFile(entityFile string, groups *map[string]*Group, users *map
 		Group []groupDefinition
 		User  []userDefinition
 	}
-
-	if strings.HasSuffix(entityFile, ".json") {
-		//unmarshal JSON (uses different array keys)
-		var jsonContents struct {
-			Groups []groupDefinition
-			Users  []userDefinition
-		}
-		file, err := os.Open(entityFile)
-		if err != nil {
-			return []error{err}
-		}
-		err = json.NewDecoder(file).Decode(&jsonContents)
-		if err != nil {
-			return []error{err}
-		}
-		contents = struct {
-			Group []groupDefinition
-			User  []userDefinition
-		}{
-			Group: jsonContents.Groups,
-			User:  jsonContents.Users,
-		}
-	} else {
-		//unmarshall TOML
-		blob, err := ioutil.ReadFile(entityFile)
-		if err != nil {
-			return []error{err}
-		}
-		_, err = toml.Decode(string(blob), &contents)
-		if err != nil {
-			return []error{err}
-		}
+	blob, err := ioutil.ReadFile(entityFile)
+	if err != nil {
+		return []error{err}
+	}
+	_, err = toml.Decode(string(blob), &contents)
+	if err != nil {
+		return []error{err}
 	}
 
 	//when checking the entity definitions, report all errors at once
