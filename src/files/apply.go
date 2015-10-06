@@ -29,21 +29,22 @@ import (
 )
 
 //Apply performs the complete application algorithm for the given ConfigFile.
-//This includes taking a backup if necessary, applying all repo files, and
-//saving the result in the target path with the correct file metadata.
+//This includes taking a copy of the target base if necessary, applying all
+//repo files, and saving the result in the target path with the correct file
+//metadata.
 func Apply(file ConfigFile, withForce bool) {
 	//determine the related paths
 	targetPath := file.TargetPath()
-	backupPath := file.BackupPath()
+	targetBasePath := file.TargetBasePath()
 
 	//step 1: will only install files from repo if:
 	//option 1: there is a corresponding regular file in the target location
 	//(that file comes from the application package, the repo file from the
 	//holo metapackage)
-	//option 2: the target file was deleted, but we have a backup that we can start from
+	//option 2: the target file was deleted, but we have a target base that we can start from
 	common.PrintInfo("Working on \x1b[1m%s\x1b[0m", targetPath)
 	if !common.IsManageableFile(targetPath) {
-		if !common.IsManageableFile(backupPath) {
+		if !common.IsManageableFile(targetBasePath) {
 			common.PrintError("  skipped: target is not a manageable file")
 			return
 		}
@@ -53,21 +54,21 @@ func Apply(file ConfigFile, withForce bool) {
 		}
 	}
 
-	//step 2: if we don't have a backup of the original file, the file at
-	//targetPath *is* the original file which we have to backup now
-	if !common.IsManageableFile(backupPath) {
-		common.PrintInfo("  store at %s", backupPath)
+	//step 2: if we don't have a target base yet, the file at targetPath *is*
+	//the targetBase which we have to copy now
+	if !common.IsManageableFile(targetBasePath) {
+		common.PrintInfo("  store at %s", targetBasePath)
 
-		backupDir := filepath.Dir(backupPath)
-		err := os.MkdirAll(backupDir, 0755)
+		targetBaseDir := filepath.Dir(targetBasePath)
+		err := os.MkdirAll(targetBaseDir, 0755)
 		if err != nil {
-			common.PrintError("Cannot create directory %s: %s", backupDir, err.Error())
+			common.PrintError("Cannot create directory %s: %s", targetBaseDir, err.Error())
 			return
 		}
 
-		err = common.CopyFile(targetPath, backupPath)
+		err = common.CopyFile(targetPath, targetBasePath)
 		if err != nil {
-			common.PrintError("Cannot copy %s to %s: %s", targetPath, backupPath, err.Error())
+			common.PrintError("Cannot copy %s to %s: %s", targetPath, targetBasePath, err.Error())
 			return
 		}
 	}
@@ -80,10 +81,10 @@ func Apply(file ConfigFile, withForce bool) {
 		//case 1: yes, the targetPath is an updated stock configuration and the
 		//old targetPath (last written by Holo) was moved to updateBackupPath
 		//(this code path is used for .rpmsave and .dpkg-old files)
-		common.PrintInfo("    update %s -> %s", targetPath, backupPath)
-		err := common.CopyFile(targetPath, backupPath)
+		common.PrintInfo("    update %s -> %s", targetPath, targetBasePath)
+		err := common.CopyFile(targetPath, targetBasePath)
 		if err != nil {
-			common.PrintError("Cannot copy %s to %s: %s", targetPath, backupPath, err.Error())
+			common.PrintError("Cannot copy %s to %s: %s", targetPath, targetBasePath, err.Error())
 			return
 		}
 		//since the target file that we wrote last time has been moved to a
@@ -95,10 +96,10 @@ func Apply(file ConfigFile, withForce bool) {
 		if updatePath != "" {
 			//case 2: yes, an updated stock configuration is available at updatePath
 			//(this code path is used for .rpmnew, .dpkg-dist and .pacnew files)
-			common.PrintInfo("    update %s -> %s", updatePath, backupPath)
-			err := common.CopyFile(updatePath, backupPath)
+			common.PrintInfo("    update %s -> %s", updatePath, targetBasePath)
+			err := common.CopyFile(updatePath, targetBasePath)
 			if err != nil {
-				common.PrintError("Cannot copy %s to %s: %s", updatePath, backupPath, err.Error())
+				common.PrintError("Cannot copy %s to %s: %s", updatePath, targetBasePath, err.Error())
 				return
 			}
 			_ = os.Remove(updatePath) //this can fail silently
@@ -106,7 +107,7 @@ func Apply(file ConfigFile, withForce bool) {
 	}
 
 	//step 4: apply the repo files *if* the version at targetPath is the one
-	//installed by the package (which can be found at backupPath); complain if
+	//installed by the package (which can be found at targetBasePath); complain if
 	//the user made any changes to config files governed by holo (this check is
 	//overridden by the --force option)
 	provisionedPath := file.ProvisionedPath()
@@ -127,9 +128,9 @@ func Apply(file ConfigFile, withForce bool) {
 		}
 	}
 
-	//step 4a: load the backup file into a buffer as the start for the
+	//step 4a: load the target base into a buffer as the start for the
 	//application algorithm
-	buffer, err := NewFileBuffer(backupPath, targetPath)
+	buffer, err := NewFileBuffer(targetBasePath, targetPath)
 	if err != nil {
 		common.PrintError(err.Error())
 		return
@@ -159,20 +160,20 @@ func Apply(file ConfigFile, withForce bool) {
 		common.PrintError(err.Error())
 		return
 	}
-	err = common.ApplyFilePermissions(backupPath, provisionedPath)
+	err = common.ApplyFilePermissions(targetBasePath, provisionedPath)
 	if err != nil {
 		common.PrintError(err.Error())
 		return
 	}
 
 	//step 4d: write the result buffer to the target location and copy
-	//owners/permissions from backup file to target file
+	//owners/permissions from target base to target file
 	err = buffer.Write(targetPath)
 	if err != nil {
 		common.PrintError(err.Error())
 		return
 	}
-	err = common.ApplyFilePermissions(backupPath, targetPath)
+	err = common.ApplyFilePermissions(targetBasePath, targetPath)
 	if err != nil {
 		common.PrintError(err.Error())
 		return

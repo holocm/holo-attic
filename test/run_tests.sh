@@ -20,7 +20,7 @@ run_testcase() {
     rm -rf -- target/
     cp -R source/ target/
     mkdir -p target/usr/share/holo/repo
-    mkdir -p target/var/lib/holo/backup
+    mkdir -p target/var/lib/holo/base
     mkdir -p target/var/lib/holo/provisioned
 
     # consistent file modes in the target/ directory (for test reproducability)

@@ -28,7 +28,7 @@ import (
 var targetDirectory = "/"
 var entityDirectory = "/usr/share/holo"
 var repoDirectory = "/usr/share/holo/repo"
-var backupDirectory = "/var/lib/holo/backup"
+var targetBaseDirectory = "/var/lib/holo/base"
 var provisionedDirectory = "/var/lib/holo/provisioned"
 
 func init() {
@@ -36,7 +36,7 @@ func init() {
 		targetDirectory = value
 		entityDirectory = filepath.Join(value, entityDirectory[1:])
 		repoDirectory = filepath.Join(value, repoDirectory[1:])
-		backupDirectory = filepath.Join(value, backupDirectory[1:])
+		targetBaseDirectory = filepath.Join(value, targetBaseDirectory[1:])
 		provisionedDirectory = filepath.Join(value, provisionedDirectory[1:])
 	}
 }
@@ -59,10 +59,10 @@ func RepoDirectory() string {
 	return repoDirectory
 }
 
-//BackupDirectory is derived from the TargetDirectory() as
-//"$target_dir/var/lib/holo/backup".
-func BackupDirectory() string {
-	return backupDirectory
+//TargetBaseDirectory is derived from the TargetDirectory() as
+//"$target_dir/var/lib/holo/base".
+func TargetBaseDirectory() string {
+	return targetBaseDirectory
 }
 
 //ProvisionedDirectory is derived from the TargetDirectory() as

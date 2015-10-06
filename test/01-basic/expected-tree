@@ -25,14 +25,14 @@ stock file is directory D:
 no stock file D:
 >> ./usr/share/holo/repo/not-a-repo-file.conf = regular
 not a repo file
->> ./var/lib/holo/backup/etc/link-over-link.conf = symlink
+>> ./var/lib/holo/base/etc/link-over-link.conf = symlink
 hhh
->> ./var/lib/holo/backup/etc/link-over-plain.conf = regular
+>> ./var/lib/holo/base/etc/link-over-plain.conf = regular
 fff
 fff
->> ./var/lib/holo/backup/etc/plain-over-link.conf = symlink
+>> ./var/lib/holo/base/etc/plain-over-link.conf = symlink
 ggg
->> ./var/lib/holo/backup/etc/plain-over-plain.conf = regular
+>> ./var/lib/holo/base/etc/plain-over-plain.conf = regular
 eee
 eee
 >> ./var/lib/holo/provisioned/etc/link-over-link.conf = symlink

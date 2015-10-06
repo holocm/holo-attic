@@ -34,23 +34,23 @@ ccc
 /bin/true
 >> ./usr/share/holo/repo/01-first/etc/symlink-to-file.conf = symlink
 /bin/true
->> ./var/lib/holo/backup/etc/file-deleted.conf = regular
+>> ./var/lib/holo/base/etc/file-deleted.conf = regular
 ddd
 eee
 fff
->> ./var/lib/holo/backup/etc/file-modified.conf = regular
+>> ./var/lib/holo/base/etc/file-modified.conf = regular
 ddd
 eee
 fff
->> ./var/lib/holo/backup/etc/file-to-symlink.conf = regular
+>> ./var/lib/holo/base/etc/file-to-symlink.conf = regular
 ddd
 eee
 fff
->> ./var/lib/holo/backup/etc/symlink-deleted.conf = symlink
+>> ./var/lib/holo/base/etc/symlink-deleted.conf = symlink
 /bin/false
->> ./var/lib/holo/backup/etc/symlink-modified.conf = symlink
+>> ./var/lib/holo/base/etc/symlink-modified.conf = symlink
 /bin/false
->> ./var/lib/holo/backup/etc/symlink-to-file.conf = symlink
+>> ./var/lib/holo/base/etc/symlink-to-file.conf = symlink
 /bin/false
 >> ./var/lib/holo/provisioned/etc/file-deleted.conf = regular
 aaa

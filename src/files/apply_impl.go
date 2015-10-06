@@ -44,8 +44,8 @@ func GetApplyImpl(repoFile RepoFile) ApplyImpl {
 
 func applyFile(repoFile RepoFile, buffer *FileBuffer) (*FileBuffer, error) {
 	//if the repo contains a plain file (or symlink), the file
-	//buffer is replaced by it, thus ignoring the backup file (or any
-	//application steps before this step)
+	//buffer is replaced by it, thus ignoring the target base (or any
+	//previous application steps)
 	return NewFileBuffer(repoFile.Path(), buffer.BasePath)
 }
 

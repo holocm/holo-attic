@@ -1,6 +1,6 @@
 [holo] Working on target/etc/targetfile-with-pacnew.conf
-[holo]     update target/etc/targetfile-with-pacnew.conf.pacnew -> target/var/lib/holo/backup/etc/targetfile-with-pacnew.conf
+[holo]     update target/etc/targetfile-with-pacnew.conf.pacnew -> target/var/lib/holo/base/etc/targetfile-with-pacnew.conf
 [holo]   passthru target/usr/share/holo/repo/01-first/etc/targetfile-with-pacnew.conf.holoscript
 [holo]  Scrubbing target/etc/targetfile-deleted-with-pacsave.conf (target was deleted)
-[holo]     delete target/var/lib/holo/backup/etc/targetfile-deleted-with-pacsave.conf
+[holo]     delete target/var/lib/holo/base/etc/targetfile-deleted-with-pacsave.conf
 [holo]     delete target/etc/targetfile-deleted-with-pacsave.conf.pacsave

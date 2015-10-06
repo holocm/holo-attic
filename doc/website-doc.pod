@@ -86,7 +86,7 @@ post-install hooks for this purpose.
 
     $ sudo holo apply
     [holo] Working on /etc/nginx/nginx.conf
-    [holo]   store at /var/lib/holo/backup/etc/nginx/nginx.conf
+    [holo]   store at /var/lib/holo/base/etc/nginx/nginx.conf
     [holo]      apply /usr/share/holo/repo/20-webserver/etc/nginx/nginx.conf
 
 Entries in the configuration repository follow a fixed naming scheme:
@@ -125,7 +125,7 @@ configuration.
     $ holo scan
     ...
     /etc/pacman.conf
-        store at /var/lib/holo/backup/etc/pacman.conf
+        store at /var/lib/holo/base/etc/pacman.conf
         passthru /usr/share/holo/repo/20-enable-color/etc/pacman.conf.holoscript
     ...
     $ cat /usr/share/holo/repo/20-enable-color/etc/pacman.conf.holoscript
@@ -149,7 +149,7 @@ use the new default configuration:
     $ sudo holo apply
     ...
     [holo] Working on /etc/pacman.conf
-    [holo]     update /etc/pacman.conf.pacnew -&gt; /var/lib/holo/backup/etc/pacman.conf
+    [holo]     update /etc/pacman.conf.pacnew -&gt; /var/lib/holo/base/etc/pacman.conf
     [holo]   passthru /usr/share/holo/repo/20-enable-color/etc/pacman.conf.holoscript
     ... 
 
@@ -160,8 +160,8 @@ a base configuration provided by a base hologram:
     $ holo scan
     ...
     /etc/pacman.conf
-        store at /var/lib/holo/backup/etc/pacman.conf
-           apply /usr/share/holo/repo/00-base/etc/pacman.conf
+        store at /var/lib/holo/base/etc/pacman.conf
+           apply /usr/share/holo/repo/00-basic/etc/pacman.conf
         passthru /usr/share/holo/repo/10-add-catalyst-repo/etc/pacman.conf.holoscript
         passthru /usr/share/holo/repo/20-enable-color/etc/pacman.conf.holoscript
     ... 
@@ -172,30 +172,30 @@ restriction on how repository files are ordered. When somewhere in the
 application chain, a plain file is found, the effects of all previous
 application steps are discarded and overwritten by that config file.
 
-=head1 The backup directory
+=head1 Target bases
 
 Before Holo overwrites the default configuration supplied by the application
-package, it always takes a copy which is placed below F</var/lib/holo/backup>. This
-typically happens only once. The first C<holo apply> after installing a new
-hologram might look like this:
+package, it always takes a copy which is placed below F</var/lib/holo/base> and
+called the I<target base>. This typically happens only once. The first
+C<holo apply> after installing a new hologram might look like this:
 
     $ sudo holo apply
     [holo] Working on /etc/nginx/nginx.conf
-    [holo]   store at /var/lib/holo/backup/etc/nginx/nginx.conf
+    [holo]   store at /var/lib/holo/base/etc/nginx/nginx.conf
     [holo]      apply /usr/share/holo/repo/20-webserver/etc/nginx/nginx.conf
 
-But when C<holo apply> is run again, it recognizes that the backup is already
-up-to-date:
+But when C<holo apply> is run again, it recognizes that the target base is
+already up-to-date:
 
     $ sudo holo apply
     [holo] Working on /etc/nginx/nginx.conf
     [holo]      apply /usr/share/holo/repo/20-webserver/etc/nginx/nginx.conf
 
-Besides allowing the user to inspect the default configuration, this backup
+Besides allowing the user to inspect the default configuration, the target base
 serves two purposes: First, it is used as a base for applying holoscripts.
 Second, the owner, group, permissions and timestamps of the target configuration
-are always copied from this backup, and thus match the corresponding metadata of
-the default configuration.
+are always copied from the target base, and thus match the corresponding
+metadata of the default configuration.
 
 =head1 Management of UNIX user accounts and groups
 

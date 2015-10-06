@@ -27,33 +27,33 @@ import (
 	"../platform"
 )
 
-//ScanOrphanedBackupFile locates a target file for a given orphaned backup file
+//ScanOrphanedTargetBase locates a target file for a given orphaned target base
 //and assesses the situation. This logic is grouped in one function because
 //it's used by both `holo scan` and `holo apply`.
-func ScanOrphanedBackupFile(backupPath string) (targetPath, strategy, assessment string) {
-	target := NewConfigFileFromBackupPath(backupPath).TargetPath()
+func ScanOrphanedTargetBase(targetBasePath string) (targetPath, strategy, assessment string) {
+	target := NewConfigFileFromTargetBasePath(targetBasePath).TargetPath()
 	if common.IsManageableFile(target) {
 		return target, "restore", "all repository files were deleted"
 	}
 	return target, "delete", "target was deleted"
 }
 
-//HandleOrphanedBackupFile cleans up an orphaned backup file.
-func HandleOrphanedBackupFile(backupPath string) {
-	targetPath, strategy, assessment := ScanOrphanedBackupFile(backupPath)
+//HandleOrphanedTargetBase cleans up an orphaned target base.
+func HandleOrphanedTargetBase(targetBasePath string) {
+	targetPath, strategy, assessment := ScanOrphanedTargetBase(targetBasePath)
 	common.PrintInfo(" Scrubbing \x1b[1m%s\x1b[0m (%s)", targetPath, assessment)
-	common.PrintInfo("%10s %s", strategy, backupPath)
+	common.PrintInfo("%10s %s", strategy, targetBasePath)
 
 	switch strategy {
 	case "delete":
-		//target is gone - delete the provisioned target and the backup file
-		provisionedPath := NewConfigFileFromBackupPath(backupPath).ProvisionedPath()
+		//target is gone - delete the provisioned target and the target base
+		provisionedPath := NewConfigFileFromTargetBasePath(targetBasePath).ProvisionedPath()
 		err := os.Remove(provisionedPath)
 		if err != nil && !os.IsNotExist(err) {
 			common.PrintError(err.Error())
 			return
 		}
-		err = os.Remove(backupPath)
+		err = os.Remove(targetBasePath)
 		if err != nil {
 			common.PrintError(err.Error())
 			return
@@ -71,25 +71,25 @@ func HandleOrphanedBackupFile(backupPath string) {
 			}
 		}
 	case "restore":
-		//target is still there - restore the backup file
-		err := common.CopyFile(backupPath, targetPath)
+		//target is still there - restore the target base
+		err := common.CopyFile(targetBasePath, targetPath)
 		if err != nil {
 			common.PrintError(err.Error())
 			return
 		}
-		//target is not managed by Holo anymore, so delete the provisioned target and the backup file
-		provisionedPath := NewConfigFileFromBackupPath(backupPath).ProvisionedPath()
+		//target is not managed by Holo anymore, so delete the provisioned target and the target base
+		provisionedPath := NewConfigFileFromTargetBasePath(targetBasePath).ProvisionedPath()
 		err = os.Remove(provisionedPath)
 		if err != nil && !os.IsNotExist(err) {
 			common.PrintError(err.Error())
 			return
 		}
-		err = os.Remove(backupPath)
+		err = os.Remove(targetBasePath)
 		if err != nil {
 			common.PrintError(err.Error())
 			return
 		}
 	}
 
-	//TODO: cleanup empty directories below BackupDirectory() and ProvisionedDirectory()
+	//TODO: cleanup empty directories below TargetBaseDirectory() and ProvisionedDirectory()
 }

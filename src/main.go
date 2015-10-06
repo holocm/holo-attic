@@ -60,7 +60,7 @@ func main() {
 	}
 
 	//scan the repo
-	configFiles, orphanedBackupFiles := files.ScanRepo()
+	configFiles, orphanedTargetBases := files.ScanRepo()
 	if configFiles == nil {
 		//some fatal error occurred while scanning the repo - it was already
 		//reported, so just exit
@@ -76,7 +76,7 @@ func main() {
 	}
 
 	//execute command
-	command(configFiles, orphanedBackupFiles, entities)
+	command(configFiles, orphanedTargetBases, entities)
 }
 
 func commandHelp() {
@@ -88,7 +88,7 @@ func commandHelp() {
 	fmt.Printf("\nSee `man 8 holo` for details.\n")
 }
 
-func commandApply(configFiles files.ConfigFiles, orphanedBackupFiles []string, entities entities.Entities) {
+func commandApply(configFiles files.ConfigFiles, orphanedTargetBases []string, entities entities.Entities) {
 	//parse arguments after "holo apply" (either files or "--force")
 	withForce := false
 	withTargets := false
@@ -117,11 +117,11 @@ func commandApply(configFiles files.ConfigFiles, orphanedBackupFiles []string, e
 		}
 	}
 
-	//cleanup orphaned backup files
-	for _, file := range orphanedBackupFiles {
-		targetFile := files.NewConfigFileFromBackupPath(file).TargetPath()
+	//cleanup orphaned target bases
+	for _, file := range orphanedTargetBases {
+		targetFile := files.NewConfigFileFromTargetBasePath(file).TargetPath()
 		if !withTargets || targets[targetFile] {
-			files.HandleOrphanedBackupFile(file)
+			files.HandleOrphanedTargetBase(file)
 		}
 	}
 
@@ -133,7 +133,7 @@ func commandApply(configFiles files.ConfigFiles, orphanedBackupFiles []string, e
 	}
 }
 
-func commandScan(configFiles files.ConfigFiles, orphanedBackupFiles []string, entities entities.Entities) {
+func commandScan(configFiles files.ConfigFiles, orphanedTargetBases []string, entities entities.Entities) {
 	//check args
 	args := os.Args[2:]
 	isShort := false
@@ -159,7 +159,7 @@ func commandScan(configFiles files.ConfigFiles, orphanedBackupFiles []string, en
 			fmt.Println(file.TargetPath())
 		} else {
 			fmt.Printf("\x1b[1m%s\x1b[0m\n", file.TargetPath())
-			fmt.Printf("    store at %s\n", file.BackupPath())
+			fmt.Printf("    store at %s\n", file.TargetBasePath())
 			repoFiles := file.RepoFiles()
 			for _, repoFile := range repoFiles {
 				fmt.Printf("    %8s %s\n", repoFile.ApplicationStrategy(), repoFile.Path())
@@ -168,12 +168,12 @@ func commandScan(configFiles files.ConfigFiles, orphanedBackupFiles []string, en
 		}
 	}
 
-	//report orphaned backup files
+	//report orphaned target bases
 	if !isShort {
-		for _, backupFile := range orphanedBackupFiles {
-			targetFile, strategy, assessment := files.ScanOrphanedBackupFile(backupFile)
+		for _, targetBaseFile := range orphanedTargetBases {
+			targetFile, strategy, assessment := files.ScanOrphanedTargetBase(targetBaseFile)
 			fmt.Printf("\x1b[1m%s\x1b[0m (%s)\n", targetFile, assessment)
-			fmt.Printf("    %8s %s\n", strategy, backupFile)
+			fmt.Printf("    %8s %s\n", strategy, targetBaseFile)
 			fmt.Println()
 		}
 	}
@@ -196,14 +196,14 @@ func commandScan(configFiles files.ConfigFiles, orphanedBackupFiles []string, en
 	}
 }
 
-func commandDiff(configFiles files.ConfigFiles, orphanedBackupFiles []string, _ entities.Entities) {
+func commandDiff(configFiles files.ConfigFiles, orphanedTargetBases []string, _ entities.Entities) {
 	//which targets have been selected?
 	if len(os.Args) == 2 {
 		//no arguments given -> diff all known config files, including those
 		//where repo files have been deleted
 		allConfigFiles := configFiles[:]
-		for _, backupFile := range orphanedBackupFiles {
-			allConfigFiles = append(allConfigFiles, files.NewConfigFileFromBackupPath(backupFile))
+		for _, targetBaseFile := range orphanedTargetBases {
+			allConfigFiles = append(allConfigFiles, files.NewConfigFileFromTargetBasePath(targetBaseFile))
 		}
 		for _, configFile := range allConfigFiles {
 			output, err := configFile.RenderDiff()

@@ -34,15 +34,15 @@ sed s/a/u/
 >> ./usr/share/holo/repo/02-holoscripts/etc/plain-through-plain.conf.holoscript = regular
 #!/bin/sh
 sed 's/bar/qux/'
->> ./var/lib/holo/backup/etc/link-through-link.conf = symlink
+>> ./var/lib/holo/base/etc/link-through-link.conf = symlink
 contents
->> ./var/lib/holo/backup/etc/link-through-plain.conf = symlink
+>> ./var/lib/holo/base/etc/link-through-plain.conf = symlink
 contents
->> ./var/lib/holo/backup/etc/plain-through-link.conf = regular
+>> ./var/lib/holo/base/etc/plain-through-link.conf = regular
 tomato
 apple
 banana
->> ./var/lib/holo/backup/etc/plain-through-plain.conf = regular
+>> ./var/lib/holo/base/etc/plain-through-plain.conf = regular
 foo
 bar
 baz

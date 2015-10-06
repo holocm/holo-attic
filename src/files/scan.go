@@ -30,13 +30,13 @@ import (
 )
 
 //ScanRepo returns a slice of all the ConfigFiles which have accompanying RepoFiles,
-//and also a string slice of all orphaned backup files (backup files without a
+//and also a string slice of all orphaned target bases (target bases without a
 //ConfigFile).
-func ScanRepo() (configFiles ConfigFiles, orphanedBackupFiles []string) {
-	//check that the repo and backup directories exist
+func ScanRepo() (configFiles ConfigFiles, orphanedTargetBases []string) {
+	//check that the repo and target base directories exist
 	repoPath := common.RepoDirectory()
-	backupPath := common.BackupDirectory()
-	pathsThatMustExist := []string{repoPath, backupPath}
+	targetBasePath := common.TargetBaseDirectory()
+	pathsThatMustExist := []string{repoPath, targetBasePath}
 
 	for _, path := range pathsThatMustExist {
 		fi, err := os.Lstat(path)
@@ -53,7 +53,7 @@ func ScanRepo() (configFiles ConfigFiles, orphanedBackupFiles []string) {
 	//cannot declare this as "var result ConfigFiles" because then we would
 	//return nil if there are no entity definitions, but nil indicates an error
 	result := ConfigFiles{}
-	seen := make(map[string]bool) //used to avoid duplicates in result, and also to find orphaned backup files
+	seen := make(map[string]bool) //used to avoid duplicates in result, and also to find orphaned target bases
 
 	//walk over the repo to find repo files (and thus the corresponding target files)
 	filepath.Walk(repoPath, func(repoFile string, repoFileInfo os.FileInfo, err error) error {
@@ -81,27 +81,27 @@ func ScanRepo() (configFiles ConfigFiles, orphanedBackupFiles []string) {
 		return nil
 	})
 
-	//walk over the backup directory to find orphaned backup files
-	var backupOrphans []string
-	filepath.Walk(backupPath, func(backupFile string, backupFileInfo os.FileInfo, err error) error {
+	//walk over the target base directory to find orphaned target bases
+	var targetBaseOrphans []string
+	filepath.Walk(targetBasePath, func(targetBaseFile string, targetBaseFileInfo os.FileInfo, err error) error {
 		//skip over unaccessible stuff
 		if err != nil {
 			return err
 		}
 		//only look at manageable files (regular files or symlinks)
-		if !(backupFileInfo.Mode().IsRegular() || common.IsFileInfoASymbolicLink(backupFileInfo)) {
+		if !(targetBaseFileInfo.Mode().IsRegular() || common.IsFileInfoASymbolicLink(targetBaseFileInfo)) {
 			return nil
 		}
 
-		//check if we have seen the config file for this backup file
-		configFile := NewConfigFileFromBackupPath(backupFile)
+		//check if we have seen the config file for this target base
+		configFile := NewConfigFileFromTargetBasePath(targetBaseFile)
 		if !seen[configFile.TargetPath()] {
-			backupOrphans = append(backupOrphans, backupFile)
+			targetBaseOrphans = append(targetBaseOrphans, targetBaseFile)
 		}
 		return nil
 	})
 
 	sort.Sort(result)
-	sort.Strings(backupOrphans)
-	return result, backupOrphans
+	sort.Strings(targetBaseOrphans)
+	return result, targetBaseOrphans
 }

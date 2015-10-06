@@ -7,7 +7,7 @@ bbb
 >> ./usr/share/holo/repo/01-first/etc/still-existing.conf = regular
 bbb
 bbb
->> ./var/lib/holo/backup/etc/still-existing.conf = regular
+>> ./var/lib/holo/base/etc/still-existing.conf = regular
 aaa
 aaa
 >> ./var/lib/holo/provisioned/etc/still-existing.conf = regular

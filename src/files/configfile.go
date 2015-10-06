@@ -29,18 +29,18 @@ import (
 )
 
 //ConfigFile represents a single target file, and includes methods to calculate
-//the corresponding backup location and repo file(s). The string stored in it
+//the corresponding target base and repo file(s). The string stored in it
 //is the path of the target file relative to the target directory.
 //
 //For example, if the target file is "/etc/pacman.conf", the string stored is
 //"etc/pacman.conf".
 type ConfigFile string
 
-//NewConfigFileFromBackupPath creates a ConfigFile instance for which the path
-//to the backup file is known.
-func NewConfigFileFromBackupPath(backupFile string) ConfigFile {
+//NewConfigFileFromTargetBasePath creates a ConfigFile instance for which the path
+//to the target base is known.
+func NewConfigFileFromTargetBasePath(targetBaseFile string) ConfigFile {
 	//make path relative
-	relPath, _ := filepath.Rel(common.BackupDirectory(), backupFile)
+	relPath, _ := filepath.Rel(common.TargetBaseDirectory(), targetBaseFile)
 	return ConfigFile(relPath)
 }
 
@@ -58,10 +58,11 @@ func (file ConfigFile) TargetPath() string {
 	return filepath.Join(common.TargetDirectory(), string(file))
 }
 
-//BackupPath returns the location where the backup for this config file is stored.
-func (file ConfigFile) BackupPath() string {
+//TargetBasePath returns the location where the target base for this config
+//file is stored.
+func (file ConfigFile) TargetBasePath() string {
 	//make path absolute
-	return filepath.Join(common.BackupDirectory(), string(file))
+	return filepath.Join(common.TargetBaseDirectory(), string(file))
 }
 
 //ProvisionedPath returns the location where a duplicate of the last provisioned

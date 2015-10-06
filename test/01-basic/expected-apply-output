@@ -1,14 +1,14 @@
 [holo] Working on target/etc/link-over-link.conf
-[holo]   store at target/var/lib/holo/backup/etc/link-over-link.conf
+[holo]   store at target/var/lib/holo/base/etc/link-over-link.conf
 [holo]      apply target/usr/share/holo/repo/01-normal/etc/link-over-link.conf
 [holo] Working on target/etc/link-over-plain.conf
-[holo]   store at target/var/lib/holo/backup/etc/link-over-plain.conf
+[holo]   store at target/var/lib/holo/base/etc/link-over-plain.conf
 [holo]      apply target/usr/share/holo/repo/01-normal/etc/link-over-plain.conf
 [holo] Working on target/etc/plain-over-link.conf
-[holo]   store at target/var/lib/holo/backup/etc/plain-over-link.conf
+[holo]   store at target/var/lib/holo/base/etc/plain-over-link.conf
 [holo]      apply target/usr/share/holo/repo/01-normal/etc/plain-over-link.conf
 [holo] Working on target/etc/plain-over-plain.conf
-[holo]   store at target/var/lib/holo/backup/etc/plain-over-plain.conf
+[holo]   store at target/var/lib/holo/base/etc/plain-over-plain.conf
 [holo]      apply target/usr/share/holo/repo/01-normal/etc/plain-over-plain.conf
 [holo] Working on target/etc/stock-file-is-directory.conf
 [holo]   skipped: target is not a manageable file
