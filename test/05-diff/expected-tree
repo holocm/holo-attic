@@ -10,11 +10,17 @@ ccc
 aaa
 bbb
 ccc
+>> ./etc/file-unmodified.conf = regular
+aaa
+bbb
+ccc
 >> ./etc/symlink-deleted.conf = symlink
 /bin/true
 >> ./etc/symlink-modified.conf = symlink
 /bin/true
 >> ./etc/symlink-to-file.conf = symlink
+/bin/true
+>> ./etc/symlink-unmodified.conf = symlink
 /bin/true
 >> ./usr/share/holo/repo/01-first/etc/file-deleted.conf = regular
 aaa
@@ -28,11 +34,17 @@ ccc
 aaa
 bbb
 ccc
+>> ./usr/share/holo/repo/01-first/etc/file-unmodified.conf = regular
+aaa
+bbb
+ccc
 >> ./usr/share/holo/repo/01-first/etc/symlink-deleted.conf = symlink
 /bin/true
 >> ./usr/share/holo/repo/01-first/etc/symlink-modified.conf = symlink
 /bin/true
 >> ./usr/share/holo/repo/01-first/etc/symlink-to-file.conf = symlink
+/bin/true
+>> ./usr/share/holo/repo/01-first/etc/symlink-unmodified.conf = symlink
 /bin/true
 >> ./var/lib/holo/base/etc/file-deleted.conf = regular
 ddd
@@ -46,11 +58,17 @@ fff
 ddd
 eee
 fff
+>> ./var/lib/holo/base/etc/file-unmodified.conf = regular
+ddd
+eee
+fff
 >> ./var/lib/holo/base/etc/symlink-deleted.conf = symlink
 /bin/false
 >> ./var/lib/holo/base/etc/symlink-modified.conf = symlink
 /bin/false
 >> ./var/lib/holo/base/etc/symlink-to-file.conf = symlink
+/bin/false
+>> ./var/lib/holo/base/etc/symlink-unmodified.conf = symlink
 /bin/false
 >> ./var/lib/holo/provisioned/etc/file-deleted.conf = regular
 aaa
@@ -64,9 +82,15 @@ ccc
 aaa
 bbb
 ccc
+>> ./var/lib/holo/provisioned/etc/file-unmodified.conf = regular
+aaa
+bbb
+ccc
 >> ./var/lib/holo/provisioned/etc/symlink-deleted.conf = symlink
 /bin/true
 >> ./var/lib/holo/provisioned/etc/symlink-modified.conf = symlink
 /bin/true
 >> ./var/lib/holo/provisioned/etc/symlink-to-file.conf = symlink
+/bin/true
+>> ./var/lib/holo/provisioned/etc/symlink-unmodified.conf = symlink
 /bin/true

@@ -204,6 +204,11 @@ func makeSymlinkCreateDiff(linkTarget, reportedPath string) []byte {
 }
 
 func makeSymlinkModifyDiff(fromLinkTarget, toLinkTarget, reportedPath string) []byte {
+	//is there a diff?
+	if fromLinkTarget == toLinkTarget {
+		return []byte(nil)
+	}
+	//build header and body
 	reportedPath = strings.TrimPrefix(reportedPath, "/")
 	//NOTE: This function makes the reasonable assumption that
 	//      !strings.Contains(linkTarget, "\n").

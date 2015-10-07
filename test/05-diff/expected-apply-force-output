@@ -4,9 +4,13 @@
 [holo]      apply target/usr/share/holo/repo/01-first/etc/file-modified.conf
 [holo] Working on target/etc/file-to-symlink.conf
 [holo]      apply target/usr/share/holo/repo/01-first/etc/file-to-symlink.conf
+[holo] Working on target/etc/file-unmodified.conf
+[holo]      apply target/usr/share/holo/repo/01-first/etc/file-unmodified.conf
 [holo] Working on target/etc/symlink-deleted.conf
 [holo]      apply target/usr/share/holo/repo/01-first/etc/symlink-deleted.conf
 [holo] Working on target/etc/symlink-modified.conf
 [holo]      apply target/usr/share/holo/repo/01-first/etc/symlink-modified.conf
 [holo] Working on target/etc/symlink-to-file.conf
 [holo]      apply target/usr/share/holo/repo/01-first/etc/symlink-to-file.conf
+[holo] Working on target/etc/symlink-unmodified.conf
+[holo]      apply target/usr/share/holo/repo/01-first/etc/symlink-unmodified.conf

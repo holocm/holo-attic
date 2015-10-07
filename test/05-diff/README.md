@@ -10,3 +10,5 @@ stored at `/var/lib/holo/provisioned`.
   `/etc/symlink-deleted.conf`
 * targets whose types have changed by the user: `/etc/file-to-symlink.conf` and
   `/etc/symlink-to-file.conf`
+* targets that have *not* been changed by the user: `/etc/file-unmodified.conf`
+  and `/etc/symlink-unmodified.conf`
