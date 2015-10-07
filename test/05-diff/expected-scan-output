@@ -11,6 +11,10 @@ target/etc/file-to-symlink.conf
     store at target/var/lib/holo/backup/etc/file-to-symlink.conf
        apply target/usr/share/holo/repo/01-first/etc/file-to-symlink.conf
 
+target/etc/file-unmodified.conf
+    store at target/var/lib/holo/backup/etc/file-unmodified.conf
+       apply target/usr/share/holo/repo/01-first/etc/file-unmodified.conf
+
 target/etc/symlink-deleted.conf
     store at target/var/lib/holo/backup/etc/symlink-deleted.conf
        apply target/usr/share/holo/repo/01-first/etc/symlink-deleted.conf
@@ -22,4 +26,8 @@ target/etc/symlink-modified.conf
 target/etc/symlink-to-file.conf
     store at target/var/lib/holo/backup/etc/symlink-to-file.conf
        apply target/usr/share/holo/repo/01-first/etc/symlink-to-file.conf
+
+target/etc/symlink-unmodified.conf
+    store at target/var/lib/holo/backup/etc/symlink-unmodified.conf
+       apply target/usr/share/holo/repo/01-first/etc/symlink-unmodified.conf
 

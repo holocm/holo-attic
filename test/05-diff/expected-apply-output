@@ -4,9 +4,13 @@
 [holo]   skipped: target file has been modified by user (use --force to overwrite)
 [holo] Working on target/etc/file-to-symlink.conf
 [holo]   skipped: target file has been modified by user (use --force to overwrite)
+[holo] Working on target/etc/file-unmodified.conf
+[holo]      apply target/usr/share/holo/repo/01-first/etc/file-unmodified.conf
 [holo] Working on target/etc/symlink-deleted.conf
 [holo]   skipped: target file has been deleted by user (use --force to overwrite)
 [holo] Working on target/etc/symlink-modified.conf
 [holo]   skipped: target file has been modified by user (use --force to overwrite)
 [holo] Working on target/etc/symlink-to-file.conf
 [holo]   skipped: target file has been modified by user (use --force to overwrite)
+[holo] Working on target/etc/symlink-unmodified.conf
+[holo]      apply target/usr/share/holo/repo/01-first/etc/symlink-unmodified.conf
