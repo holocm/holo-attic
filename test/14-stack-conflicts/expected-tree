@@ -79,6 +79,14 @@ group   = "users"
 groups  = [ "foo", "bar" ]
 home    = "/var/lib/stacked"
 shell   = "/usr/bin/zsh"
+
+[[group]]
+name    = "valid"
+gid     = 1010
+
+[[user]]
+name    = "valid"
+uid     = 1010
 >> ./usr/share/holo/02-second.toml = regular
 [[group]]
 name    = "stacked"
