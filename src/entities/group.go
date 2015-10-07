@@ -41,9 +41,13 @@ type Group struct {
 	broken bool //whether the entity definition is invalid (default: false)
 }
 
-//for the Entity interface
-func (g Group) isValid() bool { return !g.broken }
-func (g Group) setInvalid()   { g.broken = true }
+//isValid is used inside the scanning algorithm to filter entities with
+//broken definitions, which shall be skipped during `holo apply`.
+func (g *Group) isValid() bool { return !g.broken }
+
+//setInvalid is used inside the scnaning algorithm to mark entities with
+//broken definitions, which shall be skipped during `holo apply`.
+func (g *Group) setInvalid() { g.broken = true }
 
 //EntityID implements the Entity interface for Group.
 func (g Group) EntityID() string { return "group:" + g.name }

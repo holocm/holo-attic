@@ -47,9 +47,13 @@ type User struct {
 	broken bool //whether the entity definition is invalid (default: false)
 }
 
-//for the Entity interface
-func (u User) isValid() bool { return !u.broken }
-func (u User) setInvalid()   { u.broken = true }
+//isValid is used inside the scanning algorithm to filter entities with
+//broken definitions, which shall be skipped during `holo apply`.
+func (u *User) isValid() bool { return !u.broken }
+
+//setInvalid is used inside the scnaning algorithm to mark entities with
+//broken definitions, which shall be skipped during `holo apply`.
+func (u *User) setInvalid() { u.broken = true }
 
 //EntityID implements the Entity interface for User.
 func (u User) EntityID() string { return "user:" + u.name }

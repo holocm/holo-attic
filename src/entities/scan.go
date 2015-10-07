@@ -81,29 +81,27 @@ func Scan() Entities {
 	//parse entity definitions
 	groups := make(map[string]*Group)
 	users := make(map[string]*User)
-	success := true
 	for _, path := range paths {
 		err := readDefinitionFile(path, &groups, &users)
 		if len(err) > 0 {
-			success = false //don't return nil immediately; report all broken files
-			common.PrintError("Failed to read %s:", path)
+			common.PrintError("Encountered some errors while reading %s:", path)
 			for _, suberr := range err {
 				common.PrintError("    %s", suberr.Error())
 			}
 		}
 	}
 
-	if !success {
-		return nil
-	}
-
-	//flatten reuslt into a list sorted by EntityID
+	//flatten result into a list sorted by EntityID and filter invalid entites
 	entities := make(Entities, 0, len(groups)+len(users))
 	for _, group := range groups {
-		entities = append(entities, group)
+		if group.isValid() {
+			entities = append(entities, group)
+		}
 	}
 	for _, user := range users {
-		entities = append(entities, user)
+		if user.isValid() {
+			entities = append(entities, user)
+		}
 	}
 	sort.Sort(entities)
 	return entities
@@ -183,7 +181,11 @@ func readDefinitionFile(entityFile string, groups *map[string]*Group, users *map
 		group, exists := (*groups)[groupDef.Name]
 		if exists {
 			//stacked definition for this group - extend existing Group entity
-			errors = append(errors, mergeGroupDefinition(groupDef, group)...)
+			groupErrors := mergeGroupDefinition(groupDef, group)
+			if len(groupErrors) > 0 {
+				errors = append(errors, groupErrors...)
+				group.setInvalid()
+			}
 			group.definitionFiles = append(group.definitionFiles, entityFile)
 		} else {
 			//first definition for this group - create new Group entity
@@ -204,7 +206,11 @@ func readDefinitionFile(entityFile string, groups *map[string]*Group, users *map
 		user, exists := (*users)[userDef.Name]
 		if exists {
 			//stacked definition for this user - extend existing User entity
-			errors = append(errors, mergeUserDefinition(userDef, user)...)
+			userErrors := mergeUserDefinition(userDef, user)
+			if len(userErrors) > 0 {
+				errors = append(errors, userErrors...)
+				user.setInvalid()
+			}
 			user.definitionFiles = append(user.definitionFiles, entityFile)
 		} else {
 			//first definition for this user - create new User entity
