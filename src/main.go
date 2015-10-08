@@ -158,13 +158,13 @@ func commandScan(configFiles files.ConfigFiles, orphanedTargetBases []string, en
 		if isShort {
 			fmt.Println(file.TargetPath())
 		} else {
-			fmt.Printf("\x1b[1m%s\x1b[0m\n", file.TargetPath())
-			fmt.Printf("    store at %s\n", file.TargetBasePath())
+			r := common.Report{Target: file.TargetPath()}
+			r.AddLine("store at", file.TargetBasePath())
 			repoFiles := file.RepoFiles()
 			for _, repoFile := range repoFiles {
-				fmt.Printf("    %8s %s\n", repoFile.ApplicationStrategy(), repoFile.Path())
+				r.AddLine(repoFile.ApplicationStrategy(), repoFile.Path())
 			}
-			fmt.Println()
+			r.Print()
 		}
 	}
 
@@ -172,9 +172,9 @@ func commandScan(configFiles files.ConfigFiles, orphanedTargetBases []string, en
 	if !isShort {
 		for _, targetBaseFile := range orphanedTargetBases {
 			targetFile, strategy, assessment := files.ScanOrphanedTargetBase(targetBaseFile)
-			fmt.Printf("\x1b[1m%s\x1b[0m (%s)\n", targetFile, assessment)
-			fmt.Printf("    %8s %s\n", strategy, targetBaseFile)
-			fmt.Println()
+			r := common.Report{Target: targetFile, State: assessment}
+			r.AddLine(strategy, targetBaseFile)
+			r.Print()
 		}
 	}
 
@@ -183,15 +183,15 @@ func commandScan(configFiles files.ConfigFiles, orphanedTargetBases []string, en
 		if isShort {
 			fmt.Println(entity.EntityID())
 		} else {
-			fmt.Printf("\x1b[1m%s\x1b[0m\n", entity.EntityID())
+			r := common.Report{Target: entity.EntityID()}
 			defFiles := entity.DefinitionFiles()
 			for _, defFile := range defFiles {
-				fmt.Printf("    found in %s\n", defFile)
+				r.AddLine("found in", defFile)
 			}
 			if attributes := entity.Attributes(); attributes != "" {
-				fmt.Printf("        with %s\n", attributes)
+				r.AddLine("with", attributes)
 			}
-			fmt.Println()
+			r.Print()
 		}
 	}
 }
