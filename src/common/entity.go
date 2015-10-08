@@ -30,9 +30,6 @@ type Entity interface {
 	//Therefore, entity IDs should not contain whitespaces or characters that
 	//have a special meaning on the shell.
 	EntityID() string
-	//DefinitionFile returns the path to the file containing the definition of
-	//this entity.
-	DefinitionFiles() []string
 	//Report generates a common.Report describing this Entity.
 	Report() *Report
 	//Apply performs the complete application algorithm for the given Entity.

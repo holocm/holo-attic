@@ -52,9 +52,6 @@ func (g *Group) setInvalid() { g.broken = true }
 //EntityID implements the Entity interface for Group.
 func (g Group) EntityID() string { return "group:" + g.name }
 
-//DefinitionFiles implements the Entity interface for Group.
-func (g Group) DefinitionFiles() []string { return g.definitionFiles }
-
 //Report implements the Entity interface for Group.
 func (g Group) Report() *common.Report {
 	r := common.Report{Target: g.EntityID()}
