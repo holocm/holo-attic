@@ -1,6 +1,13 @@
-[holo] Working on group:stacked
-[holo]     create group with type: system, gid: 1001
+
 MOCK: groupadd --system --gid 1001 stacked
-[holo] Working on user:stacked
-[holo]     create user with type: system, uid: 1001, home: /home/stacked, login group: stacked, groups: foo,bar,baz, login shell: /bin/bash, comment: Stacked User
+Working on group:stacked
+  found in target/usr/share/holo/01-first.toml
+  found in target/usr/share/holo/02-second.toml
+      with type: system, gid: 1001
+
 MOCK: useradd --system --uid 1001 --comment 'Stacked User' --home-dir /home/stacked --gid stacked --groups foo,bar,baz --shell /bin/bash stacked
+Working on user:stacked
+  found in target/usr/share/holo/01-first.toml
+  found in target/usr/share/holo/02-second.toml
+      with type: system, uid: 1001, home: /home/stacked, login group: stacked, groups: foo,bar,baz, login shell: /bin/bash, comment: Stacked User
+

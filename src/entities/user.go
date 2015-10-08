@@ -100,32 +100,43 @@ func (u User) attributes() string {
 //If the group does not exist yet, it is created. If it does exist, but some
 //attributes do not match, it will be updated, but only if withForce is given.
 func (u User) Apply(withForce bool) {
-	common.PrintInfo("Working on \x1b[1m%s\x1b[0m", u.EntityID())
+	r := u.Report()
+	r.Action = "Working on"
+	u.doApply(r, withForce)
+	r.Print()
+}
 
+type userDiff struct {
+	field    string
+	actual   string
+	expected string
+}
+
+func (u User) doApply(report *common.Report, withForce bool) {
 	//check if we have that group already
 	userExists, actualUser, err := u.checkExists()
 	if err != nil {
-		common.PrintError("Cannot read user database: %s", err.Error())
+		report.AddError("Cannot read user database: %s", err.Error())
 		return
 	}
 
 	//check if the actual properties diverge from our definition
 	if userExists {
-		differences := []string{}
+		differences := []userDiff{}
 		if u.comment != "" && u.comment != actualUser.comment {
-			differences = append(differences, fmt.Sprintf("comment: %s, expected %s", actualUser.comment, u.comment))
+			differences = append(differences, userDiff{"comment", actualUser.comment, u.comment})
 		}
 		if u.uid > 0 && u.uid != actualUser.uid {
-			differences = append(differences, fmt.Sprintf("UID: %d, expected %d", actualUser.uid, u.uid))
+			differences = append(differences, userDiff{"UID", strconv.Itoa(actualUser.uid), strconv.Itoa(u.uid)})
 		}
 		if u.homeDirectory != "" && u.homeDirectory != actualUser.homeDirectory {
-			differences = append(differences, fmt.Sprintf("home directory: %s, expected %s", actualUser.homeDirectory, u.homeDirectory))
+			differences = append(differences, userDiff{"home directory", actualUser.homeDirectory, u.homeDirectory})
 		}
 		if u.shell != "" && u.shell != actualUser.shell {
-			differences = append(differences, fmt.Sprintf("login shell: %s, expected %s", actualUser.shell, u.shell))
+			differences = append(differences, userDiff{"login shell", actualUser.shell, u.shell})
 		}
 		if u.group != "" && u.group != actualUser.group {
-			differences = append(differences, fmt.Sprintf("login group: %s, expected %s", actualUser.group, u.group))
+			differences = append(differences, userDiff{"login group", actualUser.group, u.group})
 		}
 		//to detect changes in u.groups <-> actualUser.groups, we sort and join both slices
 		expectedGroupsSlice := append([]string(nil), u.groups...) //take a copy of the slice
@@ -135,26 +146,32 @@ func (u User) Apply(withForce bool) {
 		sort.Strings(actualGroupsSlice)
 		actualGroups := strings.Join(actualGroupsSlice, ", ")
 		if expectedGroups != actualGroups {
-			differences = append(differences, fmt.Sprintf("groups: %s, expected %s", actualGroups, expectedGroups))
+			differences = append(differences, userDiff{"groups", actualGroups, expectedGroups})
 		}
 
 		if len(differences) != 0 {
-			diffString := strings.Join(differences, "; ")
 			if withForce {
-				common.PrintInfo("       fix %s", diffString)
-				u.callUsermod()
+				for _, diff := range differences {
+					report.AddLine("fix", fmt.Sprintf("%s (was: %s)", diff.field, diff.actual))
+				}
+				err := u.callUsermod()
+				if err != nil {
+					report.AddError(err.Error())
+					return
+				}
 			} else {
-				common.PrintWarning("       has %s (use --force to overwrite)", diffString)
+				for _, diff := range differences {
+					report.AddWarning("User has %s: %s, expected %s (use --force to overwrite)", diff.field, diff.actual, diff.expected)
+				}
 			}
 		}
 	} else {
 		//create the user if it does not exist
-		description := u.attributes()
-		if description != "" {
-			description = "with " + description
+		err := u.callUseradd()
+		if err != nil {
+			report.AddError(err.Error())
+			return
 		}
-		common.PrintInfo("    create user %s", description)
-		u.callUseradd()
 	}
 }
 
@@ -233,7 +250,7 @@ func (u User) checkExists() (exists bool, currentUser *User, e error) {
 	}, nil
 }
 
-func (u User) callUseradd() {
+func (u User) callUseradd() error {
 	//assemble arguments for useradd call
 	args := []string{}
 	if u.system {
@@ -261,12 +278,10 @@ func (u User) callUseradd() {
 
 	//call useradd
 	_, err := common.ExecProgramOrMock([]byte{}, "useradd", args...)
-	if err != nil {
-		common.PrintError(err.Error())
-	}
+	return err
 }
 
-func (u User) callUsermod() {
+func (u User) callUsermod() error {
 	//assemble arguments for usermod call
 	args := []string{}
 	if u.uid > 0 {
@@ -291,7 +306,5 @@ func (u User) callUsermod() {
 
 	//call usermod
 	_, err := common.ExecProgramOrMock([]byte{}, "usermod", args...)
-	if err != nil {
-		common.PrintError(err.Error())
-	}
+	return err
 }

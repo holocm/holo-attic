@@ -1,20 +1,26 @@
-[holo] Working on target/etc/link-and-script.conf
-[holo]   store at target/var/lib/holo/base/etc/link-and-script.conf
-[holo]      apply target/usr/share/holo/repo/01-first/etc/link-and-script.conf
-[holo]   passthru target/usr/share/holo/repo/02-second/etc/link-and-script.conf.holoscript
-[holo] Working on target/etc/link-through-scripts.conf
-[holo]   store at target/var/lib/holo/base/etc/link-through-scripts.conf
-[holo]   passthru target/usr/share/holo/repo/01-first/etc/link-through-scripts.conf.holoscript
-[holo]   passthru target/usr/share/holo/repo/02-second/etc/link-through-scripts.conf.holoscript
-[holo] Working on target/etc/plain-and-plain.conf
-[holo]   store at target/var/lib/holo/base/etc/plain-and-plain.conf
-[holo]      apply target/usr/share/holo/repo/01-first/etc/plain-and-plain.conf
-[holo]      apply target/usr/share/holo/repo/02-second/etc/plain-and-plain.conf
-[holo] Working on target/etc/plain-and-script.conf
-[holo]   store at target/var/lib/holo/base/etc/plain-and-script.conf
-[holo]      apply target/usr/share/holo/repo/01-first/etc/plain-and-script.conf
-[holo]   passthru target/usr/share/holo/repo/02-second/etc/plain-and-script.conf.holoscript
-[holo] Working on target/etc/script-and-script.conf
-[holo]   store at target/var/lib/holo/base/etc/script-and-script.conf
-[holo]   passthru target/usr/share/holo/repo/01-first/etc/script-and-script.conf.holoscript
-[holo]   passthru target/usr/share/holo/repo/02-second/etc/script-and-script.conf.holoscript
+
+Working on target/etc/link-and-script.conf
+  store at target/var/lib/holo/base/etc/link-and-script.conf
+     apply target/usr/share/holo/repo/01-first/etc/link-and-script.conf
+  passthru target/usr/share/holo/repo/02-second/etc/link-and-script.conf.holoscript
+
+Working on target/etc/link-through-scripts.conf
+  store at target/var/lib/holo/base/etc/link-through-scripts.conf
+  passthru target/usr/share/holo/repo/01-first/etc/link-through-scripts.conf.holoscript
+  passthru target/usr/share/holo/repo/02-second/etc/link-through-scripts.conf.holoscript
+
+Working on target/etc/plain-and-plain.conf
+  store at target/var/lib/holo/base/etc/plain-and-plain.conf
+     apply target/usr/share/holo/repo/01-first/etc/plain-and-plain.conf
+     apply target/usr/share/holo/repo/02-second/etc/plain-and-plain.conf
+
+Working on target/etc/plain-and-script.conf
+  store at target/var/lib/holo/base/etc/plain-and-script.conf
+     apply target/usr/share/holo/repo/01-first/etc/plain-and-script.conf
+  passthru target/usr/share/holo/repo/02-second/etc/plain-and-script.conf.holoscript
+
+Working on target/etc/script-and-script.conf
+  store at target/var/lib/holo/base/etc/script-and-script.conf
+  passthru target/usr/share/holo/repo/01-first/etc/script-and-script.conf.holoscript
+  passthru target/usr/share/holo/repo/02-second/etc/script-and-script.conf.holoscript
+

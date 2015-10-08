@@ -79,39 +79,56 @@ func (g Group) attributes() string {
 //If the group does not exist yet, it is created. If it does exist, but some
 //attributes do not match, it will be updated, but only if withForce is given.
 func (g Group) Apply(withForce bool) {
-	common.PrintInfo("Working on \x1b[1m%s\x1b[0m", g.EntityID())
+	r := g.Report()
+	r.Action = "Working on"
+	g.doApply(r, withForce)
+	r.Print()
+}
 
+type groupDiff struct {
+	field    string
+	actual   string
+	expected string
+}
+
+func (g Group) doApply(report *common.Report, withForce bool) {
 	//check if we have that group already
 	groupExists, actualGid, err := g.checkExists()
 	if err != nil {
-		common.PrintError("Cannot read group database: %s", err.Error())
+		report.AddError("Cannot read group database: %s", err.Error())
 		return
 	}
 
 	//check if the actual properties diverge from our definition
 	if groupExists {
-		differences := []string{}
+		differences := []groupDiff{}
 		if g.gid > 0 && g.gid != actualGid {
-			differences = append(differences, fmt.Sprintf("GID: %d, expected %d", actualGid, g.gid))
+			differences = append(differences, groupDiff{"GID", strconv.Itoa(actualGid), strconv.Itoa(g.gid)})
 		}
 
 		if len(differences) != 0 {
-			diffString := strings.Join(differences, "; ")
 			if withForce {
-				common.PrintInfo("       fix %s", diffString)
-				g.callGroupmod()
+				for _, diff := range differences {
+					report.AddLine("fix", fmt.Sprintf("%s (was: %s)", diff.field, diff.actual))
+				}
+				err := g.callGroupmod()
+				if err != nil {
+					report.AddError(err.Error())
+					return
+				}
 			} else {
-				common.PrintWarning("       has %s (use --force to overwrite)", diffString)
+				for _, diff := range differences {
+					report.AddWarning("Group has %s: %s, expected %s (use --force to overwrite)", diff.field, diff.actual, diff.expected)
+				}
 			}
 		}
 	} else {
 		//create the group if it does not exist
-		description := g.attributes()
-		if description != "" {
-			description = "with " + description
+		err := g.callGroupadd()
+		if err != nil {
+			report.AddError(err.Error())
+			return
 		}
-		common.PrintInfo("    create group %s", description)
-		g.callGroupadd()
 	}
 }
 
@@ -137,7 +154,7 @@ func (g Group) checkExists() (exists bool, gid int, e error) {
 	return true, actualGid, err
 }
 
-func (g Group) callGroupadd() {
+func (g Group) callGroupadd() error {
 	//assemble arguments for groupadd call
 	args := []string{}
 	if g.system {
@@ -150,12 +167,10 @@ func (g Group) callGroupadd() {
 
 	//call groupadd
 	_, err := common.ExecProgramOrMock([]byte{}, "groupadd", args...)
-	if err != nil {
-		common.PrintError(err.Error())
-	}
+	return err
 }
 
-func (g Group) callGroupmod() {
+func (g Group) callGroupmod() error {
 	//assemble arguments for groupmod call
 	args := []string{}
 	if g.gid > 0 {
@@ -165,7 +180,5 @@ func (g Group) callGroupmod() {
 
 	//call groupmod
 	_, err := common.ExecProgramOrMock([]byte{}, "groupmod", args...)
-	if err != nil {
-		common.PrintError(err.Error())
-	}
+	return err
 }

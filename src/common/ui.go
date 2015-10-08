@@ -55,36 +55,51 @@ type Report struct {
 	Action    string
 	Target    string
 	State     string
-	infoLines []string
+	infoLines []reportLine
 	msgText   string
 }
 
 //AddLine adds an information line to the given Report.
 func (r *Report) AddLine(key, value string) {
-	//format contents appropriately
-	line := fmt.Sprintf("%12s %s", key, value)
-	r.infoLines = append(r.infoLines, line)
+	r.infoLines = append(r.infoLines, reportLine{key, value})
 }
 
-func (r *Report) addMessage(color, text string) {
+//ReplaceLine replaces the index-th existing report line with a new one.
+func (r *Report) ReplaceLine(index uint, key, value string) {
+	if index < uint(len(r.infoLines)) {
+		r.infoLines[index] = reportLine{key, value}
+	} else {
+		r.AddLine(key, value)
+	}
+}
+
+func (r *Report) addMessage(color, text string, args ...interface{}) {
+	if len(args) > 0 {
+		text = fmt.Sprintf(text, args...)
+	}
 	if !strings.HasSuffix(text, "\n") {
 		text += "\n"
 	}
 	r.msgText += fmt.Sprintf("\x1b[%sm%s\x1b[0m", color, text)
 }
 
-//AddWarning adds a warning message to the given Report.
-func (r *Report) AddWarning(text string) { r.addMessage("33", text) }
+//AddWarning adds a warning message to the given Report. If args... are given,
+//fmt.Sprintf() is applied.
+func (r *Report) AddWarning(text string, args ...interface{}) { r.addMessage("33", text, args...) }
 
-//AddError adds an error message to the given Report.
-func (r *Report) AddError(text string) { r.addMessage("31", text) }
+//AddError adds an error message to the given Report. If args... are given,
+//fmt.Sprintf() is applied.
+func (r *Report) AddError(text string, args ...interface{}) { r.addMessage("31", text, args...) }
 
 //Print prints the full report on stdout.
 func (r *Report) Print() {
 	//print initial line with Action, Target and State
+	var lineFormat string
 	if r.Action == "" {
+		lineFormat = "%12s %s\n"
 		fmt.Printf("\x1b[1m%s\x1b[0m", r.Target)
 	} else {
+		lineFormat = fmt.Sprintf("%%%ds %%s\n", len(r.Action))
 		fmt.Printf("%s \x1b[1m%s\x1b[0m", r.Action, r.Target)
 	}
 	if r.State == "" {
@@ -95,7 +110,9 @@ func (r *Report) Print() {
 
 	//print infoLines
 	for _, line := range r.infoLines {
-		fmt.Println(line)
+		if line.key != "" {
+			fmt.Printf(lineFormat, line.key, line.value)
+		}
 	}
 	fmt.Println()
 

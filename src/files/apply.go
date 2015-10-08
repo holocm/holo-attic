@@ -21,6 +21,7 @@
 package files
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -32,7 +33,7 @@ import (
 //This includes taking a copy of the target base if necessary, applying all
 //repo files, and saving the result in the target path with the correct file
 //metadata.
-func Apply(target *TargetFile, withForce bool) {
+func Apply(target *TargetFile, report *common.Report, withForce bool) {
 	//determine the related paths
 	targetPath := target.PathIn(common.TargetDirectory())
 	targetBasePath := target.PathIn(common.TargetBaseDirectory())
@@ -42,33 +43,32 @@ func Apply(target *TargetFile, withForce bool) {
 	//(that file comes from the application package, the repo file from the
 	//holo metapackage)
 	//option 2: the target file was deleted, but we have a target base that we can start from
-	common.PrintInfo("Working on \x1b[1m%s\x1b[0m", targetPath)
 	if !common.IsManageableFile(targetPath) {
 		if !common.IsManageableFile(targetBasePath) {
-			common.PrintError("  skipped: target is not a manageable file")
+			report.AddError("skipping target: not a manageable file")
 			return
 		}
 		if !withForce {
-			common.PrintError("  skipped: target file has been deleted by user (use --force to overwrite)")
+			report.AddError("skipping target: file has been deleted by user (use --force to overwrite)")
 			return
 		}
 	}
 
 	//step 2: if we don't have a target base yet, the file at targetPath *is*
 	//the targetBase which we have to copy now
-	if !common.IsManageableFile(targetBasePath) {
-		common.PrintInfo("  store at %s", targetBasePath)
-
+	if common.IsManageableFile(targetBasePath) {
+		report.ReplaceLine(0, "", "") //remove the "store at $target_base" line because we did not do that
+	} else {
 		targetBaseDir := filepath.Dir(targetBasePath)
 		err := os.MkdirAll(targetBaseDir, 0755)
 		if err != nil {
-			common.PrintError("Cannot create directory %s: %s", targetBaseDir, err.Error())
+			report.AddError("Cannot create directory %s: %s", targetBaseDir, err.Error())
 			return
 		}
 
 		err = common.CopyFile(targetPath, targetBasePath)
 		if err != nil {
-			common.PrintError("Cannot copy %s to %s: %s", targetPath, targetBasePath, err.Error())
+			report.AddError("Cannot copy %s to %s: %s", targetPath, targetBasePath, err.Error())
 			return
 		}
 	}
@@ -81,10 +81,10 @@ func Apply(target *TargetFile, withForce bool) {
 		//case 1: yes, the targetPath is an updated stock configuration and the
 		//old targetPath (last written by Holo) was moved to updateBackupPath
 		//(this code path is used for .rpmsave and .dpkg-old files)
-		common.PrintInfo("    update %s -> %s", targetPath, targetBasePath)
+		report.ReplaceLine(0, "update", fmt.Sprintf("%s -> %s", targetPath, targetBasePath))
 		err := common.CopyFile(targetPath, targetBasePath)
 		if err != nil {
-			common.PrintError("Cannot copy %s to %s: %s", targetPath, targetBasePath, err.Error())
+			report.AddError("Cannot copy %s to %s: %s", targetPath, targetBasePath, err.Error())
 			return
 		}
 		//since the target file that we wrote last time has been moved to a
@@ -96,10 +96,10 @@ func Apply(target *TargetFile, withForce bool) {
 		if updatePath != "" {
 			//case 2: yes, an updated stock configuration is available at updatePath
 			//(this code path is used for .rpmnew, .dpkg-dist and .pacnew files)
-			common.PrintInfo("    update %s -> %s", updatePath, targetBasePath)
+			report.ReplaceLine(0, "update", fmt.Sprintf("%s -> %s", updatePath, targetBasePath))
 			err := common.CopyFile(updatePath, targetBasePath)
 			if err != nil {
-				common.PrintError("Cannot copy %s to %s: %s", updatePath, targetBasePath, err.Error())
+				report.AddError("Cannot copy %s to %s: %s", updatePath, targetBasePath, err.Error())
 				return
 			}
 			_ = os.Remove(updatePath) //this can fail silently
@@ -114,16 +114,16 @@ func Apply(target *TargetFile, withForce bool) {
 	if !withForce && common.IsManageableFile(provisionedPath) {
 		targetBuffer, err := NewFileBuffer(lastInstalledTargetPath, targetPath)
 		if err != nil {
-			common.PrintError(err.Error())
+			report.AddError(err.Error())
 			return
 		}
 		lastProvisionedBuffer, err := NewFileBuffer(provisionedPath, targetPath)
 		if err != nil {
-			common.PrintError(err.Error())
+			report.AddError(err.Error())
 			return
 		}
 		if !targetBuffer.EqualTo(lastProvisionedBuffer) {
-			common.PrintError("  skipped: target file has been modified by user (use --force to overwrite)")
+			report.AddError("skipping target: file has been modified by user (use --force to overwrite)")
 			return
 		}
 	}
@@ -132,17 +132,16 @@ func Apply(target *TargetFile, withForce bool) {
 	//application algorithm
 	buffer, err := NewFileBuffer(targetBasePath, targetPath)
 	if err != nil {
-		common.PrintError(err.Error())
+		report.AddError(err.Error())
 		return
 	}
 
 	//step 4b: apply all the applicable repo files in order
 	repoEntries := target.RepoEntries()
 	for _, repoFile := range repoEntries {
-		common.PrintInfo("%10s %s", repoFile.ApplicationStrategy(), repoFile.Path())
 		buffer, err = GetApplyImpl(repoFile)(buffer)
 		if err != nil {
-			common.PrintError(err.Error())
+			report.AddError(err.Error())
 			return
 		}
 	}
@@ -152,17 +151,17 @@ func Apply(target *TargetFile, withForce bool) {
 	provisionedDir := filepath.Dir(provisionedPath)
 	err = os.MkdirAll(provisionedDir, 0755)
 	if err != nil {
-		common.PrintError("Cannot write %s: %s", provisionedPath, err.Error())
+		report.AddError("Cannot write %s: %s", provisionedPath, err.Error())
 		return
 	}
 	err = buffer.Write(provisionedPath)
 	if err != nil {
-		common.PrintError(err.Error())
+		report.AddError(err.Error())
 		return
 	}
 	err = common.ApplyFilePermissions(targetBasePath, provisionedPath)
 	if err != nil {
-		common.PrintError(err.Error())
+		report.AddError(err.Error())
 		return
 	}
 
@@ -170,19 +169,19 @@ func Apply(target *TargetFile, withForce bool) {
 	//owners/permissions from target base to target file
 	err = buffer.Write(targetPath)
 	if err != nil {
-		common.PrintError(err.Error())
+		report.AddError(err.Error())
 		return
 	}
 	err = common.ApplyFilePermissions(targetBasePath, targetPath)
 	if err != nil {
-		common.PrintError(err.Error())
+		report.AddError(err.Error())
 		return
 	}
 
 	//step 5: cleanup the updateBackupPath now that we successfully generated a
 	//new version of the desired target
 	if updateBackupPath != "" {
-		common.PrintInfo("    delete %s", updateBackupPath)
+		report.AddLine("delete", updateBackupPath)
 		_ = os.Remove(updateBackupPath) //this can fail silently
 	}
 }

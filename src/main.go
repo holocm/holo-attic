@@ -111,6 +111,7 @@ func commandApply(entities common.Entities) {
 	}
 
 	//apply all declared entities (or only some if the args contain a limited subset)
+	fmt.Println()
 	for _, entity := range entities {
 		if !withTargets || targets[entity.EntityID()] {
 			entity.Apply(withForce)

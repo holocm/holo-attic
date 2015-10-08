@@ -1,16 +1,39 @@
-[holo] Working on target/etc/file-deleted.conf
-[holo]   skipped: target file has been deleted by user (use --force to overwrite)
-[holo] Working on target/etc/file-modified.conf
-[holo]   skipped: target file has been modified by user (use --force to overwrite)
-[holo] Working on target/etc/file-to-symlink.conf
-[holo]   skipped: target file has been modified by user (use --force to overwrite)
-[holo] Working on target/etc/file-unmodified.conf
-[holo]      apply target/usr/share/holo/repo/01-first/etc/file-unmodified.conf
-[holo] Working on target/etc/symlink-deleted.conf
-[holo]   skipped: target file has been deleted by user (use --force to overwrite)
-[holo] Working on target/etc/symlink-modified.conf
-[holo]   skipped: target file has been modified by user (use --force to overwrite)
-[holo] Working on target/etc/symlink-to-file.conf
-[holo]   skipped: target file has been modified by user (use --force to overwrite)
-[holo] Working on target/etc/symlink-unmodified.conf
-[holo]      apply target/usr/share/holo/repo/01-first/etc/symlink-unmodified.conf
+
+Working on target/etc/file-deleted.conf
+  store at target/var/lib/holo/base/etc/file-deleted.conf
+     apply target/usr/share/holo/repo/01-first/etc/file-deleted.conf
+
+skipping target: file has been deleted by user (use --force to overwrite)
+
+Working on target/etc/file-modified.conf
+     apply target/usr/share/holo/repo/01-first/etc/file-modified.conf
+
+skipping target: file has been modified by user (use --force to overwrite)
+
+Working on target/etc/file-to-symlink.conf
+     apply target/usr/share/holo/repo/01-first/etc/file-to-symlink.conf
+
+skipping target: file has been modified by user (use --force to overwrite)
+
+Working on target/etc/file-unmodified.conf
+     apply target/usr/share/holo/repo/01-first/etc/file-unmodified.conf
+
+Working on target/etc/symlink-deleted.conf
+  store at target/var/lib/holo/base/etc/symlink-deleted.conf
+     apply target/usr/share/holo/repo/01-first/etc/symlink-deleted.conf
+
+skipping target: file has been deleted by user (use --force to overwrite)
+
+Working on target/etc/symlink-modified.conf
+     apply target/usr/share/holo/repo/01-first/etc/symlink-modified.conf
+
+skipping target: file has been modified by user (use --force to overwrite)
+
+Working on target/etc/symlink-to-file.conf
+     apply target/usr/share/holo/repo/01-first/etc/symlink-to-file.conf
+
+skipping target: file has been modified by user (use --force to overwrite)
+
+Working on target/etc/symlink-unmodified.conf
+     apply target/usr/share/holo/repo/01-first/etc/symlink-unmodified.conf
+
