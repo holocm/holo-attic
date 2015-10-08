@@ -43,8 +43,8 @@ func (file RepoFile) Path() string {
 	return string(file)
 }
 
-//ConfigFile returns the ConfigFile that this repo file is applied to.
-func (file RepoFile) ConfigFile() ConfigFile {
+//TargetPath returns the path to the corresponding target file.
+func (file RepoFile) TargetPath() string {
 	//the optional ".holoscript" suffix appears only on repo files
 	repoFile := file.Path()
 	if strings.HasSuffix(repoFile, ".holoscript") {
@@ -60,7 +60,7 @@ func (file RepoFile) ConfigFile() ConfigFile {
 	segments := strings.SplitN(relPath, fmt.Sprintf("%c", filepath.Separator), 2)
 	relPath = segments[1]
 
-	return ConfigFile(relPath)
+	return filepath.Join(common.TargetDirectory(), relPath)
 }
 
 //ApplicationStrategy returns the human-readable name for the strategy that

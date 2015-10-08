@@ -32,10 +32,10 @@ import (
 //This includes taking a copy of the target base if necessary, applying all
 //repo files, and saving the result in the target path with the correct file
 //metadata.
-func Apply(file ConfigFile, withForce bool) {
+func Apply(target *TargetFile, withForce bool) {
 	//determine the related paths
-	targetPath := file.TargetPath()
-	targetBasePath := file.TargetBasePath()
+	targetPath := target.PathIn(common.TargetDirectory())
+	targetBasePath := target.PathIn(common.TargetBaseDirectory())
 
 	//step 1: will only install files from repo if:
 	//option 1: there is a corresponding regular file in the target location
@@ -110,7 +110,7 @@ func Apply(file ConfigFile, withForce bool) {
 	//installed by the package (which can be found at targetBasePath); complain if
 	//the user made any changes to config files governed by holo (this check is
 	//overridden by the --force option)
-	provisionedPath := file.ProvisionedPath()
+	provisionedPath := target.PathIn(common.ProvisionedDirectory())
 	if !withForce && common.IsManageableFile(provisionedPath) {
 		targetBuffer, err := NewFileBuffer(lastInstalledTargetPath, targetPath)
 		if err != nil {
@@ -137,8 +137,8 @@ func Apply(file ConfigFile, withForce bool) {
 	}
 
 	//step 4b: apply all the applicable repo files in order
-	repoFiles := file.RepoFiles()
-	for _, repoFile := range repoFiles {
+	repoEntries := target.RepoEntries()
+	for _, repoFile := range repoEntries {
 		common.PrintInfo("%10s %s", repoFile.ApplicationStrategy(), repoFile.Path())
 		buffer, err = GetApplyImpl(repoFile)(buffer)
 		if err != nil {

@@ -43,7 +43,7 @@ func main() {
 	}
 
 	//check that it is a known command word
-	var command func(files.ConfigFiles, []string, common.Entities)
+	var command func(common.Entities)
 	switch os.Args[1] {
 	case "apply":
 		command = commandApply
@@ -60,8 +60,8 @@ func main() {
 	}
 
 	//scan the repo
-	configFiles, orphanedTargetBases := files.ScanRepo()
-	if configFiles == nil {
+	fileEntities := files.ScanRepo()
+	if fileEntities == nil {
 		//some fatal error occurred while scanning the repo - it was already
 		//reported, so just exit
 		return
@@ -76,7 +76,7 @@ func main() {
 	}
 
 	//execute command
-	command(configFiles, orphanedTargetBases, entities)
+	command(append(fileEntities, entities...))
 }
 
 func commandHelp() {
@@ -88,7 +88,7 @@ func commandHelp() {
 	fmt.Printf("\nSee `man 8 holo` for details.\n")
 }
 
-func commandApply(configFiles files.ConfigFiles, orphanedTargetBases []string, entities common.Entities) {
+func commandApply(entities common.Entities) {
 	//parse arguments after "holo apply" (either files or "--force")
 	withForce := false
 	withTargets := false
@@ -110,22 +110,7 @@ func commandApply(configFiles files.ConfigFiles, orphanedTargetBases []string, e
 		}
 	}
 
-	//apply all files found in the repo (or only some if the args contain a limited subset)
-	for _, file := range configFiles {
-		if !withTargets || targets[file.TargetPath()] {
-			files.Apply(file, withForce)
-		}
-	}
-
-	//cleanup orphaned target bases
-	for _, file := range orphanedTargetBases {
-		targetFile := files.NewConfigFileFromTargetBasePath(file).TargetPath()
-		if !withTargets || targets[targetFile] {
-			files.HandleOrphanedTargetBase(file)
-		}
-	}
-
-	//apply all declared entities (or only some if the args contain a limites subset)
+	//apply all declared entities (or only some if the args contain a limited subset)
 	for _, entity := range entities {
 		if !withTargets || targets[entity.EntityID()] {
 			entity.Apply(withForce)
@@ -133,7 +118,7 @@ func commandApply(configFiles files.ConfigFiles, orphanedTargetBases []string, e
 	}
 }
 
-func commandScan(configFiles files.ConfigFiles, orphanedTargetBases []string, entities common.Entities) {
+func commandScan(entities common.Entities) {
 	//check args
 	args := os.Args[2:]
 	isShort := false
@@ -153,31 +138,6 @@ func commandScan(configFiles files.ConfigFiles, orphanedTargetBases []string, en
 		fmt.Println()
 	}
 
-	//report config files with repo files
-	for _, file := range configFiles {
-		if isShort {
-			fmt.Println(file.TargetPath())
-		} else {
-			r := common.Report{Target: file.TargetPath()}
-			r.AddLine("store at", file.TargetBasePath())
-			repoFiles := file.RepoFiles()
-			for _, repoFile := range repoFiles {
-				r.AddLine(repoFile.ApplicationStrategy(), repoFile.Path())
-			}
-			r.Print()
-		}
-	}
-
-	//report orphaned target bases
-	if !isShort {
-		for _, targetBaseFile := range orphanedTargetBases {
-			targetFile, strategy, assessment := files.ScanOrphanedTargetBase(targetBaseFile)
-			r := common.Report{Target: targetFile, State: assessment}
-			r.AddLine(strategy, targetBaseFile)
-			r.Print()
-		}
-	}
-
 	//report declared entities
 	for _, entity := range entities {
 		if isShort {
@@ -188,31 +148,27 @@ func commandScan(configFiles files.ConfigFiles, orphanedTargetBases []string, en
 	}
 }
 
-func commandDiff(configFiles files.ConfigFiles, orphanedTargetBases []string, _ common.Entities) {
-	//which targets have been selected?
-	if len(os.Args) == 2 {
-		//no arguments given -> diff all known config files, including those
-		//where repo files have been deleted
-		allConfigFiles := configFiles[:]
-		for _, targetBaseFile := range orphanedTargetBases {
-			allConfigFiles = append(allConfigFiles, files.NewConfigFileFromTargetBasePath(targetBaseFile))
-		}
-		for _, configFile := range allConfigFiles {
-			output, err := configFile.RenderDiff()
-			if err != nil {
-				common.PrintError("Could not diff %s: %s\n", configFile.TargetPath(), err.Error())
+func commandDiff(entities common.Entities) {
+	//parse arguments after "holo diff" (targets)
+	withTargets := false
+	targets := make(map[string]bool)
+	args := os.Args[2:]
+	for _, arg := range args {
+		targets[arg] = true
+		withTargets = true
+	}
+
+	//apply all declared entities (or only some if the args contain a limited subset)
+	for _, entity := range entities {
+		if !withTargets || targets[entity.EntityID()] {
+			//ignore entities that are not files (TODO: allow diffs for users/groups, too)
+			if target, ok := entity.(*files.TargetFile); ok {
+				output, err := target.RenderDiff()
+				if err != nil {
+					common.PrintError("Could not diff %s: %s\n", target.PathIn(common.TargetDirectory()), err.Error())
+				}
+				os.Stdout.Write(output)
 			}
-			os.Stdout.Write(output)
-		}
-	} else {
-		args := os.Args[2:]
-		for _, targetPath := range args {
-			configFile := files.NewConfigFileFromTargetPath(targetPath)
-			output, err := configFile.RenderDiff()
-			if err != nil {
-				common.PrintError("Could not diff %s: %s\n", targetPath, err.Error())
-			}
-			os.Stdout.Write(output)
 		}
 	}
 }

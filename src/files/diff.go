@@ -43,16 +43,16 @@ const (
 //version, similar to `diff /var/lib/holo/provisioned/$FILE $FILE`, but it also
 //handles symlinks and missing files gracefully. The output is always a patch
 //that can be applied to last provisioned version into the current version.
-func (configFile *ConfigFile) RenderDiff() ([]byte, error) {
+func (target *TargetFile) RenderDiff() ([]byte, error) {
 	//stat both files (non-existence is not an error here, we handle that later)
 	//and check that they are manageable
-	fromPath := configFile.ProvisionedPath()
+	fromPath := target.PathIn(common.ProvisionedDirectory())
 	fromType, fromInfo, err := lstatForDiff(fromPath)
 	if err != nil {
 		return nil, err
 	}
 
-	toPath := configFile.TargetPath()
+	toPath := target.PathIn(common.TargetDirectory())
 	toType, toInfo, err := lstatForDiff(toPath)
 	if err != nil {
 		return nil, err

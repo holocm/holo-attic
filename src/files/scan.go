@@ -29,10 +29,8 @@ import (
 	"../common"
 )
 
-//ScanRepo returns a slice of all the ConfigFiles which have accompanying RepoFiles,
-//and also a string slice of all orphaned target bases (target bases without a
-//ConfigFile).
-func ScanRepo() (configFiles ConfigFiles, orphanedTargetBases []string) {
+//ScanRepo returns a slice of all the TargetFile entities.
+func ScanRepo() common.Entities {
 	//check that the repo and target base directories exist
 	repoPath := common.RepoDirectory()
 	targetBasePath := common.TargetBaseDirectory()
@@ -42,20 +40,16 @@ func ScanRepo() (configFiles ConfigFiles, orphanedTargetBases []string) {
 		fi, err := os.Lstat(path)
 		if err != nil {
 			common.PrintError("Cannot open %s: %s", path, err.Error())
-			return nil, nil
+			return nil
 		}
 		if !fi.IsDir() {
 			common.PrintError("Cannot open %s: not a directory!", path)
-			return nil, nil
+			return nil
 		}
 	}
 
-	//cannot declare this as "var result ConfigFiles" because then we would
-	//return nil if there are no entity definitions, but nil indicates an error
-	result := ConfigFiles{}
-	seen := make(map[string]bool) //used to avoid duplicates in result, and also to find orphaned target bases
-
 	//walk over the repo to find repo files (and thus the corresponding target files)
+	targets := make(map[string]*TargetFile)
 	filepath.Walk(repoPath, func(repoFile string, repoFileInfo os.FileInfo, err error) error {
 		//skip over unaccessible stuff
 		if err != nil {
@@ -72,17 +66,17 @@ func ScanRepo() (configFiles ConfigFiles, orphanedTargetBases []string) {
 			return nil
 		}
 
-		//check if we had this config file already
-		configFile := NewRepoFile(repoFile).ConfigFile()
-		if !seen[configFile.TargetPath()] {
-			result = append(result, configFile)
-			seen[configFile.TargetPath()] = true
+		//create new TargetFile if necessary and store the repo entry in it
+		repoEntry := NewRepoFile(repoFile)
+		targetPath := repoEntry.TargetPath()
+		if targets[targetPath] == nil {
+			targets[targetPath] = NewTargetFileFromPathIn(common.TargetDirectory(), targetPath)
 		}
+		targets[targetPath].AddRepoEntry(repoEntry)
 		return nil
 	})
 
 	//walk over the target base directory to find orphaned target bases
-	var targetBaseOrphans []string
 	filepath.Walk(targetBasePath, func(targetBaseFile string, targetBaseFileInfo os.FileInfo, err error) error {
 		//skip over unaccessible stuff
 		if err != nil {
@@ -94,14 +88,23 @@ func ScanRepo() (configFiles ConfigFiles, orphanedTargetBases []string) {
 		}
 
 		//check if we have seen the config file for this target base
-		configFile := NewConfigFileFromTargetBasePath(targetBaseFile)
-		if !seen[configFile.TargetPath()] {
-			targetBaseOrphans = append(targetBaseOrphans, targetBaseFile)
+		//(if not, it's orphaned)
+		//TODO: s/(targetBase)Path/\1Dir/g and s/(targetBase)File/Path/g
+		target := NewTargetFileFromPathIn(targetBasePath, targetBaseFile)
+		targetPath := target.PathIn(common.TargetDirectory())
+		if targets[targetPath] == nil {
+			target.orphaned = true
+			targets[targetPath] = target
 		}
 		return nil
 	})
 
+	//flatten result into list
+	result := make(common.Entities, 0, len(targets))
+	for _, target := range targets {
+		result = append(result, target)
+	}
+
 	sort.Sort(result)
-	sort.Strings(targetBaseOrphans)
-	return result, targetBaseOrphans
+	return result
 }

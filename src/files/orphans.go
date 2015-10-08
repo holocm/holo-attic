@@ -27,27 +27,28 @@ import (
 	"../platform"
 )
 
-//ScanOrphanedTargetBase locates a target file for a given orphaned target base
+//scanOrphanedTargetBase locates a target file for a given orphaned target base
 //and assesses the situation. This logic is grouped in one function because
 //it's used by both `holo scan` and `holo apply`.
-func ScanOrphanedTargetBase(targetBasePath string) (targetPath, strategy, assessment string) {
-	target := NewConfigFileFromTargetBasePath(targetBasePath).TargetPath()
-	if common.IsManageableFile(target) {
-		return target, "restore", "all repository files were deleted"
+func (target *TargetFile) scanOrphanedTargetBase() (theTargetPath, strategy, assessment string) {
+	targetPath := target.PathIn(common.TargetDirectory())
+	if common.IsManageableFile(targetPath) {
+		return targetPath, "restore", "all repository files were deleted"
 	}
-	return target, "delete", "target was deleted"
+	return targetPath, "delete", "target was deleted"
 }
 
-//HandleOrphanedTargetBase cleans up an orphaned target base.
-func HandleOrphanedTargetBase(targetBasePath string) {
-	targetPath, strategy, assessment := ScanOrphanedTargetBase(targetBasePath)
+//handleOrphanedTargetBase cleans up an orphaned target base.
+func (target *TargetFile) handleOrphanedTargetBase() {
+	targetPath, strategy, assessment := target.scanOrphanedTargetBase()
 	common.PrintInfo(" Scrubbing \x1b[1m%s\x1b[0m (%s)", targetPath, assessment)
+	targetBasePath := target.PathIn(common.TargetBaseDirectory())
 	common.PrintInfo("%10s %s", strategy, targetBasePath)
+	provisionedPath := target.PathIn(common.ProvisionedDirectory())
 
 	switch strategy {
 	case "delete":
 		//target is gone - delete the provisioned target and the target base
-		provisionedPath := NewConfigFileFromTargetBasePath(targetBasePath).ProvisionedPath()
 		err := os.Remove(provisionedPath)
 		if err != nil && !os.IsNotExist(err) {
 			common.PrintError(err.Error())
@@ -78,7 +79,6 @@ func HandleOrphanedTargetBase(targetBasePath string) {
 			return
 		}
 		//target is not managed by Holo anymore, so delete the provisioned target and the target base
-		provisionedPath := NewConfigFileFromTargetBasePath(targetBasePath).ProvisionedPath()
 		err = os.Remove(provisionedPath)
 		if err != nil && !os.IsNotExist(err) {
 			common.PrintError(err.Error())
