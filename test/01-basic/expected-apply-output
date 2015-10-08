@@ -19,11 +19,11 @@ Working on target/etc/stock-file-is-directory.conf
   store at target/var/lib/holo/base/etc/stock-file-is-directory.conf
      apply target/usr/share/holo/repo/02-errors/etc/stock-file-is-directory.conf
 
-skipping target: not a manageable file
+!! skipping target: not a manageable file
 
 Working on target/etc/stock-file-missing.conf
   store at target/var/lib/holo/base/etc/stock-file-missing.conf
      apply target/usr/share/holo/repo/02-errors/etc/stock-file-missing.conf
 
-skipping target: not a manageable file
+!! skipping target: not a manageable file
 

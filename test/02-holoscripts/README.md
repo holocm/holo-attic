@@ -12,3 +12,10 @@ manageable files (both regular files and symlinks). It ensures that:
 /etc/link-through-plain.conf        # stock config is symlink, repo has plain script
 /etc/link-through-link.conf         # stock config is symlink, repo has symlink to script
 ```
+
+Some error cases are included, too:
+
+* `/etc/plain-with-stderr.conf` has a holoscript that produces output on
+  standard error. This should produce a warning but not fail.
+* `/etc/plain-with-nonzero-exitcode.conf` has a holoscript that exits with
+  nonzero exit code. Its output should be discarded.

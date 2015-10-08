@@ -35,16 +35,20 @@ import (
 //Scan returns a slice of all the defined entities. If an error is encountered
 //during the scan, it will be reported on stdout, and nil is returned.
 func Scan() common.Entities {
+	errorReport := common.Report{Action: "scan", Target: "entity definitions"}
+
 	//look in the entity directory for entity definitions
 	entityPath := common.EntityDirectory()
 	dir, err := os.Open(entityPath)
 	if err != nil {
-		common.PrintError("Cannot read %s: %s", entityPath, err.Error())
+		errorReport.AddError("Cannot read %s: %s", entityPath, err.Error())
+		errorReport.Print()
 		return nil
 	}
 	fis, err := dir.Readdir(-1)
 	if err != nil {
-		common.PrintError("Cannot read %s: %s", entityPath, err.Error())
+		errorReport.AddError("Cannot read %s: %s", entityPath, err.Error())
+		errorReport.Print()
 		return nil
 	}
 
@@ -69,9 +73,9 @@ func Scan() common.Entities {
 	for _, path := range paths {
 		err := readDefinitionFile(path, &groups, &users)
 		if len(err) > 0 {
-			common.PrintError("Encountered some errors while reading %s:", path)
+			errorReport.AddError("File %s is invalid:", path)
 			for _, suberr := range err {
-				common.PrintError("    %s", suberr.Error())
+				errorReport.AddError("    " + suberr.Error())
 			}
 		}
 	}
@@ -89,6 +93,8 @@ func Scan() common.Entities {
 		}
 	}
 	sort.Sort(entities)
+
+	errorReport.PrintUnlessEmpty()
 	return entities
 }
 

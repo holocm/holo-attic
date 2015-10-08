@@ -73,26 +73,34 @@ func (r *Report) ReplaceLine(index uint, key, value string) {
 	}
 }
 
-func (r *Report) addMessage(color, text string, args ...interface{}) {
+func (r *Report) addMessage(color, prefix, text string, args ...interface{}) {
 	if len(args) > 0 {
 		text = fmt.Sprintf(text, args...)
 	}
 	if !strings.HasSuffix(text, "\n") {
 		text += "\n"
 	}
-	r.msgText += fmt.Sprintf("\x1b[%sm%s\x1b[0m", color, text)
+	r.msgText += fmt.Sprintf("\x1b[%sm\x1b[1m%s\x1b[0m %s", color, prefix, text)
 }
 
 //AddWarning adds a warning message to the given Report. If args... are given,
 //fmt.Sprintf() is applied.
-func (r *Report) AddWarning(text string, args ...interface{}) { r.addMessage("33", text, args...) }
+func (r *Report) AddWarning(text string, args ...interface{}) { r.addMessage("33", ">>", text, args...) }
 
 //AddError adds an error message to the given Report. If args... are given,
 //fmt.Sprintf() is applied.
-func (r *Report) AddError(text string, args ...interface{}) { r.addMessage("31", text, args...) }
+func (r *Report) AddError(text string, args ...interface{}) { r.addMessage("31", "!!", text, args...) }
+
+var reportsWerePrinted bool
 
 //Print prints the full report on stdout.
 func (r *Report) Print() {
+	//before the first report, print a newline to get the paragraph formatting right
+	if !reportsWerePrinted {
+		fmt.Println()
+		reportsWerePrinted = true
+	}
+
 	//print initial line with Action, Target and State
 	var lineFormat string
 	if r.Action == "" {
@@ -114,10 +122,20 @@ func (r *Report) Print() {
 			fmt.Printf(lineFormat, line.key, line.value)
 		}
 	}
-	fmt.Println()
+	if len(r.infoLines) > 0 {
+		fmt.Println()
+	}
 
 	//print message text, if any
 	if r.msgText != "" {
 		fmt.Println(r.msgText) //including trailing newline
+	}
+}
+
+//PrintUnlessEmpty prints the full report on stdout if it has any lines,
+//warnings or errors.
+func (r *Report) PrintUnlessEmpty() {
+	if len(r.infoLines) > 0 || r.msgText != "" {
+		r.Print()
 	}
 }

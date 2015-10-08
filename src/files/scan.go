@@ -32,24 +32,10 @@ import (
 //ScanRepo returns a slice of all the TargetFile entities.
 func ScanRepo() common.Entities {
 	//check that the repo and target base directories exist
-	repoPath := common.RepoDirectory()
-	targetBasePath := common.TargetBaseDirectory()
-	pathsThatMustExist := []string{repoPath, targetBasePath}
-
-	for _, path := range pathsThatMustExist {
-		fi, err := os.Lstat(path)
-		if err != nil {
-			common.PrintError("Cannot open %s: %s", path, err.Error())
-			return nil
-		}
-		if !fi.IsDir() {
-			common.PrintError("Cannot open %s: not a directory!", path)
-			return nil
-		}
-	}
 
 	//walk over the repo to find repo files (and thus the corresponding target files)
 	targets := make(map[string]*TargetFile)
+	repoPath := common.RepoDirectory()
 	filepath.Walk(repoPath, func(repoFile string, repoFileInfo os.FileInfo, err error) error {
 		//skip over unaccessible stuff
 		if err != nil {
@@ -77,6 +63,7 @@ func ScanRepo() common.Entities {
 	})
 
 	//walk over the target base directory to find orphaned target bases
+	targetBasePath := common.TargetBaseDirectory()
 	filepath.Walk(targetBasePath, func(targetBaseFile string, targetBaseFileInfo os.FileInfo, err error) error {
 		//skip over unaccessible stuff
 		if err != nil {

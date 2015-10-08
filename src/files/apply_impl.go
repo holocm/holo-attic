@@ -20,36 +20,40 @@
 
 package files
 
-import "../common"
+import (
+	"fmt"
+
+	"../common"
+)
 
 //The stuff in this file used to be inside src/holo/apply.go, but it was split
 //to emphasize the standardized interface of application implementations.
 
 //ApplyImpl is the return type for GetApplyImpl.
-type ApplyImpl func(*FileBuffer) (*FileBuffer, error)
+type ApplyImpl func(*FileBuffer, *common.Report) (*FileBuffer, error)
 
 //GetApplyImpl returns a function that applies the given RepoFile to a file
 //buffer, as part of the `holo apply` algorithm.
 func GetApplyImpl(repoFile RepoFile) ApplyImpl {
-	var impl func(RepoFile, *FileBuffer) (*FileBuffer, error)
+	var impl func(RepoFile, *FileBuffer, *common.Report) (*FileBuffer, error)
 	if repoFile.ApplicationStrategy() == "passthru" {
 		impl = applyScript
 	} else {
 		impl = applyFile
 	}
-	return func(fb *FileBuffer) (*FileBuffer, error) {
-		return impl(repoFile, fb)
+	return func(fb *FileBuffer, r *common.Report) (*FileBuffer, error) {
+		return impl(repoFile, fb, r)
 	}
 }
 
-func applyFile(repoFile RepoFile, buffer *FileBuffer) (*FileBuffer, error) {
+func applyFile(repoFile RepoFile, buffer *FileBuffer, report *common.Report) (*FileBuffer, error) {
 	//if the repo contains a plain file (or symlink), the file
 	//buffer is replaced by it, thus ignoring the target base (or any
 	//previous application steps)
 	return NewFileBuffer(repoFile.Path(), buffer.BasePath)
 }
 
-func applyScript(repoFile RepoFile, buffer *FileBuffer) (*FileBuffer, error) {
+func applyScript(repoFile RepoFile, buffer *FileBuffer, report *common.Report) (*FileBuffer, error) {
 	//this application strategy requires file contents
 	buffer, err := buffer.ResolveSymlink()
 	if err != nil {
@@ -58,9 +62,9 @@ func applyScript(repoFile RepoFile, buffer *FileBuffer) (*FileBuffer, error) {
 
 	//run command, fetch result file into buffer (not into the targetPath
 	//directly, in order not to corrupt the file there if the script run fails)
-	output, err := common.ExecProgram(buffer.Contents, repoFile.Path())
+	output, err := common.ExecProgram(report, buffer.Contents, repoFile.Path())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("execution of %s failed: %s", repoFile.Path(), err.Error())
 	}
 
 	//result is the stdout of the script

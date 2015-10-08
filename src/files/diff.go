@@ -133,10 +133,12 @@ func lstatForDiff(path string) (fileType fileType, fi os.FileInfo, e error) {
 	return fileUnknown, nil, fmt.Errorf("%s is not a manageable file", path)
 }
 
-func getDiffBody(fromPath, toPath string) []byte {
+func getDiffBody(fromPath, toPath, reportedPath string) []byte {
 	//skip the error handling here; a non-empty diff produces a non-zero exit
 	//code and we don't want to fail in that case
-	output, _ := common.ExecProgram([]byte{}, "diff", "-u", fromPath, toPath)
+	errorReport := common.Report{Action: "diff", Target: toPath}
+	output, _ := common.ExecProgram(&errorReport, []byte{}, "diff", "-u", fromPath, toPath)
+	errorReport.PrintUnlessEmpty()
 	//remove the header, up to the first hunk (started by a line like "@@ -1 +0,0")
 	return regexp.MustCompile("^(?s:.+?)(?m:^@@)").ReplaceAll(output, []byte("@@"))
 }
@@ -149,12 +151,12 @@ func makeRegularCreateDiff(path, reportedPath string, mode os.FileMode) []byte {
 		"--- /dev/null\n",
 		fmt.Sprintf("+++ b/%s\n", reportedPath),
 	}, ""))
-	return append(header, getDiffBody("/dev/null", path)...)
+	return append(header, getDiffBody("/dev/null", path, reportedPath)...)
 }
 
 func makeRegularModifyDiff(fromPath, toPath, reportedPath string, fromMode os.FileMode, toMode os.FileMode) []byte {
 	//is there a diff?
-	diffBody := getDiffBody(fromPath, toPath)
+	diffBody := getDiffBody(fromPath, toPath, reportedPath)
 	if len(bytes.TrimSpace(diffBody)) == 0 {
 		return []byte(nil)
 	}
@@ -185,7 +187,7 @@ func makeRegularDeleteDiff(path, reportedPath string, mode os.FileMode) []byte {
 		fmt.Sprintf("--- a/%s\n", reportedPath),
 		"+++ /dev/null\n",
 	}, ""))
-	return append(header, getDiffBody(path, "/dev/null")...)
+	return append(header, getDiffBody(path, "/dev/null", reportedPath)...)
 }
 
 func makeSymlinkCreateDiff(linkTarget, reportedPath string) []byte {

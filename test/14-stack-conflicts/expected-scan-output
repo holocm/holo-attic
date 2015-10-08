@@ -1,12 +1,14 @@
-[holo] Encountered some errors while reading target/usr/share/holo/01-first.toml:
-[holo]     groups[1] is missing required 'name' attribute
-[holo]     users[0] is missing required 'name' attribute
-[holo] Encountered some errors while reading target/usr/share/holo/02-second.toml:
-[holo]     conflicting GID for group 'stacked' (existing: 1000, new: 1001)
-[holo]     conflicting UID for user 'stacked' (existing: 1000, new: 1001)
-[holo]     conflicting home directory for user 'stacked' (existing: /var/lib/stacked, new: /home/stacked)
-[holo]     conflicting login group for user 'stacked' (existing: users, new: stacked)
-[holo]     conflicting login shell for user 'stacked' (existing: /usr/bin/zsh, new: /bin/bash)
+
+scan entity definitions
+!! File target/usr/share/holo/01-first.toml is invalid:
+!!     groups[1] is missing required 'name' attribute
+!!     users[0] is missing required 'name' attribute
+!! File target/usr/share/holo/02-second.toml is invalid:
+!!     conflicting GID for group 'stacked' (existing: 1000, new: 1001)
+!!     conflicting UID for user 'stacked' (existing: 1000, new: 1001)
+!!     conflicting home directory for user 'stacked' (existing: /var/lib/stacked, new: /home/stacked)
+!!     conflicting login group for user 'stacked' (existing: users, new: stacked)
+!!     conflicting login shell for user 'stacked' (existing: /usr/bin/zsh, new: /bin/bash)
 
 group:valid
     found in target/usr/share/holo/01-first.toml

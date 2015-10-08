@@ -124,7 +124,7 @@ func Apply(target *TargetFile, report *common.Report, withForce bool) {
 	//step 4b: apply all the applicable repo files in order
 	repoEntries := target.RepoEntries()
 	for _, repoFile := range repoEntries {
-		buffer, err = GetApplyImpl(repoFile)(buffer)
+		buffer, err = GetApplyImpl(repoFile)(buffer, report)
 		if err != nil {
 			report.AddError(err.Error())
 			return

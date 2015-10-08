@@ -111,7 +111,6 @@ func commandApply(entities common.Entities) {
 	}
 
 	//apply all declared entities (or only some if the args contain a limited subset)
-	fmt.Println()
 	for _, entity := range entities {
 		if !withTargets || targets[entity.EntityID()] {
 			entity.Apply(withForce)
@@ -132,11 +131,6 @@ func commandScan(entities common.Entities) {
 			fmt.Println("Unrecognized argument: " + arg)
 			return
 		}
-	}
-
-	//report scan results
-	if !isShort {
-		fmt.Println()
 	}
 
 	//report declared entities

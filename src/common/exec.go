@@ -37,8 +37,8 @@ func init() {
 }
 
 //ExecProgram is a wrapper around exec.Command that reports any stderr output
-//of the child process automatically.
-func ExecProgram(stdin []byte, command string, arguments ...string) (output []byte, err error) {
+//of the child process to the given Report automatically.
+func ExecProgram(report *Report, stdin []byte, command string, arguments ...string) (output []byte, err error) {
 	var stdout, stderr bytes.Buffer
 	cmd := exec.Command(command, arguments...)
 	cmd.Stdin = bytes.NewBuffer(stdin)
@@ -46,10 +46,10 @@ func ExecProgram(stdin []byte, command string, arguments ...string) (output []by
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if stderr.Len() > 0 {
-		PrintWarning("execution of %s produced error output:", command)
+		report.AddWarning("execution of %s produced error output:", command)
 		stderrLines := strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
 		for _, stderrLine := range stderrLines {
-			PrintWarning("    %s", stderrLine)
+			report.AddWarning("    " + stderrLine)
 		}
 	}
 	return stdout.Bytes(), err
@@ -58,12 +58,12 @@ func ExecProgram(stdin []byte, command string, arguments ...string) (output []by
 //ExecProgramOrMock works like ExecProgram, but when the environment variable
 //HOLO_MOCK=1 is set, it will only print the command name and return success
 //and empty stdout without executing the command.
-func ExecProgramOrMock(stdin []byte, command string, arguments ...string) (output []byte, err error) {
+func ExecProgramOrMock(report *Report, stdin []byte, command string, arguments ...string) (output []byte, err error) {
 	if mock {
-		fmt.Printf("MOCK: %s\n", shellEscapeArgs(append([]string{command}, arguments...)))
+		report.AddWarning("MOCK: %s", shellEscapeArgs(append([]string{command}, arguments...)))
 		return []byte{}, nil
 	}
-	o, e := ExecProgram(stdin, command, arguments...)
+	o, e := ExecProgram(report, stdin, command, arguments...)
 	return o, e
 }
 

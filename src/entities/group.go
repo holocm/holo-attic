@@ -111,7 +111,7 @@ func (g Group) doApply(report *common.Report, withForce bool) {
 				for _, diff := range differences {
 					report.AddLine("fix", fmt.Sprintf("%s (was: %s)", diff.field, diff.actual))
 				}
-				err := g.callGroupmod()
+				err := g.callGroupmod(report)
 				if err != nil {
 					report.AddError(err.Error())
 					return
@@ -124,7 +124,7 @@ func (g Group) doApply(report *common.Report, withForce bool) {
 		}
 	} else {
 		//create the group if it does not exist
-		err := g.callGroupadd()
+		err := g.callGroupadd(report)
 		if err != nil {
 			report.AddError(err.Error())
 			return
@@ -154,7 +154,7 @@ func (g Group) checkExists() (exists bool, gid int, e error) {
 	return true, actualGid, err
 }
 
-func (g Group) callGroupadd() error {
+func (g Group) callGroupadd(report *common.Report) error {
 	//assemble arguments for groupadd call
 	args := []string{}
 	if g.system {
@@ -166,11 +166,11 @@ func (g Group) callGroupadd() error {
 	args = append(args, g.name)
 
 	//call groupadd
-	_, err := common.ExecProgramOrMock([]byte{}, "groupadd", args...)
+	_, err := common.ExecProgramOrMock(report, []byte{}, "groupadd", args...)
 	return err
 }
 
-func (g Group) callGroupmod() error {
+func (g Group) callGroupmod(report *common.Report) error {
 	//assemble arguments for groupmod call
 	args := []string{}
 	if g.gid > 0 {
@@ -179,6 +179,6 @@ func (g Group) callGroupmod() error {
 	args = append(args, g.name)
 
 	//call groupmod
-	_, err := common.ExecProgramOrMock([]byte{}, "groupmod", args...)
+	_, err := common.ExecProgramOrMock(report, []byte{}, "groupmod", args...)
 	return err
 }

@@ -24,6 +24,14 @@ tomato
 foo
 qux
 baz
+>> ./etc/plain-with-nonzero-exitcode.conf = regular
+foo
+bar
+baz
+>> ./etc/plain-with-stderr.conf = regular
+foo
+bor
+boz
 >> ./usr/share/holo/repo/02-holoscripts/etc/link-through-link.conf.holoscript = symlink
 /usr/bin/uniq
 >> ./usr/share/holo/repo/02-holoscripts/etc/link-through-plain.conf.holoscript = regular
@@ -34,6 +42,15 @@ sed s/a/u/
 >> ./usr/share/holo/repo/02-holoscripts/etc/plain-through-plain.conf.holoscript = regular
 #!/bin/sh
 sed 's/bar/qux/'
+>> ./usr/share/holo/repo/02-holoscripts/etc/plain-with-nonzero-exitcode.conf.holoscript = regular
+#!/bin/sh
+sed s/a/x/
+exit 1
+>> ./usr/share/holo/repo/02-holoscripts/etc/plain-with-stderr.conf.holoscript = regular
+#!/bin/sh
+echo 'First line of stderr output.' >&2
+sed s/a/o/
+echo 'Second line of stderr output.' >&2
 >> ./var/lib/holo/base/etc/link-through-link.conf = symlink
 contents
 >> ./var/lib/holo/base/etc/link-through-plain.conf = symlink
@@ -43,6 +60,14 @@ tomato
 apple
 banana
 >> ./var/lib/holo/base/etc/plain-through-plain.conf = regular
+foo
+bar
+baz
+>> ./var/lib/holo/base/etc/plain-with-nonzero-exitcode.conf = regular
+foo
+bar
+baz
+>> ./var/lib/holo/base/etc/plain-with-stderr.conf = regular
 foo
 bar
 baz
@@ -65,3 +90,7 @@ tomato
 foo
 qux
 baz
+>> ./var/lib/holo/provisioned/etc/plain-with-stderr.conf = regular
+foo
+bor
+boz

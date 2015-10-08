@@ -154,7 +154,7 @@ func (u User) doApply(report *common.Report, withForce bool) {
 				for _, diff := range differences {
 					report.AddLine("fix", fmt.Sprintf("%s (was: %s)", diff.field, diff.actual))
 				}
-				err := u.callUsermod()
+				err := u.callUsermod(report)
 				if err != nil {
 					report.AddError(err.Error())
 					return
@@ -167,7 +167,7 @@ func (u User) doApply(report *common.Report, withForce bool) {
 		}
 	} else {
 		//create the user if it does not exist
-		err := u.callUseradd()
+		err := u.callUseradd(report)
 		if err != nil {
 			report.AddError(err.Error())
 			return
@@ -250,7 +250,7 @@ func (u User) checkExists() (exists bool, currentUser *User, e error) {
 	}, nil
 }
 
-func (u User) callUseradd() error {
+func (u User) callUseradd(report *common.Report) error {
 	//assemble arguments for useradd call
 	args := []string{}
 	if u.system {
@@ -277,11 +277,11 @@ func (u User) callUseradd() error {
 	args = append(args, u.name)
 
 	//call useradd
-	_, err := common.ExecProgramOrMock([]byte{}, "useradd", args...)
+	_, err := common.ExecProgramOrMock(report, []byte{}, "useradd", args...)
 	return err
 }
 
-func (u User) callUsermod() error {
+func (u User) callUsermod(report *common.Report) error {
 	//assemble arguments for usermod call
 	args := []string{}
 	if u.uid > 0 {
@@ -305,6 +305,6 @@ func (u User) callUsermod() error {
 	args = append(args, u.name)
 
 	//call usermod
-	_, err := common.ExecProgramOrMock([]byte{}, "usermod", args...)
+	_, err := common.ExecProgramOrMock(report, []byte{}, "usermod", args...)
 	return err
 }

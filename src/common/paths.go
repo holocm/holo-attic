@@ -21,6 +21,7 @@
 package common
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -38,6 +39,27 @@ func init() {
 		repoDirectory = filepath.Join(value, repoDirectory[1:])
 		targetBaseDirectory = filepath.Join(value, targetBaseDirectory[1:])
 		provisionedDirectory = filepath.Join(value, provisionedDirectory[1:])
+	}
+
+	//all these directories need to exist
+	dirs := []string{targetDirectory, entityDirectory, repoDirectory, targetBaseDirectory, provisionedDirectory}
+	errorReport := Report{Action: "Errors occurred during", Target: "startup"}
+	hasError := false
+	for _, dir := range dirs {
+		fi, err := os.Lstat(dir)
+		switch {
+		case err != nil:
+			errorReport.AddError("Cannot open %s: %s", dir, err.Error())
+			hasError = true
+		case !fi.IsDir():
+			errorReport.AddError("Cannot open %s: not a directory!", dir)
+			hasError = true
+		}
+	}
+	if hasError {
+		fmt.Println()
+		errorReport.Print()
+		panic("startup failed")
 	}
 }
 
