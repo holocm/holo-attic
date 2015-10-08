@@ -33,10 +33,9 @@ type Entity interface {
 	//DefinitionFile returns the path to the file containing the definition of
 	//this entity.
 	DefinitionFiles() []string
-	//Attributes returns a string describing additional attributes set for this
-	//entity, alternatively an empty string.
-	Attributes() string
-	//Apply performs the complete application algorithm for the givne Entity.
+	//Report generates a common.Report describing this Entity.
+	Report() *Report
+	//Apply performs the complete application algorithm for the given Entity.
 	Apply(withForce bool)
 }
 

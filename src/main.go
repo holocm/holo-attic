@@ -183,15 +183,7 @@ func commandScan(configFiles files.ConfigFiles, orphanedTargetBases []string, en
 		if isShort {
 			fmt.Println(entity.EntityID())
 		} else {
-			r := common.Report{Target: entity.EntityID()}
-			defFiles := entity.DefinitionFiles()
-			for _, defFile := range defFiles {
-				r.AddLine("found in", defFile)
-			}
-			if attributes := entity.Attributes(); attributes != "" {
-				r.AddLine("with", attributes)
-			}
-			r.Print()
+			entity.Report().Print()
 		}
 	}
 }

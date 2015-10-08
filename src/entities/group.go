@@ -55,8 +55,19 @@ func (g Group) EntityID() string { return "group:" + g.name }
 //DefinitionFiles implements the Entity interface for Group.
 func (g Group) DefinitionFiles() []string { return g.definitionFiles }
 
-//Attributes implements the Entity interface for Group.
-func (g Group) Attributes() string {
+//Report implements the Entity interface for Group.
+func (g Group) Report() *common.Report {
+	r := common.Report{Target: g.EntityID()}
+	for _, defFile := range g.definitionFiles {
+		r.AddLine("found in", defFile)
+	}
+	if attributes := g.attributes(); attributes != "" {
+		r.AddLine("with", attributes)
+	}
+	return &r
+}
+
+func (g Group) attributes() string {
 	attrs := []string{}
 	if g.system {
 		attrs = append(attrs, "type: system")
@@ -67,7 +78,7 @@ func (g Group) Attributes() string {
 	return strings.Join(attrs, ", ")
 }
 
-//Apply performs the complete application algorithm for the givne Entity.
+//Apply performs the complete application algorithm for the given Entity.
 //If the group does not exist yet, it is created. If it does exist, but some
 //attributes do not match, it will be updated, but only if withForce is given.
 func (g Group) Apply(withForce bool) {
@@ -98,7 +109,7 @@ func (g Group) Apply(withForce bool) {
 		}
 	} else {
 		//create the group if it does not exist
-		description := g.Attributes()
+		description := g.attributes()
 		if description != "" {
 			description = "with " + description
 		}
