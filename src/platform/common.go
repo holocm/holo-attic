@@ -82,9 +82,11 @@ func init() {
 		//set via HOLO_CURRENT_DISTRIBUTION=unittest only
 		impl = genericImpl{}
 	default:
-		common.PrintError("Running on an unrecognized distribution. Distribution IDs: %s", strings.Join(dists, ","))
-		common.PrintWarning("Please report this error at <https://github.com/holocm/holo/issues/new>")
-		common.PrintWarning("and include the contents of your /etc/os-release file.")
+		report := common.Report{Action: "scan", Target: "platform"}
+		report.AddError("Running on an unrecognized distribution. Distribution IDs: %s", strings.Join(dists, ","))
+		report.AddWarning("Please report this error at <https://github.com/holocm/holo/issues/new>")
+		report.AddWarning("and include the contents of your /etc/os-release file.")
+		report.Print()
 		impl = genericImpl{}
 	}
 }

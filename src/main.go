@@ -160,7 +160,9 @@ func commandDiff(entities common.Entities) {
 			if target, ok := entity.(*files.TargetFile); ok {
 				output, err := target.RenderDiff()
 				if err != nil {
-					common.PrintError("Could not diff %s: %s\n", target.PathIn(common.TargetDirectory()), err.Error())
+					report := common.Report{Action: "diff", Target: target.EntityID()}
+					report.AddError(err.Error())
+					report.Print()
 				}
 				os.Stdout.Write(output)
 			}

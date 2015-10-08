@@ -21,7 +21,6 @@
 package common
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -57,7 +56,6 @@ func init() {
 		}
 	}
 	if hasError {
-		fmt.Println()
 		errorReport.Print()
 		panic("startup failed")
 	}
