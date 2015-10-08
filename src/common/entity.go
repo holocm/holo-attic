@@ -18,22 +18,23 @@
 *
 *******************************************************************************/
 
-package entities
+package common
 
-//Entity provides a common interface for configuration entities that are not
-//files, such as user accounts and user groups.
+//Entity provides a common interface for configuration entities, such as
+//configuration files, user accounts and user groups.
 type Entity interface {
 	//EntityID returns a string that uniquely identifies the entity, usually in
 	//the form "type:name". This is how the entity can be addressed as a target
-	//in the argument list foe "holo apply", e.g. "holo apply /etc/sudoers
-	//group:foo" will apply /etc/sudoers and the group "foo". Therefore, entity
-	//IDs should not contain whitespaces or characters that have a special
-	//meaning on the shell.
+	//in the argument list for "holo apply", e.g. "holo apply /etc/sudoers
+	//group:foo" will apply the target file "/etc/sudoers" and the group "foo".
+	//Therefore, entity IDs should not contain whitespaces or characters that
+	//have a special meaning on the shell.
 	EntityID() string
-	//DefinitionFile returns the path to the file containing the definition of this entity.
+	//DefinitionFile returns the path to the file containing the definition of
+	//this entity.
 	DefinitionFiles() []string
-	//Attributes returns a string describing additional attributes set for this entity,
-	//alternatively an empty string.
+	//Attributes returns a string describing additional attributes set for this
+	//entity, alternatively an empty string.
 	Attributes() string
 	//Apply performs the complete application algorithm for the givne Entity.
 	Apply(withForce bool)

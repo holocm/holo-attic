@@ -43,7 +43,7 @@ func main() {
 	}
 
 	//check that it is a known command word
-	var command func(files.ConfigFiles, []string, entities.Entities)
+	var command func(files.ConfigFiles, []string, common.Entities)
 	switch os.Args[1] {
 	case "apply":
 		command = commandApply
@@ -88,7 +88,7 @@ func commandHelp() {
 	fmt.Printf("\nSee `man 8 holo` for details.\n")
 }
 
-func commandApply(configFiles files.ConfigFiles, orphanedTargetBases []string, entities entities.Entities) {
+func commandApply(configFiles files.ConfigFiles, orphanedTargetBases []string, entities common.Entities) {
 	//parse arguments after "holo apply" (either files or "--force")
 	withForce := false
 	withTargets := false
@@ -133,7 +133,7 @@ func commandApply(configFiles files.ConfigFiles, orphanedTargetBases []string, e
 	}
 }
 
-func commandScan(configFiles files.ConfigFiles, orphanedTargetBases []string, entities entities.Entities) {
+func commandScan(configFiles files.ConfigFiles, orphanedTargetBases []string, entities common.Entities) {
 	//check args
 	args := os.Args[2:]
 	isShort := false
@@ -196,7 +196,7 @@ func commandScan(configFiles files.ConfigFiles, orphanedTargetBases []string, en
 	}
 }
 
-func commandDiff(configFiles files.ConfigFiles, orphanedTargetBases []string, _ entities.Entities) {
+func commandDiff(configFiles files.ConfigFiles, orphanedTargetBases []string, _ common.Entities) {
 	//which targets have been selected?
 	if len(os.Args) == 2 {
 		//no arguments given -> diff all known config files, including those

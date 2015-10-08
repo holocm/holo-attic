@@ -34,7 +34,7 @@ import (
 
 //Scan returns a slice of all the defined entities. If an error is encountered
 //during the scan, it will be reported on stdout, and nil is returned.
-func Scan() Entities {
+func Scan() common.Entities {
 	//look in the entity directory for entity definitions
 	entityPath := common.EntityDirectory()
 	dir, err := os.Open(entityPath)
@@ -77,7 +77,7 @@ func Scan() Entities {
 	}
 
 	//flatten result into a list sorted by EntityID and filter invalid entites
-	entities := make(Entities, 0, len(groups)+len(users))
+	entities := make(common.Entities, 0, len(groups)+len(users))
 	for _, group := range groups {
 		if group.isValid() {
 			entities = append(entities, group)
