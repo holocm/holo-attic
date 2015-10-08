@@ -24,12 +24,8 @@ package platform
 //or generic unit tests.
 type genericImpl struct{}
 
-func (p genericImpl) FindUpdatedTargetBase(targetPath string) string {
-	return ""
-}
-
-func (p genericImpl) FindConfigBackup(targetPath string) string {
-	return ""
+func (p genericImpl) FindUpdatedTargetBase(targetPath string) (actualPath, reportedPath string, err error) {
+	return "", "", nil
 }
 
 func (p genericImpl) AdditionalCleanupTargets(targetPath string) []string {

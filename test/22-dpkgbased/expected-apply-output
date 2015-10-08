@@ -4,7 +4,6 @@ Working on target/etc/targetfile-with-dpkg-dist.conf
   passthru target/usr/share/holo/repo/01-first/etc/targetfile-with-dpkg-dist.conf.holoscript
 
 Working on target/etc/targetfile-with-dpkg-old.conf
-    update target/etc/targetfile-with-dpkg-old.conf -> target/var/lib/holo/base/etc/targetfile-with-dpkg-old.conf
+    update target/etc/targetfile-with-dpkg-old.conf (with .dpkg-old) -> target/var/lib/holo/base/etc/targetfile-with-dpkg-old.conf
   passthru target/usr/share/holo/repo/01-first/etc/targetfile-with-dpkg-old.conf.holoscript
-    delete target/etc/targetfile-with-dpkg-old.conf.dpkg-old
 

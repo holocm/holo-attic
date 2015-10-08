@@ -20,25 +20,38 @@
 
 package platform
 
-import "../common"
+import (
+	"fmt"
+
+	"../common"
+)
 
 //dpkgImpl provides the platform.Impl for dpkg-based distributions (Debian and derivatives).
 type dpkgImpl struct{}
 
-func (p dpkgImpl) FindUpdatedTargetBase(targetPath string) string {
-	dpkgDistPath := targetPath + ".dpkg-dist"
-	if common.IsManageableFile(dpkgDistPath) {
-		return dpkgDistPath
-	}
-	return ""
-}
+func (p dpkgImpl) FindUpdatedTargetBase(targetPath string) (actualPath, reportedPath string, err error) {
+	dpkgDistPath := targetPath + ".dpkg-dist" //may be an updated target base
+	dpkgOldPath := targetPath + ".dpkg-old"   //may be a backup of the last provisioned target when the updated target base is at targetPath
 
-func (p dpkgImpl) FindConfigBackup(targetPath string) string {
-	dpkgOldPath := targetPath + ".dpkg-old"
+	//if "${target}.dpkg-old" exists, move it back to $target and move the
+	//updated target base to "${target}.dpkg-dist" so that the usual application
+	//logic can continue
 	if common.IsManageableFile(dpkgOldPath) {
-		return dpkgOldPath
+		err := common.MoveFile(targetPath, dpkgDistPath)
+		if err != nil {
+			return "", "", err
+		}
+		err = common.MoveFile(dpkgOldPath, targetPath)
+		if err != nil {
+			return "", "", err
+		}
+		return dpkgDistPath, fmt.Sprintf("%s (with .dpkg-old)", targetPath), nil
 	}
-	return ""
+
+	if common.IsManageableFile(dpkgDistPath) {
+		return dpkgDistPath, dpkgDistPath, nil
+	}
+	return "", "", nil
 }
 
 func (p dpkgImpl) AdditionalCleanupTargets(targetPath string) []string {

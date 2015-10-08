@@ -25,17 +25,12 @@ import "../common"
 //archImpl provides the platform.Impl for Arch Linux and derivatives.
 type archImpl struct{}
 
-func (p archImpl) FindUpdatedTargetBase(targetPath string) string {
+func (p archImpl) FindUpdatedTargetBase(targetPath string) (actualPath, reportedPath string, err error) {
 	pacnewPath := targetPath + ".pacnew"
 	if common.IsManageableFile(pacnewPath) {
-		return pacnewPath
+		return pacnewPath, pacnewPath, nil
 	}
-	return ""
-}
-
-func (p archImpl) FindConfigBackup(targetPath string) string {
-	//not used by pacman
-	return ""
+	return "", "", nil
 }
 
 func (p archImpl) AdditionalCleanupTargets(targetPath string) []string {

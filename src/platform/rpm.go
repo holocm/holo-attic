@@ -20,25 +20,38 @@
 
 package platform
 
-import "../common"
+import (
+	"fmt"
+
+	"../common"
+)
 
 //rpmImpl provides the platform.Impl for RPM-based distributions.
 type rpmImpl struct{}
 
-func (p rpmImpl) FindUpdatedTargetBase(targetPath string) string {
-	rpmnewPath := targetPath + ".rpmnew"
-	if common.IsManageableFile(rpmnewPath) {
-		return rpmnewPath
-	}
-	return ""
-}
+func (p rpmImpl) FindUpdatedTargetBase(targetPath string) (actualPath, reportedPath string, err error) {
+	rpmnewPath := targetPath + ".rpmnew"   //may be an updated target base
+	rpmsavePath := targetPath + ".rpmsave" //may be a backup of the last provisioned target when the updated target base is at targetPath
 
-func (p rpmImpl) FindConfigBackup(targetPath string) string {
-	rpmsavePath := targetPath + ".rpmsave"
+	//if "${target}.rpmsave" exists, move it back to $target and move the
+	//updated target base to "${target}.rpmnew" so that the usual application
+	//logic can continue
 	if common.IsManageableFile(rpmsavePath) {
-		return rpmsavePath
+		err := common.MoveFile(targetPath, rpmnewPath)
+		if err != nil {
+			return "", "", err
+		}
+		err = common.MoveFile(rpmsavePath, targetPath)
+		if err != nil {
+			return "", "", err
+		}
+		return rpmnewPath, fmt.Sprintf("%s (with .rpmsave)", targetPath), nil
 	}
-	return ""
+
+	if common.IsManageableFile(rpmnewPath) {
+		return rpmnewPath, rpmnewPath, nil
+	}
+	return "", "", nil
 }
 
 func (p rpmImpl) AdditionalCleanupTargets(targetPath string) []string {

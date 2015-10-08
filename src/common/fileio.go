@@ -89,6 +89,16 @@ func copySymlinkImpl(fromPath, toPath string) error {
 	return nil
 }
 
+//MoveFile is like CopyFile, but it removes the fromPath after successful
+//copying.
+func MoveFile(fromPath, toPath string) error {
+	err := CopyFile(fromPath, toPath)
+	if err != nil {
+		return err
+	}
+	return os.Remove(fromPath)
+}
+
 //ApplyFilePermissions applies permission flags and ownership
 //from the first file to the second file.
 func ApplyFilePermissions(fromPath, toPath string) error {

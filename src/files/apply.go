@@ -75,35 +75,20 @@ func Apply(target *TargetFile, report *common.Report, withForce bool) {
 
 	//step 3: check if a system update installed a new version of the stock
 	//configuration
-	updateBackupPath := platform.Implementation().FindConfigBackup(targetPath)
-	lastInstalledTargetPath := targetPath
-	if updateBackupPath != "" {
-		//case 1: yes, the targetPath is an updated stock configuration and the
-		//old targetPath (last written by Holo) was moved to updateBackupPath
-		//(this code path is used for .rpmsave and .dpkg-old files)
-		report.ReplaceLine(0, "update", fmt.Sprintf("%s -> %s", targetPath, targetBasePath))
-		err := common.CopyFile(targetPath, targetBasePath)
+	updatePath, reportedUpdatePath, err := platform.Implementation().FindUpdatedTargetBase(targetPath)
+	if err != nil {
+		report.AddError(err.Error())
+		return
+	}
+	if updatePath != "" {
+		//an updated stock configuration is available at updatePath
+		report.ReplaceLine(0, "update", fmt.Sprintf("%s -> %s", reportedUpdatePath, targetBasePath))
+		err := common.CopyFile(updatePath, targetBasePath)
 		if err != nil {
-			report.AddError("Cannot copy %s to %s: %s", targetPath, targetBasePath, err.Error())
+			report.AddError("Cannot copy %s to %s: %s", updatePath, targetBasePath, err.Error())
 			return
 		}
-		//since the target file that we wrote last time has been moved to a
-		//different place, we need to use the changed path for the mtime check
-		//in the next step
-		lastInstalledTargetPath = updateBackupPath
-	} else {
-		updatePath := platform.Implementation().FindUpdatedTargetBase(targetPath)
-		if updatePath != "" {
-			//case 2: yes, an updated stock configuration is available at updatePath
-			//(this code path is used for .rpmnew, .dpkg-dist and .pacnew files)
-			report.ReplaceLine(0, "update", fmt.Sprintf("%s -> %s", updatePath, targetBasePath))
-			err := common.CopyFile(updatePath, targetBasePath)
-			if err != nil {
-				report.AddError("Cannot copy %s to %s: %s", updatePath, targetBasePath, err.Error())
-				return
-			}
-			_ = os.Remove(updatePath) //this can fail silently
-		}
+		_ = os.Remove(updatePath) //this can fail silently
 	}
 
 	//step 4: apply the repo files *if* the version at targetPath is the one
@@ -112,7 +97,7 @@ func Apply(target *TargetFile, report *common.Report, withForce bool) {
 	//overridden by the --force option)
 	provisionedPath := target.PathIn(common.ProvisionedDirectory())
 	if !withForce && common.IsManageableFile(provisionedPath) {
-		targetBuffer, err := NewFileBuffer(lastInstalledTargetPath, targetPath)
+		targetBuffer, err := NewFileBuffer(targetPath, targetPath)
 		if err != nil {
 			report.AddError(err.Error())
 			return
@@ -176,12 +161,5 @@ func Apply(target *TargetFile, report *common.Report, withForce bool) {
 	if err != nil {
 		report.AddError(err.Error())
 		return
-	}
-
-	//step 5: cleanup the updateBackupPath now that we successfully generated a
-	//new version of the desired target
-	if updateBackupPath != "" {
-		report.AddLine("delete", updateBackupPath)
-		_ = os.Remove(updateBackupPath) //this can fail silently
 	}
 }
