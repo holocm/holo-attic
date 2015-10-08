@@ -42,21 +42,9 @@ func (target *TargetFile) scanOrphanedTargetBase() (theTargetPath, strategy, ass
 func (target *TargetFile) handleOrphanedTargetBase(report *common.Report) {
 	targetPath, strategy, _ := target.scanOrphanedTargetBase()
 	targetBasePath := target.PathIn(common.TargetBaseDirectory())
-	provisionedPath := target.PathIn(common.ProvisionedDirectory())
 
 	switch strategy {
 	case "delete":
-		//target is gone - delete the provisioned target and the target base
-		err := os.Remove(provisionedPath)
-		if err != nil && !os.IsNotExist(err) {
-			report.AddError(err.Error())
-			return
-		}
-		err = os.Remove(targetBasePath)
-		if err != nil {
-			report.AddError(err.Error())
-			return
-		}
 		//if the package management left behind additional cleanup targets
 		//(most likely a backup of our custom configuration), we can delete
 		//these too
@@ -76,17 +64,19 @@ func (target *TargetFile) handleOrphanedTargetBase(report *common.Report) {
 			report.AddError(err.Error())
 			return
 		}
-		//target is not managed by Holo anymore, so delete the provisioned target and the target base
-		err = os.Remove(provisionedPath)
-		if err != nil && !os.IsNotExist(err) {
-			report.AddError(err.Error())
-			return
-		}
-		err = os.Remove(targetBasePath)
-		if err != nil {
-			report.AddError(err.Error())
-			return
-		}
+	}
+
+	//target is not managed by Holo anymore, so delete the provisioned target and the target base
+	lastProvisionedPath := target.PathIn(common.ProvisionedDirectory())
+	err := os.Remove(lastProvisionedPath)
+	if err != nil && !os.IsNotExist(err) {
+		report.AddError(err.Error())
+		return
+	}
+	err = os.Remove(targetBasePath)
+	if err != nil {
+		report.AddError(err.Error())
+		return
 	}
 
 	//TODO: cleanup empty directories below TargetBaseDirectory() and ProvisionedDirectory()

@@ -36,7 +36,7 @@ type Group struct {
 	name            string   //the group name (the first field in /etc/group)
 	gid             int      //the GID (the third field in /etc/group), or 0 if no specific GID is enforced
 	system          bool     //whether the group is a system group (this influences the GID selection if gid = 0)
-	definitionFiles []string //path to the files defining this entity
+	definitionFiles []string //paths to the files defining this entity
 
 	broken bool //whether the entity definition is invalid (default: false)
 }
@@ -70,7 +70,7 @@ func (g Group) attributes() string {
 		attrs = append(attrs, "type: system")
 	}
 	if g.gid > 0 {
-		attrs = append(attrs, fmt.Sprintf("gid: %d", g.gid))
+		attrs = append(attrs, fmt.Sprintf("GID: %d", g.gid))
 	}
 	return strings.Join(attrs, ", ")
 }

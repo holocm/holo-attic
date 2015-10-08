@@ -12,13 +12,13 @@ scan entity definitions
 
 Working on group:valid
   found in target/usr/share/holo/01-first.toml
-      with gid: 1010
+      with GID: 1010
 
 >> MOCK: groupadd --gid 1010 valid
 
 Working on user:valid
   found in target/usr/share/holo/01-first.toml
-      with uid: 1010
+      with UID: 1010
 
 >> MOCK: useradd --uid 1010 valid
 

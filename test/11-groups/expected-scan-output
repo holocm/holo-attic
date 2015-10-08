@@ -8,5 +8,5 @@ group:new
 
 group:wronggid
     found in target/usr/share/holo/01-groups.toml
-        with gid: 42
+        with GID: 42
 

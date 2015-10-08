@@ -1,7 +1,7 @@
 
 Working on user:existing
   found in target/usr/share/holo/01-users.toml
-      with uid: 1002, home: /home/existing, login group: users, groups: network,video,audio, login shell: /bin/zsh, comment: Existing User
+      with UID: 1002, home: /home/existing, login group: users, groups: network,video,audio, login shell: /bin/zsh, comment: Existing User
 
 Working on user:minimal
   found in target/usr/share/holo/01-users.toml
@@ -10,7 +10,7 @@ Working on user:minimal
 
 Working on user:new
   found in target/usr/share/holo/01-users.toml
-      with uid: 1001, home: /home/new, login group: users, groups: network,video,audio, login shell: /bin/zsh, comment: New User
+      with UID: 1001, home: /home/new, login group: users, groups: network,video,audio, login shell: /bin/zsh, comment: New User
 
 >> MOCK: useradd --uid 1001 --comment 'New User' --home-dir /home/new --gid users --groups network,video,audio --shell /bin/zsh new
 
@@ -44,7 +44,7 @@ Working on user:wrongshell
 
 Working on user:wronguid
   found in target/usr/share/holo/01-users.toml
-      with uid: 1003
+      with UID: 1003
        fix UID (was: 2003)
 
 >> MOCK: usermod --uid 1003 wronguid

@@ -29,27 +29,28 @@ import (
 	"../platform"
 )
 
-//Apply performs the complete application algorithm for the given ConfigFile.
+//Apply performs the complete application algorithm for the given TargetFile.
 //This includes taking a copy of the target base if necessary, applying all
-//repo files, and saving the result in the target path with the correct file
-//metadata.
+//repository entries, and saving the result in the target path with the correct
+//file metadata.
 func Apply(target *TargetFile, report *common.Report, withForce bool) {
 	//determine the related paths
 	targetPath := target.PathIn(common.TargetDirectory())
 	targetBasePath := target.PathIn(common.TargetBaseDirectory())
 
-	//step 1: will only install files from repo if:
-	//option 1: there is a corresponding regular file in the target location
-	//(that file comes from the application package, the repo file from the
-	//holo metapackage)
-	//option 2: the target file was deleted, but we have a target base that we can start from
+	//step 1: will only apply targets if:
+	//option 1: there is a manageable file in the target location (this target
+	//file is either the target base from the application package or the
+	//product of a previous Apply run)
+	//option 2: the target file was deleted, but we have a target base that we
+	//can start from
 	if !common.IsManageableFile(targetPath) {
 		if !common.IsManageableFile(targetBasePath) {
 			report.AddError("skipping target: not a manageable file")
 			return
 		}
 		if !withForce {
-			report.AddError("skipping target: file has been deleted by user (use --force to overwrite)")
+			report.AddError("skipping target: file has been deleted by user (use --force to restore)")
 			return
 		}
 	}
@@ -75,34 +76,34 @@ func Apply(target *TargetFile, report *common.Report, withForce bool) {
 
 	//step 3: check if a system update installed a new version of the stock
 	//configuration
-	updatePath, reportedUpdatePath, err := platform.Implementation().FindUpdatedTargetBase(targetPath)
+	updatedTBPath, reportedTBPath, err := platform.Implementation().FindUpdatedTargetBase(targetPath)
 	if err != nil {
 		report.AddError(err.Error())
 		return
 	}
-	if updatePath != "" {
-		//an updated stock configuration is available at updatePath
-		report.ReplaceLine(0, "update", fmt.Sprintf("%s -> %s", reportedUpdatePath, targetBasePath))
-		err := common.CopyFile(updatePath, targetBasePath)
+	if updatedTBPath != "" {
+		//an updated stock configuration is available at updatedTBPath
+		report.ReplaceLine(0, "update", fmt.Sprintf("%s -> %s", reportedTBPath, targetBasePath))
+		err := common.CopyFile(updatedTBPath, targetBasePath)
 		if err != nil {
-			report.AddError("Cannot copy %s to %s: %s", updatePath, targetBasePath, err.Error())
+			report.AddError("Cannot copy %s to %s: %s", updatedTBPath, targetBasePath, err.Error())
 			return
 		}
-		_ = os.Remove(updatePath) //this can fail silently
+		_ = os.Remove(updatedTBPath) //this can fail silently
 	}
 
 	//step 4: apply the repo files *if* the version at targetPath is the one
 	//installed by the package (which can be found at targetBasePath); complain if
 	//the user made any changes to config files governed by holo (this check is
 	//overridden by the --force option)
-	provisionedPath := target.PathIn(common.ProvisionedDirectory())
-	if !withForce && common.IsManageableFile(provisionedPath) {
+	lastProvisionedPath := target.PathIn(common.ProvisionedDirectory())
+	if !withForce && common.IsManageableFile(lastProvisionedPath) {
 		targetBuffer, err := NewFileBuffer(targetPath, targetPath)
 		if err != nil {
 			report.AddError(err.Error())
 			return
 		}
-		lastProvisionedBuffer, err := NewFileBuffer(provisionedPath, targetPath)
+		lastProvisionedBuffer, err := NewFileBuffer(lastProvisionedPath, targetPath)
 		if err != nil {
 			report.AddError(err.Error())
 			return
@@ -133,18 +134,18 @@ func Apply(target *TargetFile, report *common.Report, withForce bool) {
 
 	//step 4c: save a copy of the provisioned config file to check for manual
 	//modifications in the next Apply() run
-	provisionedDir := filepath.Dir(provisionedPath)
+	provisionedDir := filepath.Dir(lastProvisionedPath)
 	err = os.MkdirAll(provisionedDir, 0755)
 	if err != nil {
-		report.AddError("Cannot write %s: %s", provisionedPath, err.Error())
+		report.AddError("Cannot write %s: %s", lastProvisionedPath, err.Error())
 		return
 	}
-	err = buffer.Write(provisionedPath)
+	err = buffer.Write(lastProvisionedPath)
 	if err != nil {
 		report.AddError(err.Error())
 		return
 	}
-	err = common.ApplyFilePermissions(targetBasePath, provisionedPath)
+	err = common.ApplyFilePermissions(targetBasePath, lastProvisionedPath)
 	if err != nil {
 		report.AddError(err.Error())
 		return

@@ -42,7 +42,7 @@ type User struct {
 	group           string   //the name of the user's initial login group (or empty to use the default)
 	groups          []string //the names of supplementary groups which the user is also a member of
 	shell           string   //path to the user's login shell (or empty to use the default)
-	definitionFiles []string //path to the file defining this entity
+	definitionFiles []string //paths to the files defining this entity
 
 	broken bool //whether the entity definition is invalid (default: false)
 }
@@ -76,7 +76,7 @@ func (u User) attributes() string {
 		attrs = append(attrs, "type: system")
 	}
 	if u.uid > 0 {
-		attrs = append(attrs, fmt.Sprintf("uid: %d", u.uid))
+		attrs = append(attrs, fmt.Sprintf("UID: %d", u.uid))
 	}
 	if u.homeDirectory != "" {
 		attrs = append(attrs, "home: "+u.homeDirectory)

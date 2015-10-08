@@ -38,49 +38,49 @@ func Scan() common.Entities {
 	errorReport := common.Report{Action: "scan", Target: "entity definitions"}
 
 	//look in the entity directory for entity definitions
-	entityPath := common.EntityDirectory()
-	dir, err := os.Open(entityPath)
+	entityDir := common.EntityDirectory()
+	dir, err := os.Open(entityDir)
 	if err != nil {
-		errorReport.AddError("Cannot read %s: %s", entityPath, err.Error())
+		errorReport.AddError("Cannot read %s: %s", entityDir, err.Error())
 		errorReport.Print()
 		return nil
 	}
 	fis, err := dir.Readdir(-1)
 	if err != nil {
-		errorReport.AddError("Cannot read %s: %s", entityPath, err.Error())
+		errorReport.AddError("Cannot read %s: %s", entityDir, err.Error())
 		errorReport.Print()
 		return nil
 	}
 
 	//collect all definition files, sort by name
-	var paths []string
+	var definitionPaths []string
 	for _, fi := range fis {
 		if fi.Mode().IsRegular() {
-			path := filepath.Join(entityPath, fi.Name())
+			definitionPath := filepath.Join(entityDir, fi.Name())
 			switch {
 			case strings.HasSuffix(fi.Name(), ".toml"):
-				paths = append(paths, path)
+				definitionPaths = append(definitionPaths, definitionPath)
 			default:
 				//ignore files of unrecognized formats
 			}
 		}
 	}
-	sort.Strings(paths)
+	sort.Strings(definitionPaths)
 
 	//parse entity definitions
 	groups := make(map[string]*Group)
 	users := make(map[string]*User)
-	for _, path := range paths {
-		err := readDefinitionFile(path, &groups, &users)
+	for _, definitionPath := range definitionPaths {
+		err := readDefinitionFile(definitionPath, &groups, &users)
 		if len(err) > 0 {
-			errorReport.AddError("File %s is invalid:", path)
+			errorReport.AddError("File %s is invalid:", definitionPath)
 			for _, suberr := range err {
 				errorReport.AddError("    " + suberr.Error())
 			}
 		}
 	}
 
-	//flatten result into a list sorted by EntityID and filter invalid entites
+	//flatten result into a list sorted by EntityID and filter invalid entities
 	entities := make(common.Entities, 0, len(groups)+len(users))
 	for _, group := range groups {
 		if group.isValid() {
@@ -117,13 +117,13 @@ type userDefinition struct {
 	Shell   string
 }
 
-func readDefinitionFile(entityFile string, groups *map[string]*Group, users *map[string]*User) []error {
-	//unmarshal contents of entityFile into this struct
+func readDefinitionFile(definitionPath string, groups *map[string]*Group, users *map[string]*User) []error {
+	//unmarshal contents of definitionPath into this struct
 	var contents struct {
 		Group []groupDefinition
 		User  []userDefinition
 	}
-	blob, err := ioutil.ReadFile(entityFile)
+	blob, err := ioutil.ReadFile(definitionPath)
 	if err != nil {
 		return []error{err}
 	}
@@ -152,14 +152,14 @@ func readDefinitionFile(entityFile string, groups *map[string]*Group, users *map
 				errors = append(errors, groupErrors...)
 				group.setInvalid()
 			}
-			group.definitionFiles = append(group.definitionFiles, entityFile)
+			group.definitionFiles = append(group.definitionFiles, definitionPath)
 		} else {
 			//first definition for this group - create new Group entity
 			(*groups)[groupDef.Name] = &Group{
 				name:            groupDef.Name,
 				gid:             groupDef.Gid,
 				system:          groupDef.System,
-				definitionFiles: []string{entityFile},
+				definitionFiles: []string{definitionPath},
 			}
 		}
 	}
@@ -177,7 +177,7 @@ func readDefinitionFile(entityFile string, groups *map[string]*Group, users *map
 				errors = append(errors, userErrors...)
 				user.setInvalid()
 			}
-			user.definitionFiles = append(user.definitionFiles, entityFile)
+			user.definitionFiles = append(user.definitionFiles, definitionPath)
 		} else {
 			//first definition for this user - create new User entity
 			(*users)[userDef.Name] = &User{
@@ -189,7 +189,7 @@ func readDefinitionFile(entityFile string, groups *map[string]*Group, users *map
 				group:           userDef.Group,
 				groups:          userDef.Groups,
 				shell:           userDef.Shell,
-				definitionFiles: []string{entityFile},
+				definitionFiles: []string{definitionPath},
 			}
 		}
 	}

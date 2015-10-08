@@ -12,9 +12,9 @@ scan entity definitions
 
 group:valid
     found in target/usr/share/holo/01-first.toml
-        with gid: 1010
+        with GID: 1010
 
 user:valid
     found in target/usr/share/holo/01-first.toml
-        with uid: 1010
+        with UID: 1010
 

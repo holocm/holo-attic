@@ -31,12 +31,10 @@ import (
 
 //ScanRepo returns a slice of all the TargetFile entities.
 func ScanRepo() common.Entities {
-	//check that the repo and target base directories exist
-
 	//walk over the repo to find repo files (and thus the corresponding target files)
 	targets := make(map[string]*TargetFile)
-	repoPath := common.RepoDirectory()
-	filepath.Walk(repoPath, func(repoFile string, repoFileInfo os.FileInfo, err error) error {
+	repoDir := common.RepoDirectory()
+	filepath.Walk(repoDir, func(repoPath string, repoFileInfo os.FileInfo, err error) error {
 		//skip over unaccessible stuff
 		if err != nil {
 			return err
@@ -47,13 +45,13 @@ func ScanRepo() common.Entities {
 		}
 		//only look at files within subdirectories (files in the repo directory
 		//itself are skipped)
-		relPath, _ := filepath.Rel(repoPath, repoFile)
+		relPath, _ := filepath.Rel(repoDir, repoPath)
 		if !strings.ContainsRune(relPath, filepath.Separator) {
 			return nil
 		}
 
 		//create new TargetFile if necessary and store the repo entry in it
-		repoEntry := NewRepoFile(repoFile)
+		repoEntry := NewRepoFile(repoPath)
 		targetPath := repoEntry.TargetPath()
 		if targets[targetPath] == nil {
 			targets[targetPath] = NewTargetFileFromPathIn(common.TargetDirectory(), targetPath)
@@ -63,8 +61,8 @@ func ScanRepo() common.Entities {
 	})
 
 	//walk over the target base directory to find orphaned target bases
-	targetBasePath := common.TargetBaseDirectory()
-	filepath.Walk(targetBasePath, func(targetBaseFile string, targetBaseFileInfo os.FileInfo, err error) error {
+	targetBaseDir := common.TargetBaseDirectory()
+	filepath.Walk(targetBaseDir, func(targetBasePath string, targetBaseFileInfo os.FileInfo, err error) error {
 		//skip over unaccessible stuff
 		if err != nil {
 			return err
@@ -77,7 +75,7 @@ func ScanRepo() common.Entities {
 		//check if we have seen the config file for this target base
 		//(if not, it's orphaned)
 		//TODO: s/(targetBase)Path/\1Dir/g and s/(targetBase)File/Path/g
-		target := NewTargetFileFromPathIn(targetBasePath, targetBaseFile)
+		target := NewTargetFileFromPathIn(targetBaseDir, targetBasePath)
 		targetPath := target.PathIn(common.TargetDirectory())
 		if targets[targetPath] == nil {
 			target.orphaned = true
