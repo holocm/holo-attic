@@ -43,6 +43,10 @@ func ScanRepo() common.Entities {
 		if !(repoFileInfo.Mode().IsRegular() || common.IsFileInfoASymbolicLink(repoFileInfo)) {
 			return nil
 		}
+		//don't consider repoDir itself to be a repo entry (it might be a symlink)
+		if repoPath == repoDir {
+			return nil
+		}
 		//only look at files within subdirectories (files in the repo directory
 		//itself are skipped)
 		relPath, _ := filepath.Rel(repoDir, repoPath)
@@ -69,6 +73,10 @@ func ScanRepo() common.Entities {
 		}
 		//only look at manageable files (regular files or symlinks)
 		if !(targetBaseFileInfo.Mode().IsRegular() || common.IsFileInfoASymbolicLink(targetBaseFileInfo)) {
+			return nil
+		}
+		//don't consider targetBaseDir itself to be a target base (it might be a symlink)
+		if targetBasePath == targetBaseDir {
 			return nil
 		}
 

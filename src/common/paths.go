@@ -45,7 +45,7 @@ func init() {
 	errorReport := Report{Action: "Errors occurred during", Target: "startup"}
 	hasError := false
 	for _, dir := range dirs {
-		fi, err := os.Lstat(dir)
+		fi, err := os.Stat(dir)
 		switch {
 		case err != nil:
 			errorReport.AddError("Cannot open %s: %s", dir, err.Error())
