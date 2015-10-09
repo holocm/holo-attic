@@ -22,6 +22,7 @@ package common
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -82,34 +83,41 @@ func (r *Report) Print() {
 		reportsWerePrinted = true
 	}
 
+	//print to stdout or stderr?
+	out := os.Stdout
+	if r.msgText != "" {
+		out = os.Stderr
+	}
+
 	//print initial line with Action, Target and State
 	var lineFormat string
 	if r.Action == "" {
 		lineFormat = "%12s %s\n"
-		fmt.Printf("\x1b[1m%s\x1b[0m", r.Target)
+		fmt.Fprintf(out, "\x1b[1m%s\x1b[0m", r.Target)
 	} else {
 		lineFormat = fmt.Sprintf("%%%ds %%s\n", len(r.Action))
-		fmt.Printf("%s \x1b[1m%s\x1b[0m", r.Action, r.Target)
+		fmt.Fprintf(out, "%s \x1b[1m%s\x1b[0m", r.Action, r.Target)
 	}
 	if r.State == "" {
-		fmt.Println()
+		out.Write([]byte{'\n'})
 	} else {
-		fmt.Printf(" (%s)\n", r.State)
+		fmt.Fprintf(out, " (%s)\n", r.State)
 	}
 
 	//print infoLines
 	for _, line := range r.infoLines {
 		if line.key != "" {
-			fmt.Printf(lineFormat, line.key, line.value)
+			fmt.Fprintf(out, lineFormat, line.key, line.value)
 		}
 	}
 	if len(r.infoLines) > 0 {
-		fmt.Println()
+		out.Write([]byte{'\n'})
 	}
 
 	//print message text, if any
 	if r.msgText != "" {
-		fmt.Println(r.msgText) //including trailing newline
+		out.Write([]byte(r.msgText))
+		out.Write([]byte{'\n'})
 	}
 }
 
