@@ -34,6 +34,11 @@ type Entity interface {
 	Report() *Report
 	//Apply performs the complete application algorithm for the given Entity.
 	Apply(withForce bool)
+	//RenderDiff creates a unified diff between the current and last
+	//provisioned version of this entity. For files, the output is always a
+	//patch that can be applied on the last provisioned version to obtain the
+	//current state.
+	RenderDiff() ([]byte, error)
 }
 
 //Entities holds a slice of Entity instances, and implements some methods to

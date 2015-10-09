@@ -156,16 +156,13 @@ func commandDiff(entities common.Entities) {
 	//apply all declared entities (or only some if the args contain a limited subset)
 	for _, entity := range entities {
 		if !withTargets || targets[entity.EntityID()] {
-			//ignore entities that are not files (TODO: allow diffs for users/groups, too)
-			if target, ok := entity.(*files.TargetFile); ok {
-				output, err := target.RenderDiff()
-				if err != nil {
-					report := common.Report{Action: "diff", Target: target.EntityID()}
-					report.AddError(err.Error())
-					report.Print()
-				}
-				os.Stdout.Write(output)
+			output, err := entity.RenderDiff()
+			if err != nil {
+				report := common.Report{Action: "diff", Target: entity.EntityID()}
+				report.AddError(err.Error())
+				report.Print()
 			}
+			os.Stdout.Write(output)
 		}
 	}
 }
