@@ -32,7 +32,7 @@ import (
 
 //Note: This line is parsed by the Makefile to get the version string. If you
 //change the format, adjust the Makefile too.
-var version = "v0.6.0"
+var version = "v0.6.1"
 var codename = "Providence"
 
 func main() {
