@@ -8,16 +8,16 @@ _holo() {
         COMPREPLY=( $(compgen -W "--help --version apply scan" -- "$CURRENT_WORD") )
         return 0
     elif [ "${COMP_WORDS[1]}" = "apply" ]; then
-        # autocomplete for "holo apply" - argument is either a target or -f/--force
+        # autocomplete for "holo apply" - argument is either an entity or -f/--force
         COMPREPLY=( $(compgen -W "$(holo scan --short) -f --force" -- "$CURRENT_WORD") )
         return 0
     elif [ "${COMP_WORDS[1]}" = "apply" ]; then
-        # autocomplete for "holo diff" - argument is a target
+        # autocomplete for "holo diff" - argument is an entity
         COMPREPLY=( $(compgen -W "$(holo scan --short)" -- "$CURRENT_WORD") )
         return 0
     elif [ "${COMP_WORDS[1]}" = "scan" ]; then
-        # autocomplete for "holo scan" - argument is one of -s/--short
-        COMPREPLY=( $(compgen -W "-s --short" -- "$CURRENT_WORD") )
+        # autocomplete for "holo scan" - argument is either an entity or -s/--short
+        COMPREPLY=( $(compgen -W "$(holo scan --short) -s --short" -- "$CURRENT_WORD") )
         return 0
     fi
 }

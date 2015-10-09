@@ -30,18 +30,16 @@ typeset -A opt_args
         case "$words[2]" in
             apply)
                 _arguments : \
-                    {-f,--force}'[overwrite manual changes on targets]' \
+                    {-f,--force}'[overwrite manual changes on entities]' \
                     '*:target:_holo_target'
                 ;;
             diff)
                 _holo_target
                 ;;
             scan)
-                local -a _options
-                _options=(
-                    {-s,--short}':print only target names'
-                )
-                _describe -t scan_opts 'holo scan option' _options
+                _arguments : \
+                    {-s,--short}'[print only entity names]' \
+                    '*:target:_holo_target'
                 ;;
         esac
     fi
