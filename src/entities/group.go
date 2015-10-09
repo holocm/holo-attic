@@ -81,8 +81,12 @@ func (g Group) attributes() string {
 func (g Group) Apply(withForce bool) {
 	r := g.Report()
 	r.Action = "Working on"
-	g.doApply(r, withForce)
-	r.Print()
+	entityHasChanged := g.doApply(r, withForce)
+	if entityHasChanged {
+		r.Print()
+	} else {
+		r.PrintUnlessEmpty()
+	}
 }
 
 type groupDiff struct {
@@ -91,12 +95,12 @@ type groupDiff struct {
 	expected string
 }
 
-func (g Group) doApply(report *common.Report, withForce bool) {
+func (g Group) doApply(report *common.Report, withForce bool) (entityHasChanged bool) {
 	//check if we have that group already
 	groupExists, actualGid, err := g.checkExists()
 	if err != nil {
 		report.AddError("Cannot read group database: %s", err.Error())
-		return
+		return false
 	}
 
 	//check if the actual properties diverge from our definition
@@ -114,22 +118,24 @@ func (g Group) doApply(report *common.Report, withForce bool) {
 				err := g.callGroupmod(report)
 				if err != nil {
 					report.AddError(err.Error())
-					return
+					return false
 				}
-			} else {
-				for _, diff := range differences {
-					report.AddError("Group has %s: %s, expected %s (use --force to overwrite)", diff.field, diff.actual, diff.expected)
-				}
+				return true
+			}
+			for _, diff := range differences {
+				report.AddError("Group has %s: %s, expected %s (use --force to overwrite)", diff.field, diff.actual, diff.expected)
 			}
 		}
-	} else {
-		//create the group if it does not exist
-		err := g.callGroupadd(report)
-		if err != nil {
-			report.AddError(err.Error())
-			return
-		}
+		return false
 	}
+
+	//create the group if it does not exist
+	err = g.callGroupadd(report)
+	if err != nil {
+		report.AddError(err.Error())
+		return false
+	}
+	return true
 }
 
 func (g Group) checkExists() (exists bool, gid int, e error) {

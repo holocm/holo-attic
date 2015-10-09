@@ -113,10 +113,10 @@ func (r *Report) Print() {
 	}
 }
 
-//PrintUnlessEmpty prints the full report on stdout if it has any lines,
-//warnings or errors.
+//PrintUnlessEmpty prints the full report on stdout if it has any warnings or
+//errors.
 func (r *Report) PrintUnlessEmpty() {
-	if len(r.infoLines) > 0 || r.msgText != "" {
+	if r.msgText != "" {
 		r.Print()
 	}
 }

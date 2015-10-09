@@ -93,14 +93,19 @@ func (target *TargetFile) Report() *common.Report {
 //Apply implements the common.Entity interface.
 func (target *TargetFile) Apply(withForce bool) {
 	report := target.Report()
+	skipReport := false
 
 	if target.orphaned {
 		report.Action = "Scrubbing"
 		target.handleOrphanedTargetBase(report)
 	} else {
 		report.Action = "Working on"
-		Apply(target, report, withForce)
+		skipReport = apply(target, report, withForce)
 	}
 
-	report.Print()
+	if skipReport {
+		report.PrintUnlessEmpty()
+	} else {
+		report.Print()
+	}
 }

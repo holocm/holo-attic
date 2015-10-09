@@ -102,8 +102,12 @@ func (u User) attributes() string {
 func (u User) Apply(withForce bool) {
 	r := u.Report()
 	r.Action = "Working on"
-	u.doApply(r, withForce)
-	r.Print()
+	entityHasChanged := u.doApply(r, withForce)
+	if entityHasChanged {
+		r.Print()
+	} else {
+		r.PrintUnlessEmpty()
+	}
 }
 
 type userDiff struct {
@@ -112,12 +116,12 @@ type userDiff struct {
 	expected string
 }
 
-func (u User) doApply(report *common.Report, withForce bool) {
+func (u User) doApply(report *common.Report, withForce bool) (entityHasChanged bool) {
 	//check if we have that group already
 	userExists, actualUser, err := u.checkExists()
 	if err != nil {
 		report.AddError("Cannot read user database: %s", err.Error())
-		return
+		return false
 	}
 
 	//check if the actual properties diverge from our definition
@@ -157,22 +161,24 @@ func (u User) doApply(report *common.Report, withForce bool) {
 				err := u.callUsermod(report)
 				if err != nil {
 					report.AddError(err.Error())
-					return
+					return false
 				}
-			} else {
-				for _, diff := range differences {
-					report.AddError("User has %s: %s, expected %s (use --force to overwrite)", diff.field, diff.actual, diff.expected)
-				}
+				return true
+			}
+			for _, diff := range differences {
+				report.AddError("User has %s: %s, expected %s (use --force to overwrite)", diff.field, diff.actual, diff.expected)
 			}
 		}
-	} else {
-		//create the user if it does not exist
-		err := u.callUseradd(report)
-		if err != nil {
-			report.AddError(err.Error())
-			return
-		}
+		return false
 	}
+
+	//create the user if it does not exist
+	err = u.callUseradd(report)
+	if err != nil {
+		report.AddError(err.Error())
+		return false
+	}
+	return true
 }
 
 //checkExists checks if the user exists in /etc/passwd. If it does, its actual

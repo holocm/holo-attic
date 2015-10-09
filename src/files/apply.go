@@ -33,7 +33,7 @@ import (
 //This includes taking a copy of the target base if necessary, applying all
 //repository entries, and saving the result in the target path with the correct
 //file metadata.
-func Apply(target *TargetFile, report *common.Report, withForce bool) {
+func apply(target *TargetFile, report *common.Report, withForce bool) (skipReport bool) {
 	//determine the related paths
 	targetPath := target.PathIn(common.TargetDirectory())
 	targetBasePath := target.PathIn(common.TargetBaseDirectory())
@@ -47,11 +47,11 @@ func Apply(target *TargetFile, report *common.Report, withForce bool) {
 	if !common.IsManageableFile(targetPath) {
 		if !common.IsManageableFile(targetBasePath) {
 			report.AddError("skipping target: not a manageable file")
-			return
+			return false
 		}
 		if !withForce {
 			report.AddError("skipping target: file has been deleted by user (use --force to restore)")
-			return
+			return false
 		}
 	}
 
@@ -64,13 +64,13 @@ func Apply(target *TargetFile, report *common.Report, withForce bool) {
 		err := os.MkdirAll(targetBaseDir, 0755)
 		if err != nil {
 			report.AddError("Cannot create directory %s: %s", targetBaseDir, err.Error())
-			return
+			return false
 		}
 
 		err = common.CopyFile(targetPath, targetBasePath)
 		if err != nil {
 			report.AddError("Cannot copy %s to %s: %s", targetPath, targetBasePath, err.Error())
-			return
+			return false
 		}
 	}
 
@@ -79,7 +79,7 @@ func Apply(target *TargetFile, report *common.Report, withForce bool) {
 	updatedTBPath, reportedTBPath, err := platform.Implementation().FindUpdatedTargetBase(targetPath)
 	if err != nil {
 		report.AddError(err.Error())
-		return
+		return false
 	}
 	if updatedTBPath != "" {
 		//an updated stock configuration is available at updatedTBPath
@@ -87,7 +87,7 @@ func Apply(target *TargetFile, report *common.Report, withForce bool) {
 		err := common.CopyFile(updatedTBPath, targetBasePath)
 		if err != nil {
 			report.AddError("Cannot copy %s to %s: %s", updatedTBPath, targetBasePath, err.Error())
-			return
+			return false
 		}
 		_ = os.Remove(updatedTBPath) //this can fail silently
 	}
@@ -96,21 +96,22 @@ func Apply(target *TargetFile, report *common.Report, withForce bool) {
 	//installed by the package (which can be found at targetBasePath); complain if
 	//the user made any changes to config files governed by holo (this check is
 	//overridden by the --force option)
+	var lastProvisionedBuffer *FileBuffer
 	lastProvisionedPath := target.PathIn(common.ProvisionedDirectory())
 	if !withForce && common.IsManageableFile(lastProvisionedPath) {
 		targetBuffer, err := NewFileBuffer(targetPath, targetPath)
 		if err != nil {
 			report.AddError(err.Error())
-			return
+			return false
 		}
-		lastProvisionedBuffer, err := NewFileBuffer(lastProvisionedPath, targetPath)
+		lastProvisionedBuffer, err = NewFileBuffer(lastProvisionedPath, targetPath)
 		if err != nil {
 			report.AddError(err.Error())
-			return
+			return false
 		}
 		if !targetBuffer.EqualTo(lastProvisionedBuffer) {
 			report.AddError("skipping target: file has been modified by user (use --force to overwrite)")
-			return
+			return false
 		}
 	}
 
@@ -119,7 +120,7 @@ func Apply(target *TargetFile, report *common.Report, withForce bool) {
 	buffer, err := NewFileBuffer(targetBasePath, targetPath)
 	if err != nil {
 		report.AddError(err.Error())
-		return
+		return false
 	}
 
 	//step 4b: apply all the applicable repo files in order
@@ -128,7 +129,15 @@ func Apply(target *TargetFile, report *common.Report, withForce bool) {
 		buffer, err = GetApplyImpl(repoFile)(buffer, report)
 		if err != nil {
 			report.AddError(err.Error())
-			return
+			return false
+		}
+	}
+
+	//step 4c: don't do anything more if nothing has changed
+	if !withForce && lastProvisionedBuffer != nil {
+		if buffer.EqualTo(lastProvisionedBuffer) {
+			//since we did not do anything, don't report this
+			return true
 		}
 	}
 
@@ -138,17 +147,17 @@ func Apply(target *TargetFile, report *common.Report, withForce bool) {
 	err = os.MkdirAll(provisionedDir, 0755)
 	if err != nil {
 		report.AddError("Cannot write %s: %s", lastProvisionedPath, err.Error())
-		return
+		return false
 	}
 	err = buffer.Write(lastProvisionedPath)
 	if err != nil {
 		report.AddError(err.Error())
-		return
+		return false
 	}
 	err = common.ApplyFilePermissions(targetBasePath, lastProvisionedPath)
 	if err != nil {
 		report.AddError(err.Error())
-		return
+		return false
 	}
 
 	//step 4d: write the result buffer to the target location and copy
@@ -156,11 +165,13 @@ func Apply(target *TargetFile, report *common.Report, withForce bool) {
 	err = buffer.Write(targetPath)
 	if err != nil {
 		report.AddError(err.Error())
-		return
+		return false
 	}
 	err = common.ApplyFilePermissions(targetBasePath, targetPath)
 	if err != nil {
 		report.AddError(err.Error())
-		return
+		return false
 	}
+
+	return false
 }

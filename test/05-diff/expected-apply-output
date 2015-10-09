@@ -15,9 +15,6 @@ Working on target/etc/file-to-symlink.conf
 
 !! skipping target: file has been modified by user (use --force to overwrite)
 
-Working on target/etc/file-unmodified.conf
-     apply target/usr/share/holo/repo/01-first/etc/file-unmodified.conf
-
 Working on target/etc/symlink-deleted.conf
   store at target/var/lib/holo/base/etc/symlink-deleted.conf
      apply target/usr/share/holo/repo/01-first/etc/symlink-deleted.conf
@@ -33,7 +30,4 @@ Working on target/etc/symlink-to-file.conf
      apply target/usr/share/holo/repo/01-first/etc/symlink-to-file.conf
 
 !! skipping target: file has been modified by user (use --force to overwrite)
-
-Working on target/etc/symlink-unmodified.conf
-     apply target/usr/share/holo/repo/01-first/etc/symlink-unmodified.conf
 
