@@ -108,8 +108,10 @@ Now we can install the package, and after that, we can install the
 configuration from Holo's repository:
 
     $ sudo holo apply
-    [holo] Working on /etc/nginx/nginx.conf
-    [holo]      apply /usr/share/holo/repo/10-bashdocserver/etc/nginx/nginx.conf
+
+    Working on /etc/nginx/nginx.conf
+      store at /var/lib/holo/base/etc/nginx/nginx.conf
+         apply /usr/share/holo/repo/10-bashdocserver/etc/nginx/nginx.conf
 
 We can usually skip this last step since packages can include
 post-install/upgrade/remove routines where we can call C<holo apply>, as shown
@@ -163,9 +165,10 @@ When running C<holo apply>, this script will be applied to the configuration
 from the previous configuration package.
 
     $ sudo holo apply
-    [holo] Working on /etc/nginx/nginx.conf
-    [holo]      apply /usr/share/holo/repo/10-bashdocserver/etc/nginx/nginx.conf
-    [holo]   passthru /usr/share/holo/repo/20-alternate-port/etc/nginx/nginx.conf.holoscript
+
+    Working on /etc/nginx/nginx.conf
+         apply /usr/share/holo/repo/10-bashdocserver/etc/nginx/nginx.conf
+      passthru /usr/share/holo/repo/20-alternate-port/etc/nginx/nginx.conf.holoscript
 
 The order in which repository files are applied is defined by the directory
 names below F</usr/share/holo/repo> (C<10-bashdocserver> and C<20-alternate-port>), which

@@ -35,8 +35,13 @@ build/holo-makewebsite: doc/makewebsite.go
 prepare-website-repo:
 	@[ -d website/.git ] || git clone https://github.com/holocm/holocm.github.io website/
 
+# the manpage is also used for doc.html, but the manpage-style all-caps
+# headings need to be converted to title case
+doc/website-doc.pod: doc/manpage.pod
+	perl -pE 's/^=head1\s+([A-Z ]+)/=head1 \u\L\1/' $< > $@
+
 website/%.html: doc/website-%.pod doc/template.html build/holo-makewebsite prepare-website-repo
 	build/holo-makewebsite $*
 
 .PHONY: website
-website: prepare-website-repo $(patsubst doc/website-%.pod,website/%.html,$(wildcard doc/website-*.pod))
+website: prepare-website-repo website/doc.html $(patsubst doc/website-%.pod,website/%.html,$(wildcard doc/website-*.pod))
