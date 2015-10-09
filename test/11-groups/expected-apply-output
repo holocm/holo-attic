@@ -12,5 +12,5 @@ Working on group:wronggid
   found in target/usr/share/holo/01-groups.toml
       with GID: 42
 
->> Group has GID: 102, expected 42 (use --force to overwrite)
+!! Group has GID: 102, expected 42 (use --force to overwrite)
 

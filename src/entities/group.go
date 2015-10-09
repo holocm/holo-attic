@@ -118,7 +118,7 @@ func (g Group) doApply(report *common.Report, withForce bool) {
 				}
 			} else {
 				for _, diff := range differences {
-					report.AddWarning("Group has %s: %s, expected %s (use --force to overwrite)", diff.field, diff.actual, diff.expected)
+					report.AddError("Group has %s: %s, expected %s (use --force to overwrite)", diff.field, diff.actual, diff.expected)
 				}
 			}
 		}

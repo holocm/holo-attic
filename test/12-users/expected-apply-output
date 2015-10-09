@@ -18,29 +18,29 @@ Working on user:wronggroup
   found in target/usr/share/holo/01-users.toml
       with login group: users
 
->> User has login group: nobody, expected users (use --force to overwrite)
+!! User has login group: nobody, expected users (use --force to overwrite)
 
 Working on user:wronggroups
   found in target/usr/share/holo/01-users.toml
       with groups: network
 
->> User has groups: video, expected network (use --force to overwrite)
+!! User has groups: video, expected network (use --force to overwrite)
 
 Working on user:wronghome
   found in target/usr/share/holo/01-users.toml
       with home: /home/wronghome
 
->> User has home directory: /var/lib/wronghome, expected /home/wronghome (use --force to overwrite)
+!! User has home directory: /var/lib/wronghome, expected /home/wronghome (use --force to overwrite)
 
 Working on user:wrongshell
   found in target/usr/share/holo/01-users.toml
       with login shell: /bin/zsh
 
->> User has login shell: /bin/bash, expected /bin/zsh (use --force to overwrite)
+!! User has login shell: /bin/bash, expected /bin/zsh (use --force to overwrite)
 
 Working on user:wronguid
   found in target/usr/share/holo/01-users.toml
       with UID: 1003
 
->> User has UID: 2003, expected 1003 (use --force to overwrite)
+!! User has UID: 2003, expected 1003 (use --force to overwrite)
 
