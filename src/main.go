@@ -131,9 +131,9 @@ func main() {
 func commandHelp() {
 	program := os.Args[0]
 	fmt.Printf("Usage: %s <operation> [...]\nOperations:\n", program)
-	fmt.Printf("    %s apply [-f|--force] [target(s)]\n", program)
-	fmt.Printf("    %s diff [file(s)]\n", program)
-	fmt.Printf("    %s scan [-s|--short]\n", program)
+	fmt.Printf("    %s apply [-f|--force] [entity ...]\n", program)
+	fmt.Printf("    %s diff [entity ...]\n", program)
+	fmt.Printf("    %s scan [-s|--short] [entity ...]\n", program)
 	fmt.Printf("\nSee `man 8 holo` for details.\n")
 }
 

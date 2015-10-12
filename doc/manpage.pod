@@ -16,9 +16,9 @@ holo - minimal configuration management
 
 holo B<apply> [I<-f|--force>] [I<entity> ...]
 
-holo B<diff> [I<target> ...]
+holo B<diff> [I<entity> ...]
 
-holo B<scan> [I<-s|--short>]
+holo B<scan> [I<-s|--short>] [I<entity> ...]
 
 holo B<--help|--version>
 
@@ -219,12 +219,12 @@ done.
 By default, Holo will refuse to provision entities that have been changed by the
 user or by other programs. Apply B<--force> to overwrite such changes.
 
-=item B<diff> [I<target> ...]
+=item B<diff> [I<entity> ...]
 
 Print a L<diff(1)> between the last provisioned version of each selected target
 file and the actual contents of that target file.
 
-=item B<scan> [I<-s|--short>]
+=item B<scan> [I<-s|--short>] [I<entity> ...]
 
 Read the configuration repository and entity definitions, and report what
 C<holo apply> will do to apply these entities. This acts like a dry run for
