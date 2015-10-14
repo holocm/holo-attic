@@ -26,7 +26,7 @@ import (
 	"strconv"
 	"strings"
 
-	"../internal/toml"
+	"../../internal/toml"
 )
 
 //RenderDiff implements the common.Entity interface.
