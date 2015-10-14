@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 	"sort"
 
+	"../../shared"
 	"../common"
 )
 
@@ -73,8 +74,8 @@ func (target *TargetFile) EntityID() string {
 }
 
 //Report implements the common.Entity interface.
-func (target *TargetFile) Report() *common.Report {
-	r := common.Report{Target: target.EntityID()}
+func (target *TargetFile) Report() *shared.Report {
+	r := shared.Report{Target: target.EntityID()}
 
 	if target.orphaned {
 		_, strategy, assessment := target.scanOrphanedTargetBase()

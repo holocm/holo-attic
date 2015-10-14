@@ -27,6 +27,7 @@ import (
 	"regexp"
 	"strings"
 
+	"../../shared"
 	"../common"
 )
 
@@ -136,8 +137,8 @@ func lstatForDiff(path string) (fileType fileType, fi os.FileInfo, e error) {
 func getDiffBody(fromPath, toPath, reportedPath string) []byte {
 	//skip the error handling here; a non-empty diff produces a non-zero exit
 	//code and we don't want to fail in that case
-	errorReport := common.Report{Action: "diff", Target: toPath}
-	output, _ := common.ExecProgram(&errorReport, []byte{}, "diff", "-u", fromPath, toPath)
+	errorReport := shared.Report{Action: "diff", Target: toPath}
+	output, _ := shared.ExecProgram(&errorReport, []byte{}, "diff", "-u", fromPath, toPath)
 	errorReport.PrintUnlessEmpty()
 	//remove the header, up to the first hunk (started by a line like "@@ -1 +0,0")
 	return regexp.MustCompile("^(?s:.+?)(?m:^@@)").ReplaceAll(output, []byte("@@"))

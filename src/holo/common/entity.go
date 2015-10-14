@@ -20,6 +20,8 @@
 
 package common
 
+import "../../shared"
+
 //Entity provides a common interface for configuration entities, such as
 //configuration files, user accounts and user groups.
 type Entity interface {
@@ -30,8 +32,8 @@ type Entity interface {
 	//Therefore, entity IDs should not contain whitespaces or characters that
 	//have a special meaning on the shell.
 	EntityID() string
-	//Report generates a common.Report describing this Entity.
-	Report() *Report
+	//Report generates a Report describing this Entity.
+	Report() *shared.Report
 	//Apply performs the complete application algorithm for the given Entity.
 	Apply(withForce bool)
 	//RenderDiff creates a unified diff between the current and last

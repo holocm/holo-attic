@@ -23,6 +23,8 @@ package common
 import (
 	"os"
 	"path/filepath"
+
+	"../../shared"
 )
 
 var targetDirectory = "/"
@@ -42,7 +44,7 @@ func init() {
 
 	//all these directories need to exist
 	dirs := []string{targetDirectory, entityDirectory, repoDirectory, targetBaseDirectory, provisionedDirectory}
-	errorReport := Report{Action: "Errors occurred during", Target: "startup"}
+	errorReport := shared.Report{Action: "Errors occurred during", Target: "startup"}
 	hasError := false
 	for _, dir := range dirs {
 		fi, err := os.Stat(dir)

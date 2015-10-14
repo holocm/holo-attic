@@ -25,6 +25,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"../../shared"
 	"../common"
 	"../platform"
 )
@@ -33,7 +34,7 @@ import (
 //This includes taking a copy of the target base if necessary, applying all
 //repository entries, and saving the result in the target path with the correct
 //file metadata.
-func apply(target *TargetFile, report *common.Report, withForce bool) (skipReport bool) {
+func apply(target *TargetFile, report *shared.Report, withForce bool) (skipReport bool) {
 	//determine the related paths
 	targetPath := target.PathIn(common.TargetDirectory())
 	targetBasePath := target.PathIn(common.TargetBaseDirectory())

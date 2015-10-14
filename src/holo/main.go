@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"os"
 
+	"../shared"
 	"./common"
 	"./entities"
 	"./files"
@@ -159,7 +160,7 @@ func commandDiff(entities common.Entities, options map[int]bool) {
 	for _, entity := range entities {
 		output, err := entity.RenderDiff()
 		if err != nil {
-			report := common.Report{Action: "diff", Target: entity.EntityID()}
+			report := shared.Report{Action: "diff", Target: entity.EntityID()}
 			report.AddError(err.Error())
 			report.Print()
 		}

@@ -28,6 +28,7 @@ import (
 	"strconv"
 	"strings"
 
+	"../../shared"
 	"../common"
 )
 
@@ -59,8 +60,8 @@ func (u *User) setInvalid() { u.broken = true }
 func (u User) EntityID() string { return "user:" + u.name }
 
 //Report implements the Entity interface for User.
-func (u User) Report() *common.Report {
-	r := common.Report{Target: u.EntityID()}
+func (u User) Report() *shared.Report {
+	r := shared.Report{Target: u.EntityID()}
 	for _, defFile := range u.definitionFiles {
 		r.AddLine("found in", defFile)
 	}
@@ -116,7 +117,7 @@ type userDiff struct {
 	expected string
 }
 
-func (u User) doApply(report *common.Report, withForce bool) (entityHasChanged bool) {
+func (u User) doApply(report *shared.Report, withForce bool) (entityHasChanged bool) {
 	//check if we have that group already
 	userExists, actualUser, err := u.checkExists()
 	if err != nil {
@@ -256,7 +257,7 @@ func (u User) checkExists() (exists bool, currentUser *User, e error) {
 	}, nil
 }
 
-func (u User) callUseradd(report *common.Report) error {
+func (u User) callUseradd(report *shared.Report) error {
 	//assemble arguments for useradd call
 	args := []string{}
 	if u.system {
@@ -283,11 +284,11 @@ func (u User) callUseradd(report *common.Report) error {
 	args = append(args, u.name)
 
 	//call useradd
-	_, err := common.ExecProgramOrMock(report, []byte{}, "useradd", args...)
+	_, err := shared.ExecProgramOrMock(report, []byte{}, "useradd", args...)
 	return err
 }
 
-func (u User) callUsermod(report *common.Report) error {
+func (u User) callUsermod(report *shared.Report) error {
 	//assemble arguments for usermod call
 	args := []string{}
 	if u.uid > 0 {
@@ -311,6 +312,6 @@ func (u User) callUsermod(report *common.Report) error {
 	args = append(args, u.name)
 
 	//call usermod
-	_, err := common.ExecProgramOrMock(report, []byte{}, "usermod", args...)
+	_, err := shared.ExecProgramOrMock(report, []byte{}, "usermod", args...)
 	return err
 }

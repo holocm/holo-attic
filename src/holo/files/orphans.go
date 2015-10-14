@@ -23,6 +23,7 @@ package files
 import (
 	"os"
 
+	"../../shared"
 	"../common"
 	"../platform"
 )
@@ -39,7 +40,7 @@ func (target *TargetFile) scanOrphanedTargetBase() (theTargetPath, strategy, ass
 }
 
 //handleOrphanedTargetBase cleans up an orphaned target base.
-func (target *TargetFile) handleOrphanedTargetBase(report *common.Report) {
+func (target *TargetFile) handleOrphanedTargetBase(report *shared.Report) {
 	targetPath, strategy, _ := target.scanOrphanedTargetBase()
 	targetBasePath := target.PathIn(common.TargetBaseDirectory())
 

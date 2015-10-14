@@ -23,12 +23,10 @@
 package platform
 
 import (
-	"io/ioutil"
-	"os"
-	"regexp"
+	"sort"
 	"strings"
 
-	"../common"
+	"../../shared"
 )
 
 //Impl provides integration points with a distribution's toolchain.
@@ -62,15 +60,8 @@ func Implementation() Impl {
 }
 
 func init() {
-	//get list of distribution IDs
-	dists := getCurrentDistribution()
-	//convert into hash for easier lookup
-	isDist := make(map[string]bool)
-	for _, dist := range dists {
-		isDist[dist] = true
-	}
-
 	//which distribution are we running on?
+	isDist := shared.GetCurrentDistribution()
 	switch {
 	case isDist["arch"]:
 		impl = archImpl{}
@@ -82,66 +73,17 @@ func init() {
 		//set via HOLO_CURRENT_DISTRIBUTION=unittest only
 		impl = genericImpl{}
 	default:
-		report := common.Report{Action: "scan", Target: "platform"}
+		//error: unrecognized distribution
+		dists := make([]string, 0, len(isDist))
+		for dist := range isDist {
+			dists = append(dists, dist)
+		}
+		sort.Strings(dists)
+		report := shared.Report{Action: "scan", Target: "platform"}
 		report.AddError("Running on an unrecognized distribution. Distribution IDs: %s", strings.Join(dists, ","))
 		report.AddWarning("Please report this error at <https://github.com/holocm/holo/issues/new>")
 		report.AddWarning("and include the contents of your /etc/os-release file.")
 		report.Print()
 		impl = genericImpl{}
 	}
-}
-
-//Returns a list of distribution IDs, drawing on the ID= and ID_LIKE= fields of
-//os-release(5).
-func getCurrentDistribution() []string {
-	//check if a unit test override is active
-	if value := os.Getenv("HOLO_CURRENT_DISTRIBUTION"); value != "" {
-		return []string{value}
-	}
-
-	//read /etc/os-release, fall back to /usr/lib/os-release if not available
-	bytes, err := ioutil.ReadFile("/etc/os-release")
-	if err != nil {
-		if os.IsNotExist(err) {
-			bytes, err = ioutil.ReadFile("/usr/lib/os-release")
-		}
-	}
-	if err != nil {
-		panic("Cannot read os-release: " + err.Error())
-	}
-
-	//parse os-release syntax (a harshly limited subset of shell script)
-	variables := make(map[string]string)
-	lines := strings.Split(string(bytes), "\n")
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		//ignore comments
-		if line == "" || line[0] == '#' {
-			continue
-		}
-		//line format is key=value
-		if !strings.Contains(line, "=") {
-			continue
-		}
-		split := strings.SplitN(line, "=", 2)
-		key, value := split[0], split[1]
-		//value may be enclosed in quotes
-		switch {
-		case strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\""):
-			value = strings.TrimPrefix(strings.TrimSuffix(value, "\""), "\"")
-		case strings.HasPrefix(value, "'") && strings.HasSuffix(value, "'"):
-			value = strings.TrimPrefix(strings.TrimSuffix(value, "'"), "'")
-		}
-		//special characters may be escaped
-		value = regexp.MustCompile(`\\(.)`).ReplaceAllString(value, "$1")
-		//store assignment
-		variables[key] = value
-	}
-
-	//the distribution IDs we're looking for are in ID= (single value) or ID_LIKE= (space-separated list)
-	result := []string{variables["ID"]}
-	if idLike, ok := variables["ID_LIKE"]; ok {
-		result = append(result, strings.Split(idLike, " ")...)
-	}
-	return result
 }

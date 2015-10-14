@@ -29,13 +29,14 @@ import (
 	"strings"
 
 	"../../internal/toml"
+	"../../shared"
 	"../common"
 )
 
 //Scan returns a slice of all the defined entities. If an error is encountered
 //during the scan, it will be reported on stdout, and nil is returned.
 func Scan() common.Entities {
-	errorReport := common.Report{Action: "scan", Target: "entity definitions"}
+	errorReport := shared.Report{Action: "scan", Target: "entity definitions"}
 
 	//look in the entity directory for entity definitions
 	entityDir := common.EntityDirectory()

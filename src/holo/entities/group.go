@@ -27,6 +27,7 @@ import (
 	"strconv"
 	"strings"
 
+	"../../shared"
 	"../common"
 )
 
@@ -53,8 +54,8 @@ func (g *Group) setInvalid() { g.broken = true }
 func (g Group) EntityID() string { return "group:" + g.name }
 
 //Report implements the Entity interface for Group.
-func (g Group) Report() *common.Report {
-	r := common.Report{Target: g.EntityID()}
+func (g Group) Report() *shared.Report {
+	r := shared.Report{Target: g.EntityID()}
 	for _, defFile := range g.definitionFiles {
 		r.AddLine("found in", defFile)
 	}
@@ -95,7 +96,7 @@ type groupDiff struct {
 	expected string
 }
 
-func (g Group) doApply(report *common.Report, withForce bool) (entityHasChanged bool) {
+func (g Group) doApply(report *shared.Report, withForce bool) (entityHasChanged bool) {
 	//check if we have that group already
 	groupExists, actualGid, err := g.checkExists()
 	if err != nil {
@@ -160,7 +161,7 @@ func (g Group) checkExists() (exists bool, gid int, e error) {
 	return true, actualGid, err
 }
 
-func (g Group) callGroupadd(report *common.Report) error {
+func (g Group) callGroupadd(report *shared.Report) error {
 	//assemble arguments for groupadd call
 	args := []string{}
 	if g.system {
@@ -172,11 +173,11 @@ func (g Group) callGroupadd(report *common.Report) error {
 	args = append(args, g.name)
 
 	//call groupadd
-	_, err := common.ExecProgramOrMock(report, []byte{}, "groupadd", args...)
+	_, err := shared.ExecProgramOrMock(report, []byte{}, "groupadd", args...)
 	return err
 }
 
-func (g Group) callGroupmod(report *common.Report) error {
+func (g Group) callGroupmod(report *shared.Report) error {
 	//assemble arguments for groupmod call
 	args := []string{}
 	if g.gid > 0 {
@@ -185,6 +186,6 @@ func (g Group) callGroupmod(report *common.Report) error {
 	args = append(args, g.name)
 
 	//call groupmod
-	_, err := common.ExecProgramOrMock(report, []byte{}, "groupmod", args...)
+	_, err := shared.ExecProgramOrMock(report, []byte{}, "groupmod", args...)
 	return err
 }
