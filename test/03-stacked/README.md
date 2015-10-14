@@ -15,3 +15,8 @@ plain stock config files:
 
 Furthermore, `/etc/link-through-scripts.conf` is the same basic setup as
 `/etc/script-and-script.conf`, but the stock config file is a symlink.
+
+As a bonus round, `/etc/check-ordering.conf` has two repository entries, a
+plain file and a holoscript both within the same repo subdirectory, to check
+that the repo entries are applied in the correct order (first the plain file,
+then the holoscript).

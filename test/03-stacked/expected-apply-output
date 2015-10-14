@@ -1,4 +1,9 @@
 
+Working on target/etc/check-ordering.conf
+  store at target/var/lib/holo/base/etc/check-ordering.conf
+     apply target/usr/share/holo/repo/03-order/etc/check-ordering.conf
+  passthru target/usr/share/holo/repo/03-order/etc/check-ordering.conf.holoscript
+
 Working on target/etc/link-and-script.conf
   store at target/var/lib/holo/base/etc/link-and-script.conf
      apply target/usr/share/holo/repo/01-first/etc/link-and-script.conf
