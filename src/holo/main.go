@@ -37,7 +37,7 @@ const (
 
 //Note: This line is parsed by the Makefile to get the version string. If you
 //change the format, adjust the Makefile too.
-var version = "v0.7.0"
+var version = "v0.7.1"
 var codename = "Harmony"
 
 func main() {
