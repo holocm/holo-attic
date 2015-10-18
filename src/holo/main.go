@@ -35,11 +35,6 @@ const (
 	optionScanShort
 )
 
-//Note: This line is parsed by the Makefile to get the version string. If you
-//change the format, adjust the Makefile too.
-var version = "v0.7.1"
-var codename = "Harmony"
-
 func main() {
 	//a command word must be given as first argument
 	if len(os.Args) < 2 {
@@ -60,7 +55,7 @@ func main() {
 		command = commandScan
 		knownOpts = map[string]int{"-s": optionScanShort, "--short": optionScanShort}
 	case "version", "--version":
-		fmt.Printf("%s \"%s\"\n", version, codename)
+		fmt.Println(shared.VersionString())
 		return
 	default:
 		commandHelp()

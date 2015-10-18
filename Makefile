@@ -1,21 +1,23 @@
-default: build/holo build/holo.8
+default: build/holo build/holo-build build/holo.8
 .PHONY: install check test
 
 build/holo: src/holo/main.go src/holo/*/*.go
 	go build -o $@ $<
+build/holo-build: src/holo-build/main.go #src/holo-build/*/*.go
+	go build -o $@ $<
 
 # the manpage is generated using pod2man (which comes with Perl and therefore
 # should be readily available on almost every Unix system)
-build/holo.8: doc/manpage.pod src/holo/main.go
+build/holo.8: doc/manpage.pod src/shared/version.go
 	pod2man --name="holo" --section=8 --center="Configuration Management" \
-		--release="Holo $(shell grep 'var version =' src/holo/main.go | cut -d'"' -f2)" \
+		--release="Holo $(shell grep 'var version =' src/shared/version.go | cut -d'"' -f2)" \
 		$< $@
 
 test: check # just a synonym
-check: build/holo
+check: build/holo build/holo-build
 	bash test/run_tests.sh
 
-install: build/holo build/holo.8 util/completion.bash util/completion.zsh
+install: build/holo build/holo-build build/holo.8 util/completion.bash util/completion.zsh
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo"
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo/base"
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo/provisioned"
