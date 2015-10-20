@@ -22,12 +22,7 @@
 //running (most notably the package manager).
 package platform
 
-import (
-	"sort"
-	"strings"
-
-	"../../shared"
-)
+import "../../shared"
 
 //Impl provides integration points with a distribution's toolchain.
 type Impl interface {
@@ -73,17 +68,7 @@ func init() {
 		//set via HOLO_CURRENT_DISTRIBUTION=unittest only
 		impl = genericImpl{}
 	default:
-		//error: unrecognized distribution
-		dists := make([]string, 0, len(isDist))
-		for dist := range isDist {
-			dists = append(dists, dist)
-		}
-		sort.Strings(dists)
-		report := shared.Report{Action: "scan", Target: "platform"}
-		report.AddError("Running on an unrecognized distribution. Distribution IDs: %s", strings.Join(dists, ","))
-		report.AddWarning("Please report this error at <https://github.com/holocm/holo/issues/new>")
-		report.AddWarning("and include the contents of your /etc/os-release file.")
-		report.Print()
+		shared.ReportUnsupportedDistribution(isDist)
 		impl = genericImpl{}
 	}
 }

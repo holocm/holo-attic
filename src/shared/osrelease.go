@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -83,4 +84,19 @@ func GetCurrentDistribution() map[string]bool {
 		}
 	}
 	return result
+}
+
+//ReportUnsupportedDistribution prints the standard warning that the current
+//executable is running on an unsupported distribution.
+func ReportUnsupportedDistribution(isDist map[string]bool) {
+	dists := make([]string, 0, len(isDist))
+	for dist := range isDist {
+		dists = append(dists, dist)
+	}
+	sort.Strings(dists)
+	report := Report{Action: "scan", Target: "platform"}
+	report.AddError("Running on an unrecognized distribution. Distribution IDs: %s", strings.Join(dists, ","))
+	report.AddWarning("Please report this error at <https://github.com/holocm/holo/issues/new>")
+	report.AddWarning("and include the contents of your /etc/os-release file.")
+	report.Print()
 }

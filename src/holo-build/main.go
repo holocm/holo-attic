@@ -26,6 +26,7 @@ import (
 
 	"../shared"
 	"./common"
+	"./pacman"
 )
 
 const (
@@ -34,8 +35,38 @@ const (
 )
 
 func main() {
+	format, earlyExit := parseArgs()
+	if earlyExit {
+		return
+	}
+	generator := findGenerator(format)
+
+	//read package definition from stdin
+	r := shared.Report{Action: "read", Target: "package definition"}
+	pkg, hasError := common.ParsePackageDefinition(os.Stdin, &r)
+	if hasError {
+		r.Print()
+		os.Exit(3)
+	}
+
+	//find the right generator
+	if format == formatAuto {
+	}
+
+	pkgFile, err := generator.Build(pkg, "TODO")
+	if err != nil {
+		r = shared.Report{Action: "build", Target: fmt.Sprintf("%s-%s", pkg.Name, pkg.Version)}
+		r.AddError(err.Error())
+		r.Print()
+		os.Exit(4)
+	}
+
+	os.Stdout.Write(pkgFile)
+}
+
+func parseArgs() (format int, exit bool) {
 	//what can be in the arguments?
-	format := formatAuto
+	f := formatAuto
 
 	//parse arguments
 	args := os.Args[1:]
@@ -45,16 +76,16 @@ func main() {
 		switch arg {
 		case "--help":
 			printHelp()
-			return
+			return f, true
 		case "--version":
 			fmt.Println(shared.VersionString())
-			return
+			return f, true
 		case "--pacman":
-			if format != formatAuto {
+			if f != formatAuto {
 				r.AddError("Multiple package formats specified.")
 				hasArgsError = true
 			}
-			format = formatPacman
+			f = formatPacman
 		default:
 			r.AddError("Unrecognized argument: '%s'", arg)
 			hasArgsError = true
@@ -66,17 +97,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	//read package definition from stdin
-	r = shared.Report{Action: "read", Target: "package definition"}
-	pkg, hasError := common.ParsePackageDefinition(os.Stdin, &r)
-	if hasError {
-		r.Print()
-		os.Exit(2)
-	}
-
-	//TODO: unfinished :)
-	fmt.Printf("Building for format %d\n", format)
-	fmt.Printf("Package: %+v\n", pkg)
+	return f, false
 }
 
 func printHelp() {
@@ -84,4 +105,23 @@ func printHelp() {
 	fmt.Printf("Usage: %s <options> < definitionfile > packagefile\n\nOptions:\n", program)
 	fmt.Println("  --pacman\t\tBuild a pacman package\n")
 	fmt.Println("If no options are given, the package format for the current distribution is selected.\n")
+}
+
+func findGenerator(format int) common.Generator {
+	switch format {
+	case formatAuto:
+		//which distribution are we running on?
+		isDist := shared.GetCurrentDistribution()
+		switch {
+		case isDist["arch"]:
+			return &pacman.Generator{}
+		default:
+			shared.ReportUnsupportedDistribution(isDist)
+			return nil
+		}
+	case formatPacman:
+		return &pacman.Generator{}
+	default:
+		panic("Impossible format")
+	}
 }
