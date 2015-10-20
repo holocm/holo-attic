@@ -25,6 +25,7 @@ import (
 	"os"
 
 	"../shared"
+	"./common"
 )
 
 const (
@@ -65,8 +66,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	//read package definition from stdin
+	r = shared.Report{Action: "read", Target: "package definition"}
+	pkg, hasError := common.ParsePackageDefinition(os.Stdin, &r)
+	if hasError {
+		r.Print()
+		os.Exit(2)
+	}
+
 	//TODO: unfinished :)
 	fmt.Printf("Building for format %d\n", format)
+	fmt.Printf("Package: %+v\n", pkg)
 }
 
 func printHelp() {
