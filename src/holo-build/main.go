@@ -35,10 +35,11 @@ const (
 func main() {
 	//what can be in the arguments?
 	format := formatAuto
-	hasFile, file := false, ""
 
 	//parse arguments
 	args := os.Args[1:]
+	r := shared.Report{Action: "parse", Target: "arguments"}
+	hasArgsError := false
 	for _, arg := range args {
 		switch arg {
 		case "--help":
@@ -48,42 +49,29 @@ func main() {
 			fmt.Println(shared.VersionString())
 			return
 		case "--pacman":
-			//arg selects pacman package format
 			if format != formatAuto {
-				errorMultipleFormats()
+				r.AddError("Multiple package formats specified.")
+				hasArgsError = true
 			}
 			format = formatPacman
 		default:
-			//arg is a file
-			if hasFile {
-				r := shared.Report{Action: "parse", Target: "arguments"}
-				r.AddError("Multiple package description files specified.")
-				r.Print()
-				os.Exit(1)
-			}
-			hasFile, file = true, arg
+			r.AddError("Unrecognized argument: '%s'", arg)
+			hasArgsError = true
 		}
 	}
-	if !hasFile {
-		//missing a file
+	if hasArgsError {
+		r.Print()
 		printHelp()
 		os.Exit(1)
 	}
 
 	//TODO: unfinished :)
-	fmt.Printf("Building file %s for format %d\n", file, format)
+	fmt.Printf("Building for format %d\n", format)
 }
 
 func printHelp() {
 	program := os.Args[0]
-	fmt.Printf("Usage: %s <options> file\n\nOptions:\n", program)
+	fmt.Printf("Usage: %s <options> < definitionfile > packagefile\n\nOptions:\n", program)
 	fmt.Println("  --pacman\t\tBuild a pacman package\n")
 	fmt.Println("If no options are given, the package format for the current distribution is selected.\n")
-}
-
-func errorMultipleFormats() {
-	r := shared.Report{Action: "parse", Target: "arguments"}
-	r.AddError("Multiple package formats specified.")
-	r.Print()
-	os.Exit(1)
 }
