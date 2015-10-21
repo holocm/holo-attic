@@ -23,18 +23,23 @@ package common
 import (
 	"io"
 	"io/ioutil"
+	"regexp"
 
 	"../../internal/toml"
 	"../../shared"
 )
 
 //ParsePackageDefinition parses a package definition from the given input.
-func ParsePackageDefinition(input io.Reader, r *shared.Report) (p *Package, hasError bool) {
+func ParsePackageDefinition(input io.Reader, r *shared.Report) (result *Package, hasError bool) {
 	//prepare a data structure matching the input format
-	var pkg struct {
+	var p struct {
 		Package struct {
-			Name    string
-			Version string
+			Name      string
+			Version   string
+			Requires  []string
+			Provides  []string
+			Conflicts []string
+			Replaces  []string
 		}
 	}
 
@@ -44,15 +49,62 @@ func ParsePackageDefinition(input io.Reader, r *shared.Report) (p *Package, hasE
 		r.AddError(err.Error())
 		return nil, true
 	}
-	_, err = toml.Decode(string(blob), &pkg)
+	_, err = toml.Decode(string(blob), &p)
 	if err != nil {
 		r.AddError(err.Error())
 		return nil, true
 	}
 
 	//restructure the parsed data into a common.Package struct
-	return &Package{
-		Name:    pkg.Package.Name,
-		Version: pkg.Package.Version,
-	}, false
+	pkg := Package{
+		Name:    p.Package.Name,
+		Version: p.Package.Version,
+	}
+	hasError, hasErr := false, false
+	pkg.Requires, hasErr = parseRelatedPackages(p.Package.Requires, r)
+	hasError = hasError || hasErr
+	pkg.Provides, hasErr = parseRelatedPackages(p.Package.Provides, r)
+	hasError = hasError || hasErr
+	pkg.Conflicts, hasErr = parseRelatedPackages(p.Package.Conflicts, r)
+	hasError = hasError || hasErr
+	pkg.Replaces, hasErr = parseRelatedPackages(p.Package.Replaces, r)
+	hasError = hasError || hasErr
+
+	return &pkg, hasError
+}
+
+var relatedPackageRx = regexp.MustCompile(`^([^\s<=>]+)\s*(?:(<=?|>=?|=)\s*(\S+))?$`)
+
+func parseRelatedPackages(specs []string, r *shared.Report) (result []PackageRelation, hasError bool) {
+	rels := make([]PackageRelation, 0, len(specs))
+	idxByName := make(map[string]int, len(specs))
+	hasErr := false
+
+	for _, spec := range specs {
+		//check format of spec
+		match := relatedPackageRx.FindStringSubmatch(spec)
+		if match == nil {
+			r.AddError("Invalid package reference: \"%s\"", spec)
+			hasErr = true
+			continue
+		}
+
+		//do we have a relation to this package already?
+		name := match[1]
+		idx, exists := idxByName[name]
+		if !exists {
+			//no, add a new one and remember it for later additional requirements
+			idx = len(rels)
+			idxByName[name] = idx
+			rels = append(rels, PackageRelation{RelatedPackage: name})
+		}
+
+		//add version requirement if one was specified
+		if match[2] != "" {
+			req := VersionRequirement{Relation: match[2], Version: match[3]}
+			rels[idx].Requirements = append(rels[idx].Requirements, req)
+		}
+	}
+
+	return rels, hasErr
 }
