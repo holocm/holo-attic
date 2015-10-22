@@ -24,6 +24,7 @@ import (
 	"io"
 	"io/ioutil"
 	"regexp"
+	"strings"
 
 	"../../internal/toml"
 	"../../shared"
@@ -60,7 +61,21 @@ func ParsePackageDefinition(input io.Reader, r *shared.Report) (result *Package,
 		Name:    p.Package.Name,
 		Version: p.Package.Version,
 	}
-	hasError, hasErr := false, false
+	hasError = false
+
+	//do some basic validation on the package name and version since we're
+	//going to use these to construct a path
+	if strings.Contains(pkg.Name, "/") {
+		r.AddError("Invalid package name \"%s\" (may not contain slashes)", pkg.Name)
+		hasError = true
+	}
+	if strings.Contains(pkg.Version, "/") {
+		r.AddError("Invalid package version \"%s\" (may not contain slashes)", pkg.Version)
+		hasError = true
+	}
+
+	//parse relations to other packages
+	hasErr := false
 	pkg.Requires, hasErr = parseRelatedPackages(p.Package.Requires, r)
 	hasError = hasError || hasErr
 	pkg.Provides, hasErr = parseRelatedPackages(p.Package.Provides, r)

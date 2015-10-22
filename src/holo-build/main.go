@@ -49,11 +49,16 @@ func main() {
 		os.Exit(3)
 	}
 
-	//find the right generator
-	if format == formatAuto {
+	//prepare the target directory containing the filesystem tree
+	directory, err := pkg.MakeTargetDirectory()
+	if err != nil {
+		r.AddError(err.Error())
+		r.Print()
+		os.Exit(3)
 	}
 
-	pkgFile, err := generator.Build(pkg, "TODO")
+	//build package
+	pkgFile, err := generator.Build(pkg, directory)
 	if err != nil {
 		r = shared.Report{Action: "build", Target: fmt.Sprintf("%s-%s", pkg.Name, pkg.Version)}
 		r.AddError(err.Error())
