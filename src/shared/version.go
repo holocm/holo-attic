@@ -27,6 +27,11 @@ import "fmt"
 var version = "v0.8-pre"
 var codename = "Enthusiasm"
 
+//Version returns the plain version (without release codename).
+func Version() string {
+	return version
+}
+
 //VersionString returns a string including the version and the release codename.
 func VersionString() string {
 	return fmt.Sprintf("%s \"%s\"", version, codename)

@@ -35,12 +35,13 @@ func ParsePackageDefinition(input io.Reader, r *shared.Report) (result *Package,
 	//prepare a data structure matching the input format
 	var p struct {
 		Package struct {
-			Name      string
-			Version   string
-			Requires  []string
-			Provides  []string
-			Conflicts []string
-			Replaces  []string
+			Name        string
+			Version     string
+			Description string
+			Requires    []string
+			Provides    []string
+			Conflicts   []string
+			Replaces    []string
 		}
 	}
 
@@ -58,19 +59,24 @@ func ParsePackageDefinition(input io.Reader, r *shared.Report) (result *Package,
 
 	//restructure the parsed data into a common.Package struct
 	pkg := Package{
-		Name:    p.Package.Name,
-		Version: p.Package.Version,
+		Name:        p.Package.Name,
+		Version:     p.Package.Version,
+		Description: p.Package.Description,
 	}
 	hasError = false
 
 	//do some basic validation on the package name and version since we're
 	//going to use these to construct a path
-	if strings.Contains(pkg.Name, "/") {
-		r.AddError("Invalid package name \"%s\" (may not contain slashes)", pkg.Name)
+	if strings.ContainsAny(pkg.Name, "/\r\n") {
+		r.AddError("Invalid package name \"%s\" (may not contain slashes or newlines)", pkg.Name)
 		hasError = true
 	}
-	if strings.Contains(pkg.Version, "/") {
-		r.AddError("Invalid package version \"%s\" (may not contain slashes)", pkg.Version)
+	if strings.ContainsAny(pkg.Version, "/\r\n") {
+		r.AddError("Invalid package version \"%s\" (may not contain slashes or newlines)", pkg.Version)
+		hasError = true
+	}
+	if strings.ContainsAny(pkg.Description, "\r\n") {
+		r.AddError("Invalid package description \"%s\" (may not contain newlines)", pkg.Name)
 		hasError = true
 	}
 
@@ -108,16 +114,16 @@ func parseRelatedPackages(specs []string, r *shared.Report) (result []PackageRel
 		name := match[1]
 		idx, exists := idxByName[name]
 		if !exists {
-			//no, add a new one and remember it for later additional requirements
+			//no, add a new one and remember it for later additional constraints
 			idx = len(rels)
 			idxByName[name] = idx
 			rels = append(rels, PackageRelation{RelatedPackage: name})
 		}
 
-		//add version requirement if one was specified
+		//add version constraint if one was specified
 		if match[2] != "" {
-			req := VersionRequirement{Relation: match[2], Version: match[3]}
-			rels[idx].Requirements = append(rels[idx].Requirements, req)
+			constraint := VersionConstraint{Relation: match[2], Version: match[3]}
+			rels[idx].Constraints = append(rels[idx].Constraints, constraint)
 		}
 	}
 

@@ -26,9 +26,9 @@ package common
 //General note on package references: Various struct fields (Requires,
 //Provides, Conflicts, Replaces) are []string where the individual strings are
 //other packages. These strings may be just a package name, or the package name
-//may have a suffix like /[<>]?=?$version/ to specify a version requirement for
+//may have a suffix like /[<>]?=?$version/ to specify a version constraint for
 //the referenced package. The package may be referenced multiple times with
-//different version requirements.
+//different version constraints.
 //
 //    pkg.Requires = []string {
 //        "foo", # any version of foo required
@@ -42,6 +42,8 @@ type Package struct {
 	//This field is not structured further in this level since the acceptable
 	//version format may depend on the package generator used.
 	Version string
+	//Description is the optional package description.
+	Description string
 	//Requires contains a list of other packages that are required dependencies
 	//for this package and thus must be installed together with this package.
 	//This is called "Depends" by some package managers.
@@ -52,25 +54,25 @@ type Package struct {
 }
 
 //PackageRelation declares a relation to another package. For the related
-//package, any number of version requirements may be given. For example, the
+//package, any number of version constraints may be given. For example, the
 //following snippet makes a Package require any version of package "foo", and
 //at least version 2.1.2 (but less than version 3.0) of package "bar".
 //
 //    pkg.Requires := []PackageRelation{
 //        PackageRelation { "foo", nil },
-//        PackageRelation { "bar", []VersionRequirement{
-//            VersionRequirement { ">=", "2.1.2" },
-//            VersionRequirement { "<",  "3.0"   },
+//        PackageRelation { "bar", []VersionConstraint{
+//            VersionConstraint { ">=", "2.1.2" },
+//            VersionConstraint { "<",  "3.0"   },
 //        }
 //    }
 type PackageRelation struct {
 	RelatedPackage string
-	Requirements   []VersionRequirement
+	Constraints    []VersionConstraint
 }
 
-//VersionRequirement is used by the PackageRelation struct to specify version
-//requirements for a related package.
-type VersionRequirement struct {
+//VersionConstraint is used by the PackageRelation struct to specify version
+//constraints for a related package.
+type VersionConstraint struct {
 	//Relation is one of "<", "<=", "=", ">=" or ">".
 	Relation string
 	//Version is the version on the right side of the Relation, e.g. "1.2.3-1"
