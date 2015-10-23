@@ -43,4 +43,8 @@ type Generator interface {
 	//has to write the package metadata into the temporary directory, tar the
 	//directory and compress it.
 	Build(pkg *Package, rootPath string) ([]byte, error)
+	//Generate the recommended file name for this package. Distributions
+	//usually have guidelines for this sort of thing. The string returned must
+	//be a plain file name, not a path.
+	RecommendedFileName(pkg *Package) string
 }

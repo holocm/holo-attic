@@ -39,6 +39,13 @@ import (
 //and derivatives).
 type Generator struct{}
 
+//RecommendedFileName implements the common.Generator interface.
+func (g *Generator) RecommendedFileName(pkg *common.Package) string {
+	//this is called after Build(), so we can assume that package name,
+	//version, etc. were already validated
+	return fmt.Sprintf("%s-%s-any.pkg.tar.xz", pkg.Name, pkg.Version)
+}
+
 //Build implements the common.Generator interface.
 func (g *Generator) Build(pkg *common.Package, rootPath string) ([]byte, error) {
 	//TODO: validate package names, versions

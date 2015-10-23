@@ -34,44 +34,42 @@ const (
 	formatPacman
 )
 
+type options struct {
+	format        int
+	printToStdout bool
+}
+
 func main() {
-	format, earlyExit := parseArgs()
+	opts, earlyExit := parseArgs()
 	if earlyExit {
 		return
 	}
-	generator := findGenerator(format)
+	generator := findGenerator(opts.format)
 
 	//read package definition from stdin
 	r := shared.Report{Action: "read", Target: "package definition"}
 	pkg, hasError := common.ParsePackageDefinition(os.Stdin, &r)
 	if hasError {
 		r.Print()
-		os.Exit(3)
-	}
-
-	//prepare the target directory containing the filesystem tree
-	directory, err := pkg.MakeTargetDirectory()
-	if err != nil {
-		r.AddError(err.Error())
-		r.Print()
-		os.Exit(3)
+		os.Exit(1)
 	}
 
 	//build package
-	pkgFile, err := generator.Build(pkg, directory)
+	err := pkg.Build(generator, opts.printToStdout)
 	if err != nil {
 		r = shared.Report{Action: "build", Target: fmt.Sprintf("%s-%s", pkg.Name, pkg.Version)}
 		r.AddError(err.Error())
 		r.Print()
-		os.Exit(4)
+		os.Exit(2)
 	}
-
-	os.Stdout.Write(pkgFile)
 }
 
-func parseArgs() (format int, exit bool) {
-	//what can be in the arguments?
-	f := formatAuto
+func parseArgs() (result options, exit bool) {
+	//default settings
+	opts := options{
+		format:        formatAuto,
+		printToStdout: false,
+	}
 
 	//parse arguments
 	args := os.Args[1:]
@@ -81,16 +79,20 @@ func parseArgs() (format int, exit bool) {
 		switch arg {
 		case "--help":
 			printHelp()
-			return f, true
+			return opts, true
 		case "--version":
 			fmt.Println(shared.VersionString())
-			return f, true
+			return opts, true
+		case "--print":
+			opts.printToStdout = true
+		case "--no-print":
+			opts.printToStdout = false
 		case "--pacman":
-			if f != formatAuto {
+			if opts.format != formatAuto {
 				r.AddError("Multiple package formats specified.")
 				hasArgsError = true
 			}
-			f = formatPacman
+			opts.format = formatPacman
 		default:
 			r.AddError("Unrecognized argument: '%s'", arg)
 			hasArgsError = true
@@ -102,7 +104,7 @@ func parseArgs() (format int, exit bool) {
 		os.Exit(1)
 	}
 
-	return f, false
+	return opts, false
 }
 
 func printHelp() {
