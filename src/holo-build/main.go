@@ -23,11 +23,34 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
+	"syscall"
 
 	"../shared"
 	"./common"
 	"./pacman"
 )
+
+func main() {
+	//holo-build needs to run in a fakeroot(1)
+	if os.Getenv("FAKEROOTKEY") != "" {
+		//already running in fakeroot, commence normal operation
+		actualMain()
+		return
+	}
+
+	//not running in fakeroot -> exec self with fakeroot
+	cmd := exec.Command("fakeroot", os.Args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		//propagate exit code of the forked process
+		exitCode := cmd.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
+		fmt.Fprintf(os.Stderr, "holo-build exited with code %d\n", exitCode)
+		os.Exit(exitCode)
+	}
+}
 
 const (
 	formatAuto = iota
@@ -39,7 +62,7 @@ type options struct {
 	printToStdout bool
 }
 
-func main() {
+func actualMain() {
 	opts, earlyExit := parseArgs()
 	if earlyExit {
 		return
