@@ -23,7 +23,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"syscall"
 
 	"../shared"
@@ -40,16 +39,8 @@ func main() {
 	}
 
 	//not running in fakeroot -> exec self with fakeroot
-	cmd := exec.Command("fakeroot", os.Args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	if err != nil {
-		//propagate exit code of the forked process
-		exitCode := cmd.ProcessState.Sys().(syscall.WaitStatus).ExitStatus()
-		fmt.Fprintf(os.Stderr, "holo-build exited with code %d\n", exitCode)
-		os.Exit(exitCode)
-	}
+	args := append([]string{"/usr/bin/fakeroot"}, os.Args...)
+	syscall.Exec(args[0], args, os.Environ())
 }
 
 const (
