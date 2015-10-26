@@ -50,12 +50,16 @@ func (g *Generator) RecommendedFileName(pkg *common.Package) string {
 func (g *Generator) Build(pkg *common.Package, rootPath string) ([]byte, error) {
 	//TODO: validate package names, versions
 
-	//TODO: write .INSTALL
-
 	//write .PKGINFO
 	err := writePKGINFO(pkg, rootPath)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to write .PKGINFO: %s", err.Error())
+	}
+
+	//write .INSTALL
+	err = writeINSTALL(pkg, rootPath)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to write .INSTALL: %s", err.Error())
 	}
 
 	//write mtree
@@ -155,6 +159,24 @@ func compilePackageRelations(relType string, rels []common.PackageRelation) stri
 		}
 	}
 	return strings.Join(lines, "\n") + "\n"
+}
+
+func writeINSTALL(pkg *common.Package, rootPath string) error {
+	//assemble the contents for the .INSTALL file
+	contents := ""
+	if script := strings.TrimSpace(pkg.SetupScript); script != "" {
+		contents += fmt.Sprintf("post_install() {\n%s\n}\npost_upgrade() { post_install }\n", script)
+	}
+	if script := strings.TrimSpace(pkg.CleanupScript); script != "" {
+		contents += fmt.Sprintf("post_remove() {\n%s\n}\n", script)
+	}
+
+	//do we need the .INSTALL file at all?
+	if contents == "" {
+		return nil
+	}
+
+	return ioutil.WriteFile(filepath.Join(rootPath, ".INSTALL"), []byte(contents), 0666)
 }
 
 func writeMTREE(rootPath string) error {

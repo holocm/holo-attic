@@ -47,10 +47,23 @@ type Package struct {
 	//Requires contains a list of other packages that are required dependencies
 	//for this package and thus must be installed together with this package.
 	//This is called "Depends" by some package managers.
-	Requires  []PackageRelation
-	Provides  []PackageRelation
+	Requires []PackageRelation
+	//Provides contains a list of packages that this package provides features
+	//of (or virtual packages whose capabilities it implements).
+	Provides []PackageRelation
+	//Conflicts contains a list of other packages that cannot be installed at
+	//the same time as this package.
 	Conflicts []PackageRelation
-	Replaces  []PackageRelation
+	//Replaces contains a list of obsolete packages that are replaced by this
+	//package. Upon performing a system upgrade, the obsolete packages will be
+	//automatically replaced by this package.
+	Replaces []PackageRelation
+	//SetupScript contains a shell script that is executed when the package is
+	//installed or upgraded.
+	SetupScript string
+	//CleanupScript contains a shell script that is executed when the package is
+	//installed or upgraded.
+	CleanupScript string
 }
 
 //PackageRelation declares a relation to another package. For the related

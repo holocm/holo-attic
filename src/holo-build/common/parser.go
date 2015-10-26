@@ -35,13 +35,15 @@ func ParsePackageDefinition(input io.Reader, r *shared.Report) (result *Package,
 	//prepare a data structure matching the input format
 	var p struct {
 		Package struct {
-			Name        string
-			Version     string
-			Description string
-			Requires    []string
-			Provides    []string
-			Conflicts   []string
-			Replaces    []string
+			Name          string
+			Version       string
+			Description   string
+			Requires      []string
+			Provides      []string
+			Conflicts     []string
+			Replaces      []string
+			SetupScript   string
+			CleanupScript string
 		}
 	}
 
@@ -59,9 +61,11 @@ func ParsePackageDefinition(input io.Reader, r *shared.Report) (result *Package,
 
 	//restructure the parsed data into a common.Package struct
 	pkg := Package{
-		Name:        p.Package.Name,
-		Version:     p.Package.Version,
-		Description: p.Package.Description,
+		Name:          p.Package.Name,
+		Version:       p.Package.Version,
+		Description:   p.Package.Description,
+		SetupScript:   p.Package.SetupScript,
+		CleanupScript: p.Package.CleanupScript,
 	}
 	hasError = false
 
