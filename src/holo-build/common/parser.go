@@ -61,18 +61,26 @@ func ParsePackageDefinition(input io.Reader, r *shared.Report) (result *Package,
 
 	//restructure the parsed data into a common.Package struct
 	pkg := Package{
-		Name:          p.Package.Name,
-		Version:       p.Package.Version,
-		Description:   p.Package.Description,
-		SetupScript:   p.Package.SetupScript,
-		CleanupScript: p.Package.CleanupScript,
+		Name:          strings.TrimSpace(p.Package.Name),
+		Version:       strings.TrimSpace(p.Package.Version),
+		Description:   strings.TrimSpace(p.Package.Description),
+		SetupScript:   strings.TrimSpace(p.Package.SetupScript),
+		CleanupScript: strings.TrimSpace(p.Package.CleanupScript),
 	}
 	hasError = false
 
 	//do some basic validation on the package name and version since we're
 	//going to use these to construct a path
+	if pkg.Name == "" {
+		r.AddError("Missing package name", pkg.Name)
+		hasError = true
+	}
 	if strings.ContainsAny(pkg.Name, "/\r\n") {
 		r.AddError("Invalid package name \"%s\" (may not contain slashes or newlines)", pkg.Name)
+		hasError = true
+	}
+	if pkg.Version == "" {
+		r.AddError("Missing package version", pkg.Name)
 		hasError = true
 	}
 	if strings.ContainsAny(pkg.Version, "/\r\n") {
