@@ -62,8 +62,11 @@ func actualMain() {
 
 	//read package definition from stdin
 	r := shared.Report{Action: "read", Target: "package definition"}
-	pkg, hasError := common.ParsePackageDefinition(os.Stdin, &r)
-	if hasError {
+	pkg, errs := common.ParsePackageDefinition(os.Stdin)
+	if len(errs) > 0 {
+		for _, err := range errs {
+			r.AddError(err.Error())
+		}
 		r.Print()
 		os.Exit(1)
 	}

@@ -21,17 +21,18 @@
 package common
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"regexp"
 	"strings"
 
 	"../../internal/toml"
-	"../../shared"
 )
 
 //ParsePackageDefinition parses a package definition from the given input.
-func ParsePackageDefinition(input io.Reader, r *shared.Report) (result *Package, hasError bool) {
+//The operation is successful if the returned []error is nil or empty.
+func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 	//prepare a data structure matching the input format
 	var p struct {
 		Package struct {
@@ -50,13 +51,11 @@ func ParsePackageDefinition(input io.Reader, r *shared.Report) (result *Package,
 	//read from input
 	blob, err := ioutil.ReadAll(input)
 	if err != nil {
-		r.AddError(err.Error())
-		return nil, true
+		return nil, []error{err}
 	}
 	_, err = toml.Decode(string(blob), &p)
 	if err != nil {
-		r.AddError(err.Error())
-		return nil, true
+		return nil, []error{err}
 	}
 
 	//restructure the parsed data into a common.Package struct
@@ -67,58 +66,52 @@ func ParsePackageDefinition(input io.Reader, r *shared.Report) (result *Package,
 		SetupScript:   strings.TrimSpace(p.Package.SetupScript),
 		CleanupScript: strings.TrimSpace(p.Package.CleanupScript),
 	}
-	hasError = false
 
 	//do some basic validation on the package name and version since we're
 	//going to use these to construct a path
+	var errors []error
 	if pkg.Name == "" {
-		r.AddError("Missing package name", pkg.Name)
-		hasError = true
+		errors = append(errors, fmt.Errorf("Missing package name", pkg.Name))
 	}
 	if strings.ContainsAny(pkg.Name, "/\r\n") {
-		r.AddError("Invalid package name \"%s\" (may not contain slashes or newlines)", pkg.Name)
-		hasError = true
+		errors = append(errors, fmt.Errorf("Invalid package name \"%s\" (may not contain slashes or newlines)", pkg.Name))
 	}
 	if pkg.Version == "" {
-		r.AddError("Missing package version", pkg.Name)
-		hasError = true
+		errors = append(errors, fmt.Errorf("Missing package version", pkg.Name))
 	}
 	if strings.ContainsAny(pkg.Version, "/\r\n") {
-		r.AddError("Invalid package version \"%s\" (may not contain slashes or newlines)", pkg.Version)
-		hasError = true
+		errors = append(errors, fmt.Errorf("Invalid package version \"%s\" (may not contain slashes or newlines)", pkg.Version))
 	}
 	if strings.ContainsAny(pkg.Description, "\r\n") {
-		r.AddError("Invalid package description \"%s\" (may not contain newlines)", pkg.Name)
-		hasError = true
+		errors = append(errors, fmt.Errorf("Invalid package description \"%s\" (may not contain newlines)", pkg.Name))
 	}
 
 	//parse relations to other packages
-	hasErr := false
-	pkg.Requires, hasErr = parseRelatedPackages(p.Package.Requires, r)
-	hasError = hasError || hasErr
-	pkg.Provides, hasErr = parseRelatedPackages(p.Package.Provides, r)
-	hasError = hasError || hasErr
-	pkg.Conflicts, hasErr = parseRelatedPackages(p.Package.Conflicts, r)
-	hasError = hasError || hasErr
-	pkg.Replaces, hasErr = parseRelatedPackages(p.Package.Replaces, r)
-	hasError = hasError || hasErr
+	var errs []error
+	pkg.Requires, errs = parseRelatedPackages(p.Package.Requires)
+	errors = append(errors, errs...)
+	pkg.Provides, errs = parseRelatedPackages(p.Package.Provides)
+	errors = append(errors, errs...)
+	pkg.Conflicts, errs = parseRelatedPackages(p.Package.Conflicts)
+	errors = append(errors, errs...)
+	pkg.Replaces, errs = parseRelatedPackages(p.Package.Replaces)
+	errors = append(errors, errs...)
 
-	return &pkg, hasError
+	return &pkg, errors
 }
 
 var relatedPackageRx = regexp.MustCompile(`^([^\s<=>]+)\s*(?:(<=?|>=?|=)\s*(\S+))?$`)
 
-func parseRelatedPackages(specs []string, r *shared.Report) (result []PackageRelation, hasError bool) {
+func parseRelatedPackages(specs []string) ([]PackageRelation, []error) {
 	rels := make([]PackageRelation, 0, len(specs))
 	idxByName := make(map[string]int, len(specs))
-	hasErr := false
+	var errors []error
 
 	for _, spec := range specs {
 		//check format of spec
 		match := relatedPackageRx.FindStringSubmatch(spec)
 		if match == nil {
-			r.AddError("Invalid package reference: \"%s\"", spec)
-			hasErr = true
+			errors = append(errors, fmt.Errorf("Invalid package reference: \"%s\"", spec))
 			continue
 		}
 
@@ -139,5 +132,5 @@ func parseRelatedPackages(specs []string, r *shared.Report) (result []PackageRel
 		}
 	}
 
-	return rels, hasErr
+	return rels, errors
 }
