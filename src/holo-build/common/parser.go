@@ -30,29 +30,35 @@ import (
 	"../../internal/toml"
 )
 
+//PackageDefinition only needs a nice exported name for the TOML parser to
+//produce more meaningful error messages on malformed input data.
+type PackageDefinition struct {
+	Package PackageSection
+}
+
+//PackageSection only needs a nice exported name for the TOML parser to produce
+//more meaningful error messages on malformed input data.
+type PackageSection struct {
+	Name          string
+	Version       string
+	Description   string
+	Requires      []string
+	Provides      []string
+	Conflicts     []string
+	Replaces      []string
+	SetupScript   string
+	CleanupScript string
+}
+
 //ParsePackageDefinition parses a package definition from the given input.
 //The operation is successful if the returned []error is nil or empty.
 func ParsePackageDefinition(input io.Reader) (*Package, []error) {
-	//prepare a data structure matching the input format
-	var p struct {
-		Package struct {
-			Name          string
-			Version       string
-			Description   string
-			Requires      []string
-			Provides      []string
-			Conflicts     []string
-			Replaces      []string
-			SetupScript   string
-			CleanupScript string
-		}
-	}
-
 	//read from input
 	blob, err := ioutil.ReadAll(input)
 	if err != nil {
 		return nil, []error{err}
 	}
+	var p PackageDefinition
 	_, err = toml.Decode(string(blob), &p)
 	if err != nil {
 		return nil, []error{err}
