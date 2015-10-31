@@ -20,6 +20,8 @@
 
 package common
 
+import "os"
+
 //Package contains all information about a single package. This representation
 //will be passed into the generator backends.
 //
@@ -64,6 +66,8 @@ type Package struct {
 	//CleanupScript contains a shell script that is executed when the package is
 	//installed or upgraded.
 	CleanupScript string
+	//Entries lists the files and directories contained within this package.
+	FSEntries []FSEntry
 }
 
 //PackageRelation declares a relation to another package. For the related
@@ -93,4 +97,30 @@ type VersionConstraint struct {
 	//since the acceptable version format may depend on the package generator
 	//used.
 	Version string
+}
+
+const (
+	//FSEntryTypeRegular is the FSEntry.Type for regular files.
+	FSEntryTypeRegular = iota
+	//FSEntryTypeSymlink is the FSEntry.Type for symlinks.
+	FSEntryTypeSymlink
+	//FSEntryTypeDirectory is the FSEntry.Type for directories.
+	FSEntryTypeDirectory
+)
+
+//IntOrString is used for FsEntry.Owner and FSEntry.Group that can be either
+//int or string.
+type IntOrString struct {
+	Int uint32
+	Str string
+}
+
+//FSEntry represents a file, directory or symlink in the package.
+type FSEntry struct {
+	Type    int
+	Path    string
+	Content string       //except directories (has content for regular files, target for symlinks)
+	Mode    os.FileMode  //except symlinks
+	Owner   *IntOrString //except symlinks
+	Group   *IntOrString //except symlinks
 }
