@@ -186,7 +186,7 @@ func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 			Type:    FSEntryTypeRegular,
 			Path:    path,
 			Content: parseFileContent(fileSection.Content, fileSection.ContentFrom, ec, entryDesc),
-			Mode:    parseFileMode(fileSection.Mode, 0755, ec, entryDesc),
+			Mode:    parseFileMode(fileSection.Mode, 0644, ec, entryDesc),
 			Owner:   parseUserOrGroupRef(fileSection.Owner, ec, entryDesc),
 			Group:   parseUserOrGroupRef(fileSection.Group, ec, entryDesc),
 		})
