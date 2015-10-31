@@ -20,6 +20,8 @@
 
 package common
 
+//#include <unistd.h>
+import "C"
 import (
 	"fmt"
 	"io/ioutil"
@@ -117,35 +119,36 @@ func (pkg *Package) materializeFSEntries(rootPath string) error {
 		}
 
 		//apply ownership (numeric ownership can be written into the package directly; ownership by name will be applied in the setupScript)
-		var uid, gid uint32 = 0, 0
+		var uid C.__uid_t
+		var gid C.__gid_t
 		if entry.Owner != nil {
 			if entry.Owner.Str == "" {
-				uid = entry.Owner.Int
+				uid = C.__uid_t(entry.Owner.Int)
 			} else {
-				additionalSetupScript += fmt.Sprintf("chown %s %s", entry.Owner.Str, entry.Path)
+				additionalSetupScript += fmt.Sprintf("chown %s %s\n", entry.Owner.Str, entry.Path)
 			}
 		}
 		if entry.Group != nil {
 			if entry.Group.Str == "" {
-				gid = entry.Group.Int
+				gid = C.__gid_t(entry.Group.Int)
 			} else {
 				additionalSetupScript += fmt.Sprintf("chgrp %s %s\n", entry.Group.Str, entry.Path)
 			}
 		}
 		if uid != 0 || gid != 0 {
-			err = os.Chown(path, int(uid), int(gid))
-			if err != nil {
+			//cannot use os.Chown(); os.Chown calls into syscall.Chown and thus
+			//does a direct syscall which cannot be intercepted by fakeroot; I
+			//need to call chown(2) via cgo
+			result, err := C.chown(C.CString(path), uid, gid)
+			if result != 0 && err != nil {
 				return err
 			}
 		}
 	}
 
 	if additionalSetupScript != "" {
-		//ensure "\n" at end of existing setupScript
-		if pkg.SetupScript != "" {
-			pkg.SetupScript = strings.TrimSpace(pkg.SetupScript) + "\n"
-		}
-		pkg.SetupScript += additionalSetupScript
+		//ensure that ownership is correct before running the actual setup script
+		pkg.SetupScript = additionalSetupScript + pkg.SetupScript
 	}
 
 	return nil
