@@ -127,6 +127,8 @@ func parseArgs() (result options, exit bool) {
 func printHelp() {
 	program := os.Args[0]
 	fmt.Printf("Usage: %s <options> < definitionfile > packagefile\n\nOptions:\n", program)
+	fmt.Println("  --print\t\tPrint resulting package on stdout")
+	fmt.Println("  --no-print\t\tWrite resulting package to the working directory (default)\n")
 	fmt.Println("  --pacman\t\tBuild a pacman package\n")
 	fmt.Println("If no options are given, the package format for the current distribution is selected.\n")
 }
