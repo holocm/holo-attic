@@ -36,12 +36,12 @@ run_testcase() {
     [ -f env.sh ] && source ./env.sh
 
     # run holo
-    ../../build/holo scan          2>&1 | ../strip-ansi-colors.sh > scan-output
-    ../../build/holo diff          2>&1 | ../strip-ansi-colors.sh > diff-output
-    ../../build/holo apply         2>&1 | ../strip-ansi-colors.sh > apply-output
+    ../../../build/holo scan          2>&1 | ../strip-ansi-colors.sh > scan-output
+    ../../../build/holo diff          2>&1 | ../strip-ansi-colors.sh > diff-output
+    ../../../build/holo apply         2>&1 | ../strip-ansi-colors.sh > apply-output
     # if "holo apply" that certain operations will only be performed with --force, do so now
     grep -q -- --force apply-output && \
-    ../../build/holo apply --force 2>&1 | ../strip-ansi-colors.sh > apply-force-output
+    ../../../build/holo apply --force 2>&1 | ../strip-ansi-colors.sh > apply-force-output
 
     # dump the contents of the target directory into a single file for better diff'ing
     # (NOTE: I concede that this is slightly messy.)
