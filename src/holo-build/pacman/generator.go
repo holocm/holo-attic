@@ -198,6 +198,11 @@ func writeMTREE(rootPath string, buildReproducibly bool) error {
 		if err != nil {
 			return err
 		}
+		//filepath.Rel() may result in "foo" instead of "./foo" sometimes, but
+		//makepkg has .MTREEs with "./foo" paths, so enforce that
+		if !strings.HasPrefix(target, "./") {
+			target = "./" + target
+		}
 		targets = append(targets, target)
 	}
 
