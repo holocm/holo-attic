@@ -127,7 +127,7 @@ func writePKGINFO(pkg *common.Package, rootPath string, buildReproducibly bool) 
 	contents += "makepkgopt = !debug\n"
 
 	//write .PKGINFO
-	return common.WriteFile(filepath.Join(rootPath, ".PKGINFO"), []byte(contents), 0666, buildReproducibly)
+	return common.WriteFile(filepath.Join(rootPath, ".PKGINFO"), []byte(contents), 0644, buildReproducibly)
 }
 
 //Returns the installed size of the package (in bytes).
@@ -183,7 +183,7 @@ func writeINSTALL(pkg *common.Package, rootPath string, buildReproducibly bool) 
 		return nil
 	}
 
-	return common.WriteFile(filepath.Join(rootPath, ".INSTALL"), []byte(contents), 0666, buildReproducibly)
+	return common.WriteFile(filepath.Join(rootPath, ".INSTALL"), []byte(contents), 0644, buildReproducibly)
 }
 
 func writeMTREE(rootPath string, buildReproducibly bool) error {
