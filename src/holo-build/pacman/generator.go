@@ -172,7 +172,7 @@ func writeINSTALL(pkg *common.Package, rootPath string, buildReproducibly bool) 
 	//assemble the contents for the .INSTALL file
 	contents := ""
 	if script := strings.TrimSpace(pkg.SetupScript); script != "" {
-		contents += fmt.Sprintf("post_install() {\n%s\n}\npost_upgrade() { post_install }\n", script)
+		contents += fmt.Sprintf("post_install() {\n%s\n}\npost_upgrade() {\npost_install\n}\n", script)
 	}
 	if script := strings.TrimSpace(pkg.CleanupScript); script != "" {
 		contents += fmt.Sprintf("post_remove() {\n%s\n}\n", script)
