@@ -104,7 +104,7 @@ func recognizeAndDump(data []byte) (string, error) {
 		return dumpTar(data)
 	}
 
-	return fmt.Sprintf("data (%d bytes)\n", len(data)) + indent(string(data)), nil
+	return "data as shown below\n" + indent(string(data)), nil
 }
 
 func dumpGZ(data []byte) (string, error) {

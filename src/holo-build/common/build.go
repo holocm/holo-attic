@@ -31,7 +31,7 @@ import (
 )
 
 //Build builds the package using the given Generator.
-func (pkg *Package) Build(generator Generator, printToStdout bool) error {
+func (pkg *Package) Build(generator Generator, printToStdout bool, buildReproducibly bool) error {
 	//choose root directory in such a way that the user can easily find and
 	//inspect it in the case that an error occurs
 	rootPath := fmt.Sprintf("./holo-build-%s-%s", pkg.Name, pkg.Version)
@@ -49,13 +49,13 @@ func (pkg *Package) Build(generator Generator, printToStdout bool) error {
 	}
 
 	//materialize FS entries in the root directory
-	err = pkg.materializeFSEntries(rootPath)
+	err = pkg.materializeFSEntries(rootPath, buildReproducibly)
 	if err != nil {
 		return err
 	}
 
 	//build package
-	pkgBytes, err := generator.Build(pkg, rootPath)
+	pkgBytes, err := generator.Build(pkg, rootPath, buildReproducibly)
 	if err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func (pkg *Package) Build(generator Generator, printToStdout bool) error {
 	return nil
 }
 
-func (pkg *Package) materializeFSEntries(rootPath string) error {
+func (pkg *Package) materializeFSEntries(rootPath string, buildReproducibly bool) error {
 	var additionalSetupScript string
 
 	for _, entry := range pkg.FSEntries {
@@ -149,6 +149,21 @@ func (pkg *Package) materializeFSEntries(rootPath string) error {
 	if additionalSetupScript != "" {
 		//ensure that ownership is correct before running the actual setup script
 		pkg.SetupScript = additionalSetupScript + pkg.SetupScript
+	}
+
+	//if a reproducible build has been requested, set all timestamps for all FS
+	//entries to 0 (i.e. 1970-01-01T00:00:00Z)
+	if buildReproducibly {
+		err := filepath.Walk(rootPath, func(path string, fileInfo os.FileInfo, err error) error {
+			//skip over unaccessible stuff
+			if err != nil {
+				return err
+			}
+			return ResetTimestamp(path)
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

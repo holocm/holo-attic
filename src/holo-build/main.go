@@ -51,6 +51,7 @@ const (
 type options struct {
 	format        int
 	printToStdout bool
+	reproducible  bool
 }
 
 func actualMain() {
@@ -72,7 +73,7 @@ func actualMain() {
 	}
 
 	//build package
-	err := pkg.Build(generator, opts.printToStdout)
+	err := pkg.Build(generator, opts.printToStdout, opts.reproducible)
 	if err != nil {
 		r = shared.Report{Action: "build", Target: fmt.Sprintf("%s-%s", pkg.Name, pkg.Version)}
 		r.AddError(err.Error())
@@ -86,6 +87,7 @@ func parseArgs() (result options, exit bool) {
 	opts := options{
 		format:        formatAuto,
 		printToStdout: false,
+		reproducible:  false,
 	}
 
 	//parse arguments
@@ -104,6 +106,10 @@ func parseArgs() (result options, exit bool) {
 			opts.printToStdout = true
 		case "--no-print":
 			opts.printToStdout = false
+		case "--reproducible":
+			opts.reproducible = true
+		case "--no-reproducible":
+			opts.reproducible = false
 		case "--pacman":
 			if opts.format != formatAuto {
 				r.AddError("Multiple package formats specified.")
@@ -128,7 +134,9 @@ func printHelp() {
 	program := os.Args[0]
 	fmt.Printf("Usage: %s <options> < definitionfile > packagefile\n\nOptions:\n", program)
 	fmt.Println("  --print\t\tPrint resulting package on stdout")
-	fmt.Println("  --no-print\t\tWrite resulting package to the working directory (default)\n")
+	fmt.Println("  --no-print\t\tWrite resulting package to the working directory (default)")
+	fmt.Println("  --reproducible\tBuild a reproducible package with bogus timestamps etc.")
+	fmt.Println("  --no-reproducible\tBuild a non-reproducible package with actual timestamps etc. (default)")
 	fmt.Println("  --pacman\t\tBuild a pacman package\n")
 	fmt.Println("If no options are given, the package format for the current distribution is selected.\n")
 }

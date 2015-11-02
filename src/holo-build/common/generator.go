@@ -42,7 +42,11 @@ type Generator interface {
 	//the right content, ownership, and permissions. The generator usually just
 	//has to write the package metadata into the temporary directory, tar the
 	//directory and compress it.
-	Build(pkg *Package, rootPath string) ([]byte, error)
+	//
+	//If `buildReproducibly` is true, the package must be built such that every
+	//run (even across systems) produces an identical result. For example, no
+	//timestamps or generator version information may be included.
+	Build(pkg *Package, rootPath string, buildReproducibly bool) ([]byte, error)
 	//Generate the recommended file name for this package. Distributions
 	//usually have guidelines for this sort of thing. The string returned must
 	//be a plain file name, not a path.
