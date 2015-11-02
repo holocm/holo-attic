@@ -111,8 +111,9 @@ func writePKGINFO(pkg *common.Package, rootPath string, buildReproducibly bool) 
 	contents += compilePackageRelations("provides", pkg.Provides)
 	contents += compilePackageRelations("depend", pkg.Requires)
 
-	//we used holo-build to build this
-	contents += "makedepend = holo-build\n"
+	//we used holo-build to build this, so the build depends on the package
+	//"holo" which contains holo-build
+	contents += "makedepend = holo\n"
 	//these makepkgopt are fabricated (well, duh) and describe the behavior of
 	//holo-build in terms of these options
 	contents += "makepkgopt = !strip\n"
