@@ -39,7 +39,7 @@ func main() {
 	}
 
 	//not running in fakeroot -> exec self with fakeroot
-	args := append([]string{"/usr/bin/fakeroot", "-u"}, os.Args...)
+	args := append([]string{"/usr/bin/fakeroot"}, os.Args...)
 	syscall.Exec(args[0], args, os.Environ())
 }
 

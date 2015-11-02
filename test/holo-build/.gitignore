@@ -1,0 +1,4 @@
+# pacman generator
+*.pkg.tar.xz
+pacman-output
+pacman-error-output
