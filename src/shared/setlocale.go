@@ -18,7 +18,7 @@
 *
 *******************************************************************************/
 
-package common
+package shared
 
 // #include <locale.h>
 import "C"

@@ -20,6 +20,8 @@
 
 package main
 
+// #include <locale.h>
+import "C"
 import (
 	"archive/tar"
 	"bytes"
@@ -56,6 +58,10 @@ import (
 //generators).
 
 func main() {
+	//Holo requires a neutral locale, esp. for deterministic sorting of file paths
+	lcAll := C.int(0)
+	C.setlocale(lcAll, C.CString("C"))
+
 	//read the input from stdin
 	data, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
