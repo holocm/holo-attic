@@ -5,7 +5,7 @@ TESTS_DIR="$(readlink -f "$(dirname $0)")"
 
 run_testcase() {
     local TEST_NAME=$1
-    echo ">> Running testcase $TEST_NAME..."
+    echo ">> Running testcase holo/$TEST_NAME..."
 
     # determine testcase location
     local TESTCASE_DIR="$TESTS_DIR/$TEST_NAME"
@@ -83,8 +83,8 @@ else
 fi
 
 if [ $TEST_EXIT_CODE = 0 ]; then
-    echo ">> All tests completed successfully."
+    echo ">> All tests for \"holo\" completed successfully."
 else
-    echo "!! Some or all tests failed. Please check the output above for more information."
+    echo "!! Some or all tests for \"holo\" failed. Please check the output above for more information."
 fi
 exit $TEST_EXIT_CODE
