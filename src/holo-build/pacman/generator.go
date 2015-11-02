@@ -219,6 +219,11 @@ func writeMTREE(rootPath string, buildReproducibly bool) error {
 		return err
 	}
 
+	err = os.Chmod(filepath.Join(rootPath, ".MTREE"), 0644)
+	if err != nil {
+		return err
+	}
+
 	if buildReproducibly {
 		return common.ResetTimestamp(filepath.Join(rootPath, ".MTREE"))
 	}
