@@ -13,8 +13,12 @@ build/holo.8: doc/manpage.pod src/shared/version.go
 		--release="Holo $(shell grep 'var version =' src/shared/version.go | cut -d'"' -f2)" \
 		$< $@
 
+# this utility is needed only for testing
+build/dump-package: test/holo-build/dump-package.go
+	go build -o $@ $<
+
 test: check # just a synonym
-check: build/holo build/holo-build
+check: build/holo build/holo-build build/dump-package
 	bash test/holo/run_tests.sh
 
 install: build/holo build/holo-build build/holo.8 util/completion.bash util/completion.zsh
