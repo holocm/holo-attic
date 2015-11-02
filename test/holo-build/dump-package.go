@@ -32,6 +32,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"sort"
 	"strings"
 )
 
@@ -161,7 +162,8 @@ func dumpXZ(data []byte) (string, error) {
 func dumpTar(data []byte) (string, error) {
 	//use "archive/tar" package to read the tar archive
 	tr := tar.NewReader(bytes.NewReader(data))
-	var dump string
+	dumps := make(map[string]string)
+	var names []string
 
 	//iterate through the entries in the archive
 	for {
@@ -217,7 +219,15 @@ func dumpTar(data []byte) (string, error) {
 			str += "\n"
 		}
 
-		dump += str
+		names = append(names, header.Name)
+		dumps[header.Name] = str
+	}
+
+	//dump entries ordered by name
+	sort.Strings(names)
+	dump := ""
+	for _, name := range names {
+		dump += dumps[name]
 	}
 
 	return "POSIX tar archive\n" + indent(dump), nil
