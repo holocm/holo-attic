@@ -1,0 +1,9 @@
+
+read package definition
+!! Missing package name
+!! Missing package version
+!! directory 1 is invalid: missing "path" attribute
+!! file 1 is invalid: missing "path" attribute
+!! file "/etc/this-not-either.conf" is invalid: missing content
+!! symlink 0 is invalid: missing "path" attribute
+

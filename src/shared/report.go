@@ -77,16 +77,16 @@ var reportsWerePrinted bool
 
 //Print prints the full report on stdout.
 func (r *Report) Print() {
-	//before the first report, print a newline to get the paragraph formatting right
-	if !reportsWerePrinted {
-		fmt.Println()
-		reportsWerePrinted = true
-	}
-
 	//print to stdout or stderr?
 	out := os.Stdout
 	if r.msgText != "" {
 		out = os.Stderr
+	}
+
+	//before the first report, print a newline to get the paragraph formatting right
+	if !reportsWerePrinted {
+		out.Write([]byte{'\n'})
+		reportsWerePrinted = true
 	}
 
 	//print initial line with Action, Target and State

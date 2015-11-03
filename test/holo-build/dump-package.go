@@ -91,6 +91,10 @@ func indent(dump string) string {
 }
 
 func recognizeAndDump(data []byte) (string, error) {
+	if len(data) == 0 {
+		return "empty file", nil
+	}
+
 	//Thanks to https://stackoverflow.com/a/19127748/334761 for
 	//listing all the magic numbers of the usual compression formats.
 

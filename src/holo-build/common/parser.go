@@ -135,13 +135,13 @@ func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 	//going to use these to construct a path
 	ec := &errorCollector{}
 	if pkg.Name == "" {
-		ec.addf("Missing package name", pkg.Name)
+		ec.addf("Missing package name")
 	}
 	if strings.ContainsAny(pkg.Name, "/\r\n") {
 		ec.addf("Invalid package name \"%s\" (may not contain slashes or newlines)", pkg.Name)
 	}
 	if pkg.Version == "" {
-		ec.addf("Missing package version", pkg.Name)
+		ec.addf("Missing package version")
 	}
 	if strings.ContainsAny(pkg.Version, "/\r\n") {
 		ec.addf("Invalid package version \"%s\" (may not contain slashes or newlines)", pkg.Version)

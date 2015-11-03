@@ -25,6 +25,10 @@ run_testcase() {
         ../../../build/holo-build --print --reproducible --$GENERATOR < input.toml 2> $GENERATOR-error-output \
             | ../../../build/dump-package &> $GENERATOR-output
 
+        # strip ANSI colors from error output
+        ../../strip-ansi-colors.sh < $GENERATOR-error-output > $GENERATOR-error-output.new
+        mv $GENERATOR-error-output{.new,}
+
         # use diff to check the actual run with our expectations
         for FILE in $GENERATOR-error-output $GENERATOR-output; do
             if [ -f $FILE ]; then
