@@ -1,3 +1,6 @@
+# This testcase should only contain the minimal set of required fields, to
+# validate that all other fields are indeed optional.
+
 [package]
 name = "the-package"
 version = "1.0-1"

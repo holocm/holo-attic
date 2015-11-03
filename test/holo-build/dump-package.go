@@ -50,7 +50,7 @@ import (
 //    XZ-compressed data
 //        POSIX tar archive
 //            >> foo/ is directory (mode: 0755, owner: 1000, group: 1000)
-//            >> foo/bar is regular file (mode: 0600, owner: 1000, group: 1000), content: data (13 bytes)
+//            >> foo/bar is regular file (mode: 0600, owner: 1000, group: 1000), content: data as shown below
 //                Hello World!
 //            >> foo/baz is symlink to bar
 //
