@@ -114,6 +114,10 @@ func recognizeAndDump(data []byte) (string, error) {
 	if len(data) >= 512 && bytes.Equal(data[257:262], []byte("ustar")) {
 		return dumpTar(data)
 	}
+	//is it an mtree archive?
+	if bytes.HasPrefix(data, []byte("#mtree")) {
+		return dumpMtree(data)
+	}
 
 	return "data as shown below\n" + indent(string(data)), nil
 }
@@ -235,4 +239,94 @@ func dumpTar(data []byte) (string, error) {
 	}
 
 	return "POSIX tar archive\n" + indent(dump), nil
+}
+
+func dumpMtree(data []byte) (string, error) {
+	//We don't have a library for the mtree(5) format, but it's relatively simple.
+	//NOTE: We don't support absolute paths ("mtree v2.0") and we don't track the cwd.
+	//All we do is resolve duplicate entries and "/set" and "/unset" commands.
+	lines := strings.Split(string(data), "\n")
+
+	//go through each entry and resolve "/set"
+	globalOpts := make(map[string]string)
+	entries := make(map[string]map[string]string)
+
+	for _, line := range lines {
+		//ignore comments
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "#") || line == "" {
+			continue
+		}
+
+		//lines look like "name option option option"
+		options := strings.Split(line, " ")
+		name := options[0]
+		options = options[1:]
+
+		//parse options (option = "key=value")
+		opts := make(map[string]string, len(options))
+		for _, option := range options {
+			pair := strings.SplitN(option, "=", 2)
+			if len(pair) == 1 {
+				opts[pair[0]] = ""
+			} else {
+				opts[pair[0]] = pair[1]
+			}
+		}
+
+		//name can either be a special command or a filename
+		switch name {
+		case "/set":
+			//set the opts globally
+			for key, value := range opts {
+				globalOpts[key] = value
+			}
+		case "/unset":
+			//unset the opts globally
+			for key := range opts {
+				delete(globalOpts, key)
+			}
+		default:
+			//create (if missing) an entry for this file and add the opts to it
+			entry, ok := entries[name]
+			if !ok {
+				entry = make(map[string]string, len(opts)+len(globalOpts))
+				//apply globalOpts
+				for key, value := range globalOpts {
+					entry[key] = value
+				}
+				entries[name] = entry
+			}
+			for key, value := range opts {
+				entry[key] = value
+			}
+		}
+	}
+
+	//sort entries by name
+	entryNames := make([]string, 0, len(entries))
+	for name := range entries {
+		entryNames = append(entryNames, name)
+	}
+	sort.Strings(entryNames)
+
+	outputLines := make([]string, 0, len(entries))
+	for _, name := range entryNames {
+		//sort options for entry by key
+		entry := entries[name]
+		keys := make([]string, 0, len(entry))
+		for key := range entry {
+			keys = append(keys, key)
+		}
+		sort.Strings(keys)
+
+		options := ""
+		for _, key := range keys {
+			options += fmt.Sprintf(" %s=%s", key, entry[key])
+		}
+
+		outputLines = append(outputLines, ">> "+name+options)
+	}
+
+	return "mtree metadata archive\n" + indent(strings.Join(outputLines, "\n")), nil
 }
