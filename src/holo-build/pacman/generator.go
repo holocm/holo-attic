@@ -71,6 +71,15 @@ func (g *Generator) Build(pkg *common.Package, rootPath string, buildReproducibl
 	return compressPackage(rootPath)
 }
 
+func fullVersionString(pkg *common.Package) string {
+	//pkg.Version may not contain dashes in pacman packages, so replace "-" with "_"
+	str := fmt.Sprintf("%s-%d", strings.Replace(pkg.Version, "-", "_", -1), pkg.Release)
+	if pkg.Epoch > 0 {
+		str = fmt.Sprintf("%d:%s", pkg.Epoch, str)
+	}
+	return str
+}
+
 func writePKGINFO(pkg *common.Package, rootPath string, buildReproducibly bool) error {
 	//gather metrics
 	installedSize, err := findPackageInstalledSize(rootPath)
@@ -96,7 +105,7 @@ func writePKGINFO(pkg *common.Package, rootPath string, buildReproducibly bool) 
 		contents += fmt.Sprintf("# using %s\n", strings.TrimSpace(string(fakerootVersionString)))
 	}
 	contents += fmt.Sprintf("pkgname = %s\n", pkg.Name)
-	contents += fmt.Sprintf("pkgver = %s\n", pkg.Version)
+	contents += fmt.Sprintf("pkgver = %s\n", fullVersionString(pkg))
 	contents += fmt.Sprintf("pkgdesc = %s\n", desc)
 	contents += "url = \n"
 	if !buildReproducibly {

@@ -40,10 +40,23 @@ import "os"
 type Package struct {
 	//Name is the package name.
 	Name string
-	//Version is the package's version, e.g. "1.2.3-1" or "2:20151024-1.1".
-	//This field is not structured further in this level since the acceptable
-	//version format may depend on the package generator used.
+	//Version is the version for the package contents. While many package
+	//formats are more or less liberal about the format of version strings,
+	//holo-build requires versions to adhere to the Semantic Version format
+	//(semver.org). Build metadata is not supported, while as an extension, we
+	//support an arbitrary number of segments in the initial
+	//"MAJOR.MINOR.PATCH" part.
 	Version string
+	//Release is a counter that can be increased when the same version of one
+	//hologram needs to be rebuilt. The default value is 1.
+	Release uint
+	//Epoch is a counter that can be increased when the version of a newer
+	//package is smaller than the previous version, thus breaking normal
+	//version comparison logic. This is usually only necessary when changing to
+	//a different version numbering scheme. The default value is 0, which
+	//usually results in the epoch not being shown in the combined version
+	//string at all.
+	Epoch uint
 	//Description is the optional package description.
 	Description string
 	//Requires contains a list of other packages that are required dependencies

@@ -2,7 +2,7 @@
 
 [package]
 name = "foo"
-version = "1.0.beta2-1"
+version = "1.0-beta.2"
 description = "my foo bar package"
 requires = ["bar>=2.1", "bar<3.0", "baz"]
 provides = ["foo-bar=2.1", "foo-baz"]

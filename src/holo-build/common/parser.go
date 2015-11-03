@@ -47,6 +47,8 @@ type PackageDefinition struct {
 type PackageSection struct {
 	Name          string
 	Version       string
+	Release       uint
+	Epoch         uint
 	Description   string
 	Requires      []string
 	Provides      []string
@@ -106,6 +108,13 @@ func (c *errorCollector) addf(format string, args ...interface{}) {
 	}
 }
 
+var versionRx = regexp.MustCompile(`^[0-9]+(?:\.[0-9]+)*(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$`)
+
+//                                   <-+---------------><-+----------------------------------->
+//                                     |                  |
+//                                     |                prerelease identifier (e.g. "-alpha.1")
+//                                    numeric versions (e.g. "1.2.3" or "20151103")
+
 //ParsePackageDefinition parses a package definition from the given input.
 //The operation is successful if the returned []error is nil or empty.
 func ParsePackageDefinition(input io.Reader) (*Package, []error) {
@@ -125,26 +134,33 @@ func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 	pkg := Package{
 		Name:          strings.TrimSpace(p.Package.Name),
 		Version:       strings.TrimSpace(p.Package.Version),
+		Release:       p.Package.Release,
+		Epoch:         p.Package.Epoch,
 		Description:   strings.TrimSpace(p.Package.Description),
 		SetupScript:   strings.TrimSpace(p.Package.SetupScript),
 		CleanupScript: strings.TrimSpace(p.Package.CleanupScript),
 		FSEntries:     make([]FSEntry, 0, fsEntryCount),
 	}
 
+	//default value for Release is 1
+	if pkg.Release == 0 {
+		pkg.Release = 1
+	}
+
 	//do some basic validation on the package name and version since we're
 	//going to use these to construct a path
 	ec := &errorCollector{}
-	if pkg.Name == "" {
+	switch {
+	case pkg.Name == "":
 		ec.addf("Missing package name")
-	}
-	if strings.ContainsAny(pkg.Name, "/\r\n") {
+	case strings.ContainsAny(pkg.Name, "/\r\n"):
 		ec.addf("Invalid package name \"%s\" (may not contain slashes or newlines)", pkg.Name)
 	}
-	if pkg.Version == "" {
+	switch {
+	case pkg.Version == "":
 		ec.addf("Missing package version")
-	}
-	if strings.ContainsAny(pkg.Version, "/\r\n") {
-		ec.addf("Invalid package version \"%s\" (may not contain slashes or newlines)", pkg.Version)
+	case !versionRx.MatchString(pkg.Version):
+		ec.addf("Invalid package version \"%s\" (must be a chain of numbers like \"1.2.0\", optionally with pre-release suffix like \"-alpha.1\")", pkg.Version)
 	}
 	if strings.ContainsAny(pkg.Description, "\r\n") {
 		ec.addf("Invalid package description \"%s\" (may not contain newlines)", pkg.Name)
