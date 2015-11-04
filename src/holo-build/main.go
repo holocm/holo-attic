@@ -102,9 +102,9 @@ func parseArgs() (result options, exit bool) {
 		case "--version":
 			fmt.Println(shared.VersionString())
 			return opts, true
-		case "--print":
+		case "--stdout":
 			opts.printToStdout = true
-		case "--no-print":
+		case "--no-stdout":
 			opts.printToStdout = false
 		case "--reproducible":
 			opts.reproducible = true
@@ -133,8 +133,8 @@ func parseArgs() (result options, exit bool) {
 func printHelp() {
 	program := os.Args[0]
 	fmt.Printf("Usage: %s <options> < definitionfile > packagefile\n\nOptions:\n", program)
-	fmt.Println("  --print\t\tPrint resulting package on stdout")
-	fmt.Println("  --no-print\t\tWrite resulting package to the working directory (default)")
+	fmt.Println("  --stdout\t\tPrint resulting package on stdout")
+	fmt.Println("  --no-stdout\t\tWrite resulting package to the working directory (default)")
 	fmt.Println("  --reproducible\tBuild a reproducible package with bogus timestamps etc.")
 	fmt.Println("  --no-reproducible\tBuild a non-reproducible package with actual timestamps etc. (default)")
 	fmt.Println("  --pacman\t\tBuild a pacman package\n")

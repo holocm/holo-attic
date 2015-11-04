@@ -22,7 +22,7 @@ run_testcase() {
     for GENERATOR in pacman; do
 
         # run holo-build, decompose result with dump-package (see dump-package.go in the same directory as this script)
-        ../../../build/holo-build --print --reproducible --$GENERATOR < input.toml 2> $GENERATOR-error-output \
+        ../../../build/holo-build --stdout --reproducible --$GENERATOR < input.toml 2> $GENERATOR-error-output \
             | ../../../build/dump-package &> $GENERATOR-output
 
         # strip ANSI colors from error output

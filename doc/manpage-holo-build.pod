@@ -52,11 +52,12 @@ The package description format is described below.
 
 =over 4
 
-=item B<--print>/B<--no-print>
+=item B<--stdout>/B<--no-stdout>
 
 By default, the resulting package will be placed in the working directory using
-the naming convention for the corresponding output package format. If B<--print>
-is given, the package will be printed directly to standard output instead.
+the naming convention for the corresponding output package format. If
+B<--stdout> is given, the package will be printed directly to standard output
+instead.
 
 =item B<--pacman>
 

@@ -37,7 +37,7 @@ test case looks like this:
 The generator name `$g` is the one in the CLI option that selects this
 generator. `holo-build` is called as
 
-    holo-build --$g --reproducible --print < input.toml > $g-output 2> $g-stderr-output
+    holo-build --$g --reproducible --stdout < input.toml 2> $g-stderr-output | dump-package > $g-output
 
 Running the tests
 -----------------
