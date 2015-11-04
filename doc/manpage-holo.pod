@@ -1,13 +1,5 @@
 =encoding UTF-8
 
-=for Comment
-################################################################################
-# NOTE: This document generates both the manpage and the website's doc.html,   #
-#       through copious use of =begin, =end and =for.                          #
-################################################################################
-
-=begin :man
-
 =head1 NAME
 
 holo - minimal configuration management
@@ -21,55 +13,6 @@ holo B<diff> [I<entity> ...]
 holo B<scan> [I<-s|--short>] [I<entity> ...]
 
 holo B<--help|--version>
-
-=end :man
-
-=begin :html
-
-=head1 User documentation
-
-New to Holo? Check out our feature overview before diving into the details in here.
-
-=for html <p class="follow"><a href="./tour.html">Take the tour »</a></p>
-
-=head1 Installation
-
-The recommended method, if possible, is to install Holo as a package.
-
-=over 4
-
-=item *
-
-Arch Linux users can use the L<AUR package|https://aur.archlinux.org/packages/holo>.
-
-=item *
-
-If you have packaged Holo for your distribution, please
-L<send me a link|https://github.com/holocm/holo/issues/new> that I can add to
-this list.
-
-=back
-
-Alternatively, to install from source, clone the
-L<Git repository|https://github.com/holocm/holo>
-and build the master branch:
-
-    $ git clone https://github.com/holocm/holo
-    $ cd holo
-    $ make
-    $ make check
-    $ sudo make install
-
-You need L<Go|https://golang.org> to compile Holo and
-L<Perl|https://www.perl.org> to run the tests. Packages for Go and Perl are
-available for all major distributions. Note that these are both build-time
-dependencies; when installed, Holo is a single static binary (plus manpage) that
-depends only on a UNIX kernel, plus the
-L<shadow|http://pkg-shadow.alioth.debian.org/> tools if you wish to provision
-user accounts or groups.
-
-
-=end :html
 
 =head1 DESCRIPTION
 
@@ -248,7 +191,18 @@ Print out Holo's version string including the release name.
 
 =back
 
+=for Comment
+################################################################################
+# NOTE: This document generates both the manpage and the website's             #
+#       man-holo.html. The following sections only appear in the manpage.      #
+################################################################################
+
 =begin :man
+
+=head1 SEE ALSO
+
+L<holo-build(8)> can optionally be used in conjunction with Holo to simplify
+the package build process.
 
 =head1 AUTHOR
 

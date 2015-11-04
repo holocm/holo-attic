@@ -1,0 +1,59 @@
+=encoding UTF-8
+
+=head1 User documentation
+
+New to Holo? Check out our feature overview before diving into the details in here.
+
+=for html <p class="follow"><a href="./tour.html">Take the tour »</a></p>
+
+=head1 Installation
+
+The recommended method, if possible, is to install Holo as a package.
+
+=over 4
+
+=item *
+
+Arch Linux users can use the L<AUR package|https://aur.archlinux.org/packages/holo>.
+
+=item *
+
+If you have packaged Holo for your distribution, please
+L<send me a link|https://github.com/holocm/holo/issues/new> that I can add to
+this list.
+
+=back
+
+Alternatively, to install from source, clone the
+L<Git repository|https://github.com/holocm/holo>
+and build the master branch:
+
+    $ git clone https://github.com/holocm/holo
+    $ cd holo
+    $ make
+    $ make check
+    $ sudo make install
+
+You need L<Go|https://golang.org> and L<Perl|https://www.perl.org> to compile
+Holo. Packages for Go and Perl are available for all major distributions. Note
+that these are both build-time dependencies; when installed, Holo is a single
+static binary (plus manpage) that depends only on a UNIX kernel, plus the
+L<shadow|http://pkg-shadow.alioth.debian.org/> tools if you wish to provision
+user accounts or groups. The C<holo-build> utility adds two more runtime
+dependencies: C<bsdtar> and C<fakeroot>.
+
+=head1 Command reference
+
+Holo is divided into two utilities. The original C<holo> is typically installed
+by configuration packages as a dependency, and can provision configuration
+files, user accounts and groups. It can also check whether these things were
+changed manually since being provisioned.
+
+=for html <p class="follow"><a href="./man-holo.html">Manpage for holo(8) »</a></p>
+
+The second utility, C<holo-build>, provides a simple, distribution-independent
+language for specifying and building configuration packages. It can be used for
+configuration packages instead of the distribution-specific package building
+method.
+
+=for html <p class="follow"><a href="./man-holo-build.html">Manpage for holo-build(8) »</a></p>
