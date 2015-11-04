@@ -167,19 +167,17 @@ func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 	}
 
 	//parse relations to other packages
-	pkg.Requires = parseRelatedPackages(p.Package.Requires, ec)
-	pkg.Provides = parseRelatedPackages(p.Package.Provides, ec)
-	pkg.Conflicts = parseRelatedPackages(p.Package.Conflicts, ec)
-	pkg.Replaces = parseRelatedPackages(p.Package.Replaces, ec)
+	pkg.Requires = parseRelatedPackages("requires", p.Package.Requires, ec)
+	pkg.Provides = parseRelatedPackages("provides", p.Package.Provides, ec)
+	pkg.Conflicts = parseRelatedPackages("conflicts", p.Package.Conflicts, ec)
+	pkg.Replaces = parseRelatedPackages("replaces", p.Package.Replaces, ec)
 
 	//parse and validate FS entries
 	wasPathSeen := make(map[string]bool, fsEntryCount)
 
 	for idx, dirSection := range p.Directory {
 		path := dirSection.Path
-		if !validatePath(path, &wasPathSeen, ec, "directory", idx) {
-			continue
-		}
+		validatePath(path, &wasPathSeen, ec, "directory", idx)
 
 		entryDesc := fmt.Sprintf("directory \"%s\"", path)
 		pkg.FSEntries = append(pkg.FSEntries, FSEntry{
@@ -193,9 +191,7 @@ func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 
 	for idx, fileSection := range p.File {
 		path := fileSection.Path
-		if !validatePath(path, &wasPathSeen, ec, "file", idx) {
-			continue
-		}
+		validatePath(path, &wasPathSeen, ec, "file", idx)
 
 		entryDesc := fmt.Sprintf("file \"%s\"", path)
 		pkg.FSEntries = append(pkg.FSEntries, FSEntry{
@@ -210,9 +206,7 @@ func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 
 	for idx, symlinkSection := range p.Symlink {
 		path := symlinkSection.Path
-		if !validatePath(path, &wasPathSeen, ec, "symlink", idx) {
-			continue
-		}
+		validatePath(path, &wasPathSeen, ec, "symlink", idx)
 
 		if symlinkSection.Target == "" {
 			ec.addf("symlink \"%s\" is invalid: missing target", path)
@@ -228,9 +222,9 @@ func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 	return &pkg, ec.errors
 }
 
-var relatedPackageRx = regexp.MustCompile(`^([^\s<=>]+)\s*(?:(<=?|>=?|=)\s*(\S+))?$`)
+var relatedPackageRx = regexp.MustCompile(`^([^\s<=>]+)\s*(?:(<=?|>=?|=)\s*([^\s<=>]+))?$`)
 
-func parseRelatedPackages(specs []string, ec *errorCollector) []PackageRelation {
+func parseRelatedPackages(relType string, specs []string, ec *errorCollector) []PackageRelation {
 	rels := make([]PackageRelation, 0, len(specs))
 	idxByName := make(map[string]int, len(specs))
 
@@ -238,7 +232,7 @@ func parseRelatedPackages(specs []string, ec *errorCollector) []PackageRelation 
 		//check format of spec
 		match := relatedPackageRx.FindStringSubmatch(spec)
 		if match == nil {
-			ec.addf("Invalid package reference: \"%s\"", spec)
+			ec.addf("Invalid package reference in %s: \"%s\"", relType, spec)
 			continue
 		}
 
@@ -325,7 +319,7 @@ func parseUserOrGroupRef(value interface{}, ec *errorCollector, entryDesc string
 		}
 		return &IntOrString{Str: val}
 	default:
-		ec.addf("%s is invalid: \"owner\"/\"group\" attributes must be strings or integers, found type %t", entryDesc, value)
+		ec.addf("%s is invalid: \"owner\"/\"group\" attributes must be strings or integers, found type %T", entryDesc, value)
 		return nil
 	}
 }
@@ -333,6 +327,9 @@ func parseUserOrGroupRef(value interface{}, ec *errorCollector, entryDesc string
 func parseFileContent(content string, contentFrom string, ec *errorCollector, entryDesc string) string {
 	//option 1: content given verbatim in "content" field
 	if content != "" {
+		if contentFrom != "" {
+			ec.addf("%s is invalid: cannot use both `content` and `contentFrom`", entryDesc)
+		}
 		return content
 	}
 

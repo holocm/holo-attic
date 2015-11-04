@@ -1,0 +1,19 @@
+
+read package definition
+!! Invalid package name "invalid/package" (may not contain slashes or newlines)
+!! Invalid package version "1.0_fc21" (must be a chain of numbers like "1.2.0", optionally with pre-release suffix like "-alpha.1")
+!! Invalid package reference in requires: "holo += 2.0"
+!! Invalid package reference in provides: "=1.1"
+!! Invalid package reference in conflicts: "bar< =2.0"
+!! directory "/var/lib/foo/bar/" is invalid: trailing slash(es)
+!! directory "/var/lib/foo/bar/" is invalid: cannot parse mode "read/write" (strconv.ParseUint: parsing "read/write": invalid syntax)
+!! directory "/var/lib/foo/bar/" is invalid: user or group ID "-23" may not be negative
+!! directory "/var/lib/foo/bar/" is invalid: user or group ID "-42" may not be negative
+!! file "foo/bar.conf" is invalid: must be an absolute path
+!! file "foo/bar.conf" is invalid: cannot use both `content` and `contentFrom`
+!! file "foo/bar.conf" is invalid: "owner"/"group" attributes must be strings or integers, found type bool
+!! file "foo/bar.conf" is invalid: "owner"/"group" attributes must be strings or integers, found type []interface {}
+!! multiple entries for path "/etc/foo"
+!! file "/etc/foo" is invalid: "john+doe" is not an acceptable user or group name
+!! file "/etc/foo" is invalid: "$users" is not an acceptable user or group name
+
