@@ -1,0 +1,343 @@
+=encoding UTF-8
+
+=head1 NAME
+
+holo-build - cross-distribution system package compiler
+
+=head1 SYNOPSIS
+
+holo-build [I<option>...] < I<file>
+
+holo-build B<--help|--version>
+
+=head1 DESCRIPTION
+
+Holo adds a few sprinkles on top of package management to make it suitable for
+basic configuration management tasks. Its prime directive is to have all
+configuration statically declared and defined within packages, which can be
+installed to add new configuration, or uninstalled to remove configuration from
+a system.
+
+However, the tools for creating system packages are optimized towards compiling
+applications for tarballs, and introduce needless complexity when you just want
+to package up a few files and list some dependencies. holo-build provides a
+simple, distribution-independent package description language and generates a
+system package from such a description.
+
+For example, the following package description will build a package that
+installs and configures C<systemd-timesyncd> with a custom NTP server:
+
+    [package]
+    name     = "hologram-systemd-timesyncd"
+    version  = "1.0"
+    requires = ["systemd"]
+    setupScript   = "systemctl daemon-reload && systemctl start systemd-timesyncd"
+    cleanupScript = "systemctl stop systemd-timesyncd"
+
+    [[file]]
+    name     = "/etc/systemd/timesyncd.conf.d/server.conf"
+    content  = """
+        [Time]
+        NTP=ntp.someserver.local
+    """
+
+    [[symlink]]
+    # as created by `systemctl enable systemd-timesyncd`
+    name     = "/etc/systemd/system/sysinit.target.wants/systemd-timesyncd.service"
+    target   = "/usr/lib/systemd/system/systemd-timesyncd.service"
+
+The package description format is described below.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--print>/B<--no-print>
+
+By default, the resulting package will be placed in the working directory using
+the naming convention for the corresponding output package format. If B<--print>
+is given, the package will be printed directly to standard output instead.
+
+=item B<--pacman>
+
+Generate a C<pacman> package (suitable for Arch Linux and derivatives). This is
+currently the only available format, but once there are multiple output formats
+available, this switch can be used to override format auto-selection (which
+checks the current distribution).
+
+=item B<--reproducible>
+
+Try to generate a package that is more reproducible, that is: does not contain
+any timestamps and such. This switch does not actually guarantee a 100%
+reproducible package.
+
+This switch should be considered internal, and only be used for testing
+purposes.
+
+=item B<--help>
+
+Print out usage information.
+
+=item B<--version>
+
+Print out Holo's version string including the release name.
+
+=back
+
+=head1 PACKAGE DESCRIPTION FORMAT
+
+Package descriptions are written in TOML format.
+
+=for html <p class="follow"><a href="https://github.com/toml-lang/toml">TOML specification »</a></p>
+
+Only the C<[package]> section is required. All other sections (and all fields
+not marked as required) are optional.
+
+=head2 C<[package]> section
+
+This section is required and contains global properties for the package.
+
+    [package]
+    name    = "example-package"
+    version = "1.2.5-alpha.2"
+    epoch   = 2
+    release = 3
+    description = "An example package"
+    requires    = [ "other-package >= 2.0" ]
+    provides    = [ "example-package-api = 1.2" ]
+    conflicts   = [ "bloatware-package" ]
+    replaces    = [ "sample-package" ]
+    setupScript   = "touch /etc/example.conf && systemctl reload cron"
+    cleanupScript = "rm -r /var/lib/example"
+
+=over 4
+
+=item B<name> (string, required)
+
+The package name. This string may never contain any slashes or newlines. The
+output format may impose additional charset or size restrictions on the package
+name. As a rule of thumb, the pattern C<[a-zA-Z0-9-]+> is a safe set of allowed
+package names.
+
+=item B<version> (string, required)
+
+The package version. To ensure sanity, holo-build enforces a relatively strict
+pattern, inspired by the Semantic Versioning spec. Basic version numbers must
+be numbers (C<0|[1-9][0-9]*>) chained together by dots:
+
+    version = "1.2.3"
+    version = "0.10"
+    version = "20151015"
+    version = "2015.10.15"
+
+For pre-releases, a suffix of dot-separated alphanumeric labels
+(C<[A-Za-z0-9-]+>) may be added, separated with a dash:
+
+    version = "1.0-alpha.1"
+
+=item B<epoch> (unsigned integer)
+
+An increase in the epoch (default: 0) can be used to force the package to be
+seen as newer than any previous version with a lower epoch. This is used when
+the version numbering scheme for a package changes, breaking normal version
+comparison logic.
+
+=item B<release> (unsigned integer)
+
+The release number (default: 1) can be appended if the same package is rebuilt
+multiple times without its contents changing, in order for the built packages
+to be distinguishable from one another.
+
+=item B<description> (string)
+
+A description of the purpose and contents of this package.
+
+=item B<requires> (array of strings)
+
+A list of other packages that must be installed when this package is installed.
+Some package managers call these I<dependencies> instead. When a specific
+package version is required, a version test can be appended, using one of the
+operators C<=>, C<< > >>, C<< >= >>, C<< < >> or C<< <= >>. If multiple version
+tests are required, the same package can be stated multiple times.
+
+    [package]
+    # require any version of foo, and a 2.x version of bar
+    requires = [ "foo", "bar >= 2.0", "bar < 3.0" ]
+
+When the package contains any files below C</usr/share/holo>, a requirement
+
+    requires = [ "holo" ]
+
+is implied automatically.
+
+=item B<provides> (array of strings)
+
+A list of other packages (or virtual packages) that the software provides the
+features of. This means that this package can satisfy another package's
+requirement for the provided package. If a specific version is provided, this
+can be specified with the same syntax as for C<requires>.
+
+    [package]
+    name     = "rewrite-of-foo"
+    provides = [ "foo = 2.1" ] # this package acts like foo-2.1
+
+=item B<conflicts> (array of strings)
+
+A list of other packages that may not be installed when this package is
+installed. Version tests can be added using the same syntax as for C<requires>.
+
+=item B<replaces> (array of strings)
+
+A list of obsolete packages that this package replaces. If this package is not
+installed, but one of the obsolete packages is installed, a system upgrade will
+result in the obsolete package being uninstalled, and this package being
+installed as a replacement.
+
+If this package can replace the obsolete package, but it shall not be replaced
+automatically, don't use this; reference the obsolete package in both
+C<provides> and C<conflicts> instead.
+
+=item B<setupScript> (string)
+
+A shell script that will be executed (as root) when the package is installed or
+updated, after the package files have been extracted to the file system.
+
+If the package contains any files below F</usr/share/holo>, then C<holo apply>
+will automatically run before this setup script is executed, so you can rely on
+provisioned files, user accounts and groups to be available already.
+
+=item B<cleanupScript> (string)
+
+A shell script that will be executed (as root) when the package is being
+uninstalled, after the package files have been removed from the file system.
+
+If the package contains any files below F</usr/share/holo>, then C<holo apply>
+will automatically run before this cleanup script is executed.
+
+=back
+
+=head2 C<[[file]]> section
+
+Each one of these sections define a file to be added to the package.
+
+    [[file]]
+    path    = "/etc/foo.conf"
+    mode    = "0600"
+    owner   = "foouser"
+    group   = "foogroup"
+    # alternative 1
+    content = """
+        content for foo.conf
+        content for foo.conf
+    """
+    # alternative 2
+    contentFrom = "input.txt"
+
+=over 4
+
+=item B<path> (string, required)
+
+The path to this file. The path must be absolute and may not have a trailing
+slash.
+
+=item B<content>/B<contentFrom> (string, exactly one required)
+
+If the C<content> field is given, it contains the content of this file.
+Alternatively, C<contentFrom> may reference a file whose contents will be used.
+This file must be present at package-build time; relative paths will be
+interpreted relative to the current working directory of the C<holo-build>
+process.
+
+=item B<mode> (string)
+
+The mode bits for this file. Since TOML does not support octal number
+literals, this field must be given as a string containing an octal number:
+
+    mode = "0600" # rw-------
+    mode = "0755" # rwxr-xr-x
+
+=item B<owner>/B<group> (string or int)
+
+The owner (or group) for this file. If this field contains an integer, it is
+interpreted as the ID of the user or group. If this field contains a string, it
+is interpreted as a user/group name.
+
+Since user/group names cannot be mapped to IDs at package build time, specifying
+a name will result in the file being packaged as belonging to user/group
+C<root>, and the actual user/group will be applied at install time using
+L<chown(1)> or L<chgrp(1)>.
+
+=back
+
+=head2 C<[[directory]]> section
+
+Each one of these sections define a directory to be added to the package.
+
+    [[directory]]
+    path = "/var/lib/foo"
+    mode = "0600"
+    owner = "foouser"
+    group = "foogroup"
+
+Note that directories are usually created automatically when files are placed in
+them. A C<[[directory]]> section is only required to include an empty directory
+in the package, or to assign non-standard permissions or specific ownership to a
+directory.
+
+=over 4
+
+=item B<path> (string, required)
+
+The path to this directory. The path must be absolute and may not have a
+trailing slash.
+
+=item B<mode>/B<owner>/B<group>
+
+These are the same as for C<[[file]]> sections; see above.
+
+=back
+
+=head2 C<[[symlink]]> section
+
+Each one of these sections define a symlink to be added to the package.
+
+    [[symlink]]
+    path   = "/etc/foo.conf"
+    target = "bar.conf"
+
+=over 4
+
+=item B<path> (string, required)
+
+The path to this directory. The path must be absolute and may not have a
+trailing slash.
+
+=item B<target>
+
+The symlink target. Both relative and absolute targets are acceptable.
+
+=back
+
+=for Comment
+################################################################################
+# NOTE: This document generates both the manpage and the website's             #
+#       man-holo.html. The following sections only appear in the manpage.      #
+################################################################################
+
+=begin :man
+
+=head1 SEE ALSO
+
+L<holo(8)>
+
+=head1 AUTHOR
+
+Stefan Majewsky
+
+Further documentation is available at the project homepage: http://holocm.org
+
+Please report any issues and feature requests at Github: http://github.com/holocm/holo/issues
+
+=end :man
+
+=cut
