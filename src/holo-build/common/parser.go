@@ -21,6 +21,7 @@
 package common
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -64,6 +65,7 @@ type FileSection struct {
 	Path        string
 	Content     string
 	ContentFrom string
+	Raw         bool
 	Mode        string      //TOML does not support octal number literals, so we have to write: mode = "0666"
 	Owner       interface{} //either string (name) or integer (ID)
 	Group       interface{} //same
@@ -197,7 +199,7 @@ func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 		pkg.FSEntries = append(pkg.FSEntries, FSEntry{
 			Type:    FSEntryTypeRegular,
 			Path:    path,
-			Content: parseFileContent(fileSection.Content, fileSection.ContentFrom, ec, entryDesc),
+			Content: parseFileContent(fileSection.Content, fileSection.ContentFrom, fileSection.Raw, ec, entryDesc),
 			Mode:    parseFileMode(fileSection.Mode, 0644, ec, entryDesc),
 			Owner:   parseUserOrGroupRef(fileSection.Owner, ec, entryDesc),
 			Group:   parseUserOrGroupRef(fileSection.Group, ec, entryDesc),
@@ -324,13 +326,16 @@ func parseUserOrGroupRef(value interface{}, ec *errorCollector, entryDesc string
 	}
 }
 
-func parseFileContent(content string, contentFrom string, ec *errorCollector, entryDesc string) string {
+func parseFileContent(content string, contentFrom string, dontPruneIndent bool, ec *errorCollector, entryDesc string) string {
 	//option 1: content given verbatim in "content" field
 	if content != "" {
 		if contentFrom != "" {
 			ec.addf("%s is invalid: cannot use both `content` and `contentFrom`", entryDesc)
 		}
-		return content
+		if dontPruneIndent {
+			return content
+		}
+		return string(pruneIndentation([]byte(content)))
 	}
 
 	//option 2: content referenced in "contentFrom" field
@@ -341,4 +346,50 @@ func parseFileContent(content string, contentFrom string, ec *errorCollector, en
 	bytes, err := ioutil.ReadFile(contentFrom)
 	ec.add(err)
 	return string(bytes)
+}
+
+func pruneIndentation(text []byte) []byte {
+	//split into lines for analysis
+	lines := bytes.Split(text, []byte{'\n'})
+
+	//use the indentation of the first non-empty line as a starting point for the longest common prefix
+	var prefix []byte
+	for _, line := range lines {
+		if len(line) != 0 {
+			lineWithoutIndentation := bytes.TrimLeft(line, "\t ")
+			prefix = line[:len(line)-len(lineWithoutIndentation)]
+			break
+		}
+	}
+
+	//find the longest common prefix (from the starting point, remove trailing
+	//characters until it *is* the longest common prefix)
+	for len(prefix) > 0 {
+		found := true
+		for _, line := range lines {
+			if len(line) == 0 {
+				continue
+			}
+			if !bytes.HasPrefix(line, prefix) {
+				//not the longest common prefix yet -> chop off one byte and retry
+				prefix = prefix[:len(prefix)-1]
+				found = false
+				break
+			}
+		}
+		if found {
+			break
+		}
+	}
+
+	//remove the longest common prefix from all non-empty lines
+	if len(prefix) == 0 {
+		return text //fast exit
+	}
+	for idx, line := range lines {
+		if len(line) > 0 {
+			lines[idx] = line[len(prefix):]
+		}
+	}
+	return bytes.Join(lines, []byte{'\n'})
 }

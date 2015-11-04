@@ -249,6 +249,31 @@ This file must be present at package-build time; relative paths will be
 interpreted relative to the current working directory of the C<holo-build>
 process.
 
+=item B<raw> (boolean)
+
+To aid readability, the C<content> field allows strings to have indentation
+which will automatically be pruned. The following two content specifications
+are equivalent:
+
+    content = """
+    content for foo.conf
+    content for foo.conf
+    """
+
+    content = """
+        content for foo.conf
+        content for foo.conf
+    """
+
+To disable this behavior and use leading whitespace verbatim, set the C<raw>
+flag:
+
+    raw     = true
+    content = """
+        content for foo.conf
+        content for foo.conf
+    """
+
 =item B<mode> (string)
 
 The mode bits for this file. Since TOML does not support octal number
