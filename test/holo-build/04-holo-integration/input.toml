@@ -1,0 +1,13 @@
+# This testcase checks that, when files are installed to the Holo repository,
+# a dependency to Holo is added and `holo apply` is run automatically.
+
+[package]
+name = "holo-integration"
+version = "1.0"
+# requires = ["holo"] will be added implicitly
+# setupScript = "holo apply" will be added implicitly
+# cleanupScript = "holo apply" will be added implicitly
+
+[[file]]
+path = "/usr/share/holo/repo/01-first/etc/foo.conf"
+content = "test"

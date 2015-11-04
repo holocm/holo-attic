@@ -32,6 +32,9 @@ import (
 
 //Build builds the package using the given Generator.
 func (pkg *Package) Build(generator Generator, printToStdout bool, buildReproducibly bool) error {
+	//do magical Holo integration tasks
+	pkg.doMagicalHoloIntegration()
+
 	//choose root directory in such a way that the user can easily find and
 	//inspect it in the case that an error occurs
 	rootPath := fmt.Sprintf("./holo-build-%s-%s", pkg.Name, pkg.Version)
@@ -84,6 +87,36 @@ func (pkg *Package) Build(generator Generator, printToStdout bool, buildReproduc
 	}
 
 	return nil
+}
+
+func (pkg *Package) doMagicalHoloIntegration() {
+	//does this package need to provision stuff with Holo?
+	doesProvision := false
+	for _, entry := range pkg.FSEntries {
+		if strings.HasPrefix(entry.Path, "/usr/share/holo/") {
+			doesProvision = true
+			break
+		}
+	}
+	if !doesProvision {
+		return
+	}
+
+	//it does -> add Holo to the list of requirements...
+	hasHoloDep := false
+	for _, rel := range pkg.Requires {
+		if rel.RelatedPackage == "holo" {
+			hasHoloDep = true
+			break
+		}
+	}
+	if !hasHoloDep {
+		pkg.Requires = append(pkg.Requires, PackageRelation{RelatedPackage: "holo"})
+	}
+
+	//...and run `holo apply` during setup/cleanup
+	pkg.SetupScript = "holo apply\n" + pkg.SetupScript
+	pkg.CleanupScript = "holo apply\n" + pkg.CleanupScript
 }
 
 func (pkg *Package) materializeFSEntries(rootPath string, buildReproducibly bool) error {
