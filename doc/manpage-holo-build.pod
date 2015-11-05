@@ -249,29 +249,44 @@ This file must be present at package-build time; relative paths will be
 interpreted relative to the current working directory of the C<holo-build>
 process.
 
+If C<content> is given, it may not be empty. To create an empty file, you can
+use C</dev/null> as a source:
+
+    [[file]]
+    path        = "/etc/empty-file.conf"
+    contentFrom = "/dev/null"
+
 =item B<raw> (boolean)
 
 To aid readability, the C<content> field allows strings to have indentation
-which will automatically be pruned. The following two content specifications
-are equivalent:
+which will automatically be pruned. The following two sections are equivalent:
 
+    [[file]]
+    path    = "/etc/example.conf"
     content = """
-    content for foo.conf
-    content for foo.conf
+    foo
+        bar
+    baz
     """
 
+    [[file]]
+    path    = "/etc/example.conf"
     content = """
-        content for foo.conf
-        content for foo.conf
+        foo
+            bar
+        baz
     """
 
 To disable this behavior and use leading whitespace verbatim, set the C<raw>
 flag:
 
+    [[file]]
+    path    = "/etc/example.conf"
     raw     = true
     content = """
-        content for foo.conf
-        content for foo.conf
+        foo
+            bar
+        baz
     """
 
 =item B<mode> (string)
