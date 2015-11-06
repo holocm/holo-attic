@@ -23,6 +23,7 @@ package pacman
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"../common"
 )
@@ -64,7 +65,15 @@ func validatePackage(pkg *common.Package) error {
 
 func validatePackageRelations(relType string, rels []common.PackageRelation) error {
 	for _, rel := range rels {
-		if !packageNameRx.MatchString(rel.RelatedPackage) {
+		name := rel.RelatedPackage
+		//for requirements, allow special syntaxes "group:foo", "except:bar"
+		//and "except:group:qux"
+		if relType == "requires" {
+			name = strings.TrimPrefix(name, "except:")
+			name = strings.TrimPrefix(name, "group:")
+		}
+
+		if !packageNameRx.MatchString(name) {
 			return fmt.Errorf("Package name \"%s\" is not acceptable for Pacman packages (found in %s)", rel.RelatedPackage, relType)
 		}
 	}

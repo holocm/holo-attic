@@ -122,7 +122,11 @@ func writePKGINFO(pkg *common.Package, rootPath string, buildReproducibly bool) 
 	contents += compilePackageRelations("replaces", pkg.Replaces)
 	contents += compilePackageRelations("conflict", pkg.Conflicts)
 	contents += compilePackageRelations("provides", pkg.Provides)
-	contents += compilePackageRelations("depend", pkg.Requires)
+	requires, err := compilePackageRequirements(pkg.Requires)
+	if err != nil {
+		return err
+	}
+	contents += requires
 
 	//we used holo-build to build this, so the build depends on the package
 	//"holo" which contains holo-build
@@ -158,27 +162,6 @@ func findPackageInstalledSize(rootPath string) (int, error) {
 		return 0, fmt.Errorf("invalid output returned from `du -s -B 1 --apparent-size %s`: \"%s\"", rootPath, string(output))
 	}
 	return strconv.Atoi(string(match[1]))
-}
-
-//Renders package relations into .PKGINFO.
-func compilePackageRelations(relType string, rels []common.PackageRelation) string {
-	if len(rels) == 0 {
-		return ""
-	}
-
-	lines := make([]string, 0, len(rels)) //only a lower boundary on the final size, but usually a good guess
-	for _, rel := range rels {
-		if len(rel.Constraints) == 0 {
-			//simple relation without constraint, e.g. "depend = linux"
-			lines = append(lines, fmt.Sprintf("%s = %s", relType, rel.RelatedPackage))
-		} else {
-			for _, c := range rel.Constraints {
-				//relation with constraint, e.g. "conflict = holo<0.5"
-				lines = append(lines, fmt.Sprintf("%s = %s%s%s", relType, rel.RelatedPackage, c.Relation, c.Version))
-			}
-		}
-	}
-	return strings.Join(lines, "\n") + "\n"
 }
 
 func writeINSTALL(pkg *common.Package, rootPath string, buildReproducibly bool) error {

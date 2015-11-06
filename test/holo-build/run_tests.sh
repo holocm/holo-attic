@@ -16,6 +16,9 @@ run_testcase() {
     # set cwd!
     cd "$TESTCASE_DIR"
 
+    # enable mock implementations for distribution-dependent implementations
+    export HOLO_MOCK=1
+
     local EXIT_CODE=0
 
     # run test for all available generators

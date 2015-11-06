@@ -169,6 +169,22 @@ When the package contains any files below C</usr/share/holo>, a requirement
 
 is implied automatically.
 
+For C<--pacman> only, a special syntax is allowed to require complete package
+groups (by giving the groupname with a C<group:> prefix), and to exclude
+certain packages or package groups from this group requirement (by prefixing the
+dependency with C<not:>). For example, to have the package require all packages
+from the C<xorg> group, except for the C<xorg-drivers> group and the
+C<xorg-docs> package:
+
+    [package]
+    requires = [
+        # require all packages from the xorg group
+        "group:xorg",
+        # except for xorg-docs and all packages in the xorg-drivers group
+        "not:xorg-docs",
+        "not:group:xorg-drivers",
+    ]
+
 =item B<provides> (array of strings)
 
 A list of other packages (or virtual packages) that the software provides the
