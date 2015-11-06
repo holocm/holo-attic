@@ -125,7 +125,7 @@ and refuse to overwrite the manual changes.
     Working on target/etc/pacman.conf
          apply target/usr/share/holo/repo/01-base/etc/pacman.conf
 
-    !! skipping target: file has been delete by user (use --force to restore)
+    !! skipping target: file has been deleted by user (use --force to restore)
 
     Working on user:test
       found in target/usr/share/holo/01-base.toml
