@@ -110,12 +110,9 @@ func (c *errorCollector) addf(format string, args ...interface{}) {
 	}
 }
 
-var versionRx = regexp.MustCompile(`^[0-9]+(?:\.[0-9]+)*(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$`)
-
-//                                   <-+---------------><-+----------------------------------->
-//                                     |                  |
-//                                     |                prerelease identifier (e.g. "-alpha.1")
-//                                    numeric versions (e.g. "1.2.3" or "20151103")
+//versions are dot-separated numbers like (0|[1-9][0-9]*) (this enforces no
+//trailing zeros)
+var versionRx = regexp.MustCompile(`^(?:0|[1-9][0-9]*)(?:\.(?:0|[1-9][0-9]*))*$`)
 
 //ParsePackageDefinition parses a package definition from the given input.
 //The operation is successful if the returned []error is nil or empty.
@@ -162,7 +159,7 @@ func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 	case pkg.Version == "":
 		ec.addf("Missing package version")
 	case !versionRx.MatchString(pkg.Version):
-		ec.addf("Invalid package version \"%s\" (must be a chain of numbers like \"1.2.0\", optionally with pre-release suffix like \"-alpha.1\")", pkg.Version)
+		ec.addf("Invalid package version \"%s\" (must be a chain of numbers like \"1.2.0\" or \"20151104\")", pkg.Version)
 	}
 	if strings.ContainsAny(pkg.Description, "\r\n") {
 		ec.addf("Invalid package description \"%s\" (may not contain newlines)", pkg.Name)

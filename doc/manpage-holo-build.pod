@@ -35,7 +35,7 @@ installs and configures C<systemd-timesyncd> with a custom NTP server:
     cleanupScript = "systemctl stop systemd-timesyncd"
 
     [[file]]
-    name     = "/etc/systemd/timesyncd.conf.d/server.conf"
+    path     = "/etc/systemd/timesyncd.conf.d/server.conf"
     content  = """
         [Time]
         NTP=ntp.someserver.local
@@ -43,7 +43,7 @@ installs and configures C<systemd-timesyncd> with a custom NTP server:
 
     [[symlink]]
     # as created by `systemctl enable systemd-timesyncd`
-    name     = "/etc/systemd/system/sysinit.target.wants/systemd-timesyncd.service"
+    path     = "/etc/systemd/system/sysinit.target.wants/systemd-timesyncd.service"
     target   = "/usr/lib/systemd/system/systemd-timesyncd.service"
 
 The package description format is described below.
@@ -117,24 +117,22 @@ This section is required and contains global properties for the package.
 
 The package name. This string may never contain any slashes or newlines. The
 output format may impose additional charset or size restrictions on the package
-name. As a rule of thumb, the pattern C<[a-zA-Z0-9-]+> is a safe set of allowed
+name. As a rule of thumb, the pattern C<[a-z0-9-]+> is a safe set of allowed
 package names.
+
+For C<--pacman>, the package name may contain C<[a-z0-9@._+-]>, but the first
+character may not be a hyphen.
 
 =item B<version> (string, required)
 
 The package version. To ensure sanity, holo-build enforces a relatively strict
-pattern, inspired by the Semantic Versioning spec. Basic version numbers must
-be numbers (C<0|[1-9][0-9]*>) chained together by dots:
+pattern. Version numbers must be numbers (C<0|[1-9][0-9]*>) chained together by
+dots:
 
     version = "1.2.3"
     version = "0.10"
     version = "20151015"
     version = "2015.10.15"
-
-For pre-releases, a suffix of dot-separated alphanumeric labels
-(C<[A-Za-z0-9-]+>) may be added, separated with a dash:
-
-    version = "1.0-alpha.1"
 
 =item B<epoch> (unsigned integer)
 

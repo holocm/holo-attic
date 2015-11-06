@@ -47,10 +47,14 @@ func (g *Generator) RecommendedFileName(pkg *common.Package) string {
 
 //Build implements the common.Generator interface.
 func (g *Generator) Build(pkg *common.Package, rootPath string, buildReproducibly bool) ([]byte, error) {
-	//TODO: validate package names, versions
+	//validate package
+	err := validatePackage(pkg)
+	if err != nil {
+		return nil, err
+	}
 
 	//write .PKGINFO
-	err := writePKGINFO(pkg, rootPath, buildReproducibly)
+	err = writePKGINFO(pkg, rootPath, buildReproducibly)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to write .PKGINFO: %s", err.Error())
 	}

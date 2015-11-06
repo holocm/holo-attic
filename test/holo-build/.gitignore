@@ -1,3 +1,5 @@
+# artifacts from failing testcases
+holo-build-*-*
 # pacman generator
 *.pkg.tar.xz
 pacman-output
