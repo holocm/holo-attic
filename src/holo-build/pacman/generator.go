@@ -42,7 +42,7 @@ type Generator struct{}
 func (g *Generator) RecommendedFileName(pkg *common.Package) string {
 	//this is called after Build(), so we can assume that package name,
 	//version, etc. were already validated
-	return fmt.Sprintf("%s-%s-any.pkg.tar.xz", pkg.Name, pkg.Version)
+	return fmt.Sprintf("%s-%s-any.pkg.tar.xz", pkg.Name, fullVersionString(pkg))
 }
 
 //Build implements the common.Generator interface.
