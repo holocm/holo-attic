@@ -24,7 +24,7 @@ import "fmt"
 
 //Note: This line is parsed by the Makefile to get the version string. If you
 //change the format, adjust the Makefile too.
-var version = "v0.8-pre"
+var version = "v0.8.0"
 var codename = "Enthusiasm"
 
 //Version returns the plain version (without release codename).
