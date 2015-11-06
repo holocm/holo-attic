@@ -169,12 +169,11 @@ configuration installed by the application package.
 
 This tiny:
 
-    $ ls -lh /usr/bin/holo
-    -rwxr-xr-x 1 root root 3.3M 20. Sep 01:42 /usr/bin/holo
-    $ ldd /usr/bin/holo
-          not a dynamic executable
+    $ ls -lh /usr/bin/holo*
+    -rwxr-xr-x 1 root root 2,8M  6. Nov 22:38 /usr/bin/holo
+    -rwxr-xr-x 1 root root 2,6M  6. Nov 22:38 /usr/bin/holo-build
 
-Holo comes in one single static binary which is trivial to deploy even during
+Holo comes in two static binaries which are trivial to deploy even during
 initial setup of your system. To install it on your system as well, have a look
 at the user documentation.
 
