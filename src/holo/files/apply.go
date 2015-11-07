@@ -163,12 +163,20 @@ func apply(target *TargetFile, report *shared.Report, withForce bool) (skipRepor
 
 	//step 4d: write the result buffer to the target location and copy
 	//owners/permissions from target base to target file
-	err = buffer.Write(targetPath)
+	newTargetPath := targetPath + ".holonew"
+	err = buffer.Write(newTargetPath)
 	if err != nil {
 		report.AddError(err.Error())
 		return false
 	}
-	err = common.ApplyFilePermissions(targetBasePath, targetPath)
+	err = common.ApplyFilePermissions(targetBasePath, newTargetPath)
+	if err != nil {
+		report.AddError(err.Error())
+		return false
+	}
+	//move $target.holonew -> $target atomically (to ensure that there is
+	//always a valid file at $target)
+	err = os.Rename(newTargetPath, targetPath)
 	if err != nil {
 		report.AddError(err.Error())
 		return false
