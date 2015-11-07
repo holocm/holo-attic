@@ -26,6 +26,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -122,6 +123,7 @@ func writePKGINFO(pkg *common.Package, rootPath string, buildReproducibly bool) 
 	contents += compilePackageRelations("replaces", pkg.Replaces)
 	contents += compilePackageRelations("conflict", pkg.Conflicts)
 	contents += compilePackageRelations("provides", pkg.Provides)
+	contents += compileBackupMarkers(pkg)
 	requires, err := compilePackageRequirements(pkg.Requires)
 	if err != nil {
 		return err
@@ -162,6 +164,17 @@ func findPackageInstalledSize(rootPath string) (int, error) {
 		return 0, fmt.Errorf("invalid output returned from `du -s -B 1 --apparent-size %s`: \"%s\"", rootPath, string(output))
 	}
 	return strconv.Atoi(string(match[1]))
+}
+
+func compileBackupMarkers(pkg *common.Package) string {
+	var lines []string
+	for _, entry := range pkg.FSEntries {
+		if entry.Type == common.FSEntryTypeRegular && !strings.HasPrefix(entry.Path, "/usr/share/holo/") {
+			lines = append(lines, fmt.Sprintf("backup = %s\n", strings.TrimPrefix(entry.Path, "/")))
+		}
+	}
+	sort.Strings(lines)
+	return strings.Join(lines, "")
 }
 
 func writeINSTALL(pkg *common.Package, rootPath string, buildReproducibly bool) error {

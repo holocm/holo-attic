@@ -17,7 +17,7 @@ XZ-compressed data
         >> .MTREE is regular file (mode: 644, owner: 0, group: 0), content is GZip-compressed data
             mtree metadata archive
                 >> ./.INSTALL gid=0 md5digest=dede37e36f956199c27abdba15861fd2 mode=644 sha256digest=3474c87b37f73e91a2afab69177e62f798e623671c396c8e56b9037602bb8f20 size=186 time=0.0 type=file uid=0
-                >> ./.PKGINFO gid=0 md5digest=03fbb4e32be8a4b1c194e012234c5385 mode=644 sha256digest=ac0ad66f80bf2100f5cf2b9d5223b5d65896bbf5473c09b019ae6252253d3a15 size=547 time=0.0 type=file uid=0
+                >> ./.PKGINFO gid=0 md5digest=828279d2c515944b158cf390afda2739 mode=644 sha256digest=fbdf9c00f472da4a2c5eb4e9fb98572d911be149c75088a77f9feaf397d595fb size=603 time=0.0 type=file uid=0
                 >> ./etc gid=0 mode=755 time=0.0 type=dir uid=0
                 >> ./etc/files gid=0 mode=755 time=0.0 type=dir uid=0
                 >> ./etc/files/foo.conf gid=0 md5digest=5fb7ba7e8447a836e774b66155f5776a mode=644 sha256digest=f13a55b71d31ec3df35f99d6b6332b23a4967312314456941aff922a7d354818 size=8 time=0.0 type=file uid=0
@@ -45,6 +45,8 @@ XZ-compressed data
             conflict = qux<=1.2.0
             provides = foo-bar=2.1
             provides = foo-baz
+            backup = etc/files/foo.conf
+            backup = etc/files/foo.toml
             depend = bar>=2.1
             depend = bar<3.0
             depend = baz
