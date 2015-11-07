@@ -21,18 +21,20 @@ test: check # just a synonym
 check: build/holo build/holo-build build/dump-package
 	@bash test/run_tests.sh
 
-install: build/holo build/holo-build build/holo.8 build/holo-build.8 util/completion.bash util/completion.zsh
+install: build/holo build/holo-build build/holo.8 build/holo-build.8 util/completions/holo.bash util/completions/holo-build.bash util/completions/holo.zsh util/completions/holo-build.zsh
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo"
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo/base"
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo/provisioned"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo/repo"
-	install -D -m 0755 build/holo           "$(DESTDIR)/usr/bin/holo"
-	install -D -m 0755 build/holo-build     "$(DESTDIR)/usr/bin/holo-build"
-	install -D -m 0644 build/holo.8         "$(DESTDIR)/usr/share/man/man8/holo.8"
-	install -D -m 0644 build/holo-build.8   "$(DESTDIR)/usr/share/man/man8/holo-build.8"
-	install -D -m 0644 util/completion.bash "$(DESTDIR)/usr/share/bash-completion/completions/holo"
-	install -D -m 0644 util/completion.zsh  "$(DESTDIR)/usr/share/zsh/site-functions/_holo"
+	install -D -m 0755 build/holo         "$(DESTDIR)/usr/bin/holo"
+	install -D -m 0755 build/holo-build   "$(DESTDIR)/usr/bin/holo-build"
+	install -D -m 0644 build/holo.8       "$(DESTDIR)/usr/share/man/man8/holo.8"
+	install -D -m 0644 build/holo-build.8 "$(DESTDIR)/usr/share/man/man8/holo-build.8"
+	install -D -m 0644 util/completions/holo.bash       "$(DESTDIR)/usr/share/bash-completion/completions/holo"
+	install -D -m 0644 util/completions/holo-build.bash "$(DESTDIR)/usr/share/bash-completion/completions/holo-build"
+	install -D -m 0644 util/completions/holo.zsh        "$(DESTDIR)/usr/share/zsh/site-functions/_holo"
+	install -D -m 0644 util/completions/holo-build.zsh  "$(DESTDIR)/usr/share/zsh/site-functions/_holo-build"
 
 # the website is generated with pod2html (also from Perl) and a HTML template;
 # everything is mushed together using a small helper program
