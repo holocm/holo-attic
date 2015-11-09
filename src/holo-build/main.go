@@ -27,6 +27,7 @@ import (
 
 	"../shared"
 	"./common"
+	"./debian"
 	"./pacman"
 )
 
@@ -46,6 +47,7 @@ func main() {
 const (
 	formatAuto = iota
 	formatPacman
+	formatDebian
 )
 
 type options struct {
@@ -116,6 +118,12 @@ func parseArgs() (result options, exit bool) {
 				hasArgsError = true
 			}
 			opts.format = formatPacman
+		case "--debian":
+			if opts.format != formatAuto {
+				r.AddError("Multiple package formats specified.")
+				hasArgsError = true
+			}
+			opts.format = formatDebian
 		default:
 			r.AddError("Unrecognized argument: '%s'", arg)
 			hasArgsError = true
@@ -137,6 +145,7 @@ func printHelp() {
 	fmt.Println("  --no-stdout\t\tWrite resulting package to the working directory (default)")
 	fmt.Println("  --reproducible\tBuild a reproducible package with bogus timestamps etc.")
 	fmt.Println("  --no-reproducible\tBuild a non-reproducible package with actual timestamps etc. (default)")
+	fmt.Println("  --debian\t\tBuild a debian package\n")
 	fmt.Println("  --pacman\t\tBuild a pacman package\n")
 	fmt.Println("If no options are given, the package format for the current distribution is selected.\n")
 }
@@ -149,12 +158,16 @@ func findGenerator(format int) common.Generator {
 		switch {
 		case isDist["arch"]:
 			return &pacman.Generator{}
+		case isDist["debian"]:
+			return &debian.Generator{}
 		default:
 			shared.ReportUnsupportedDistribution(isDist)
 			return nil
 		}
 	case formatPacman:
 		return &pacman.Generator{}
+	case formatDebian:
+		return &debian.Generator{}
 	default:
 		panic("Impossible format")
 	}

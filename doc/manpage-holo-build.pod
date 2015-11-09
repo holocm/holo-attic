@@ -62,9 +62,12 @@ instead.
 =item B<--pacman>
 
 Generate a C<pacman> package (suitable for Arch Linux and derivatives). This is
-currently the only available format, but once there are multiple output formats
-available, this switch can be used to override format auto-selection (which
-checks the current distribution).
+the default under suitable distributions.
+
+=item B<--debian>
+
+Generate a Debian package (suitable for Debian and derivatives). This is
+the default under suitable distributions.
 
 =item B<--reproducible>
 
@@ -119,6 +122,9 @@ The package name. This string may never contain any slashes or newlines. The
 output format may impose additional charset or size restrictions on the package
 name. As a rule of thumb, the pattern C<[a-z0-9-]+> is a safe set of allowed
 package names.
+
+For C<--debian>, the package name may contain C<[a-z0-9+-.]>, but the first
+character must be alphanumeric.
 
 For C<--pacman>, the package name may contain C<[a-z0-9@._+-]>, but the first
 character may not be a hyphen.
