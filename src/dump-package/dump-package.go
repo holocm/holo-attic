@@ -34,6 +34,8 @@ import (
 	"os/exec"
 	"sort"
 	"strings"
+
+	"../internal/ar"
 )
 
 //This program is used by the holo-build tests to extract generated packages and render
@@ -117,6 +119,10 @@ func recognizeAndDump(data []byte) (string, error) {
 	//is it an mtree archive?
 	if bytes.HasPrefix(data, []byte("#mtree")) {
 		return dumpMtree(data)
+	}
+	//is it an ar archive?
+	if bytes.HasPrefix(data, []byte("!<arch>\n")) {
+		return dumpAr(data)
 	}
 
 	return "data as shown below\n" + indent(string(data)), nil
@@ -239,6 +245,67 @@ func dumpTar(data []byte) (string, error) {
 	}
 
 	return "POSIX tar archive\n" + indent(dump), nil
+}
+
+func dumpAr(data []byte) (string, error) {
+	//use "github.com/blakesmith/ar" package to read the ar archive
+	ar := ar.NewReader(bytes.NewReader(data))
+	dumps := make(map[string]string)
+	var names []string
+
+	//iterate through the entries in the archive
+	idx := -1
+	for {
+		idx++
+
+		//get next entry
+		header, err := ar.Next()
+		if err == io.EOF {
+			break //end of archive
+		}
+		if err != nil {
+			return "", err
+		}
+
+		//get contents of entry
+		data, err := ioutil.ReadAll(ar)
+		if err != nil {
+			return "", err
+		}
+
+		//our ar parser only works with a small subset of all the varieties of
+		//ar files (large enough to handle Debian packages whose toplevel ar
+		//packages contain just plain files with short names), so we assume
+		//that everything that it reads without crashing is a regular file
+		str := fmt.Sprintf(">> %s is regular file (mode: %o, owner: %d, group: %d)",
+			header.Name, header.Mode, header.Uid, header.Gid,
+		)
+
+		//for Debian packages, we need to check that the file "debian-binary"
+		//is the first entry
+		if header.Name == "debian-binary" {
+			str += fmt.Sprintf(" at archive position %d", idx)
+		}
+
+		//recognizeAndDump contents of regular files with indentation
+		dump, err := recognizeAndDump(data)
+		if err != nil {
+			return "", err
+		}
+		str += ", content is " + dump
+
+		names = append(names, header.Name)
+		dumps[header.Name] = str
+	}
+
+	//dump entries ordered by name
+	sort.Strings(names)
+	dump := ""
+	for _, name := range names {
+		dump += dumps[name]
+	}
+
+	return "ar archive\n" + indent(dump), nil
 }
 
 func dumpMtree(data []byte) (string, error) {
