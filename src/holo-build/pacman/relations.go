@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"sort"
 	"strings"
 
 	"../common"
@@ -97,11 +98,14 @@ func compilePackageRequirements(rels []common.PackageRelation) (string, error) {
 
 	//add all missing relations (these are all pkgName with acceptPkg[pkgName]
 	//= true since we removed existing rels from acceptPkg in the last step)
+	additionalRels := make([]common.PackageRelation, 0, len(acceptPkg))
 	for pkgName, accepted := range acceptPkg {
 		if accepted {
-			prunedRels = append(prunedRels, common.PackageRelation{RelatedPackage: pkgName})
+			additionalRels = append(additionalRels, common.PackageRelation{RelatedPackage: pkgName})
 		}
 	}
+	sort.Sort(byRelatedPackage(additionalRels))
+	prunedRels = append(prunedRels, additionalRels...)
 
 	return compilePackageRelations("depend", prunedRels), nil
 }
@@ -123,3 +127,10 @@ func resolvePackageGroup(groupName string) ([]string, error) {
 
 	return strings.Fields(string(out)), nil
 }
+
+//implement sort.Sort interface for package relations
+type byRelatedPackage []common.PackageRelation
+
+func (b byRelatedPackage) Len() int           { return len(b) }
+func (b byRelatedPackage) Less(i, j int) bool { return b[i].RelatedPackage < b[j].RelatedPackage }
+func (b byRelatedPackage) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }
