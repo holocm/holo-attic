@@ -25,6 +25,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"../common"
@@ -41,7 +43,7 @@ func (g *Generator) RecommendedFileName(pkg *common.Package) string {
 }
 
 func fullVersionString(pkg *common.Package) string {
-	str := fmt.Sprintf("%s_%d", pkg.Version, pkg.Release)
+	str := fmt.Sprintf("%s-%d", pkg.Version, pkg.Release)
 	if pkg.Epoch > 0 {
 		str = fmt.Sprintf("%d:%s", pkg.Epoch, str)
 	}
@@ -67,12 +69,16 @@ func (g *Generator) Build(pkg *common.Package, rootPath string, buildReproducibl
 		return nil, err
 	}
 
-	//TODO: build control.tar.gz
+	//prepare a directory into which to assemble the metadata files for control.tar.gz
+	controlTar, err := buildControlTar(pkg, rootPath, buildReproducibly)
+	if err != nil {
+		return nil, err
+	}
 
 	//build ar archive
 	return buildArArchive([]arArchiveEntry{
 		arArchiveEntry{"debian-binary", []byte("2.0\n")},
-		//arArchiveEntry{"control.tar.gz", controlTar},
+		arArchiveEntry{"control.tar.gz", controlTar},
 		arArchiveEntry{"data.tar.xz", dataTar},
 	})
 }
@@ -89,6 +95,124 @@ func buildDataTar(rootPath string) ([]byte, error) {
 	cmd.Dir = rootPath
 	cmd.Stderr = os.Stderr
 	return cmd.Output()
+}
+
+func buildControlTar(pkg *common.Package, rootPath string, buildReproducibly bool) ([]byte, error) {
+	//prepare a directory into which to put all these files
+	controlPath := filepath.Join(rootPath, ".control")
+	err := os.MkdirAll(controlPath, 0755)
+	if err != nil {
+		return nil, err
+	}
+
+	//place all the required files in there
+	err = writeControlFile(pkg, rootPath, controlPath, buildReproducibly)
+	if err != nil {
+		return nil, err
+	}
+
+	//TODO: add files "conffiles" and "md5sums"
+
+	//compress directory
+	cmd := exec.Command(
+		//using standardized language settings...
+		"env", "LANG=C",
+		//...generate a .tar.gz archive...
+		"tar", "czf", "-",
+		//...of the working directory (== controlPath)
+		".",
+	)
+	cmd.Dir = controlPath
+	cmd.Stderr = os.Stderr
+	return cmd.Output()
+}
+
+func writeControlFile(pkg *common.Package, rootPath, controlPath string, buildReproducibly bool) error {
+	//reference for this file:
+	//https://www.debian.org/doc/debian-policy/ch-controlfields.html#s-binarycontrolfiles
+
+	//gather metrics
+	installedSize, err := common.FindApparentSizeForPath(rootPath)
+	if err != nil {
+		return err
+	}
+
+	//generate file contents
+	contents := fmt.Sprintf("Package: %s\n", pkg.Name)
+	contents += fmt.Sprintf("Version: %s\n", fullVersionString(pkg))
+	contents += "Architecture: all\n"
+	contents += "Maintainer: Unknown <unknown@example.org>\n"                //TODO This needs to be a field in the package definition, and its existence must be validated for Debian packages.
+	contents += fmt.Sprintf("Installed-Size: %d\n", int(installedSize/1024)) // convert bytes to KiB
+	contents += "Section: misc\n"
+	contents += "Priority: optional\n"
+
+	//compile relations
+	rels, err := compilePackageRelations("Depends", pkg.Requires)
+	if err != nil {
+		return err
+	}
+	contents += rels
+
+	rels, err = compilePackageRelations("Provides", pkg.Provides)
+	if err != nil {
+		return err
+	}
+	contents += rels
+
+	rels, err = compilePackageRelations("Conflicts", pkg.Conflicts)
+	if err != nil {
+		return err
+	}
+	contents += rels
+
+	rels, err = compilePackageRelations("Replaces", pkg.Replaces)
+	if err != nil {
+		return err
+	}
+	contents += rels
+
+	//we have only one description field, which we use both as the synopsis and the extended description
+	desc := strings.TrimSpace(strings.Replace(pkg.Description, "\n", " ", -1))
+	if desc == "" {
+		desc = strings.TrimSpace(pkg.Name) //description field is strictly required
+	}
+	contents += fmt.Sprintf("Description: %s\n %s\n", desc, desc)
+
+	return common.WriteFile(filepath.Join(controlPath, "control"), []byte(contents), 0644, buildReproducibly)
+}
+
+func compilePackageRelations(relType string, rels []common.PackageRelation) (string, error) {
+	if len(rels) == 0 {
+		return "", nil
+	}
+
+	lines := make([]string, 0, len(rels))
+	//foreach related package...
+	for _, rel := range rels {
+		line := fmt.Sprintf("%s: %s", relType, rel.RelatedPackage)
+
+		//...compile constraints into a list like ">= 2.4, << 3.0" (operators "<" and ">" become "<<" and ">>" here)
+		if len(rel.Constraints) > 0 {
+			if relType == "Provides" {
+				return "", fmt.Errorf("version constraints on \"Provides: %s\" are not allowed for Debian packages", rel.RelatedPackage)
+			}
+			constraints := make([]string, 0, len(rel.Constraints))
+			for _, c := range rel.Constraints {
+				operator := c.Relation
+				if operator == "<" {
+					operator = "<<"
+				}
+				if operator == ">" {
+					operator = ">>"
+				}
+				constraints = append(constraints, fmt.Sprintf("%s %s", operator, c.Version))
+			}
+			line += fmt.Sprintf(" (%s)", strings.Join(constraints, ", "))
+		}
+		lines = append(lines, line)
+	}
+
+	return strings.Join(lines, "\n") + "\n", nil
 }
 
 func buildArArchive(entries []arArchiveEntry) ([]byte, error) {
