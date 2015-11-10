@@ -22,10 +22,13 @@ package debian
 
 import (
 	"bytes"
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -105,13 +108,35 @@ func buildControlTar(pkg *common.Package, rootPath string, buildReproducibly boo
 		return nil, err
 	}
 
-	//place all the required files in there
+	//place all the required files in there (NOTE: using the conffiles file
+	//does not seem to be appropriate for our use-case, although I'll let more
+	//experienced Debian users judge this one)
 	err = writeControlFile(pkg, rootPath, controlPath, buildReproducibly)
 	if err != nil {
 		return nil, err
 	}
+	err = writeMD5SumsFile(pkg, controlPath, buildReproducibly)
+	if err != nil {
+		return nil, err
+	}
 
-	//TODO: add files "conffiles" and "md5sums"
+	//write postinst script if necessary
+	if strings.TrimSpace(pkg.SetupScript) != "" {
+		script := "#!/bin/bash\n" + strings.TrimSuffix(pkg.SetupScript, "\n") + "\n"
+		err = common.WriteFile(filepath.Join(controlPath, "postinst"), []byte(script), 0755, buildReproducibly)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	//write postrm script if necessary
+	if strings.TrimSpace(pkg.CleanupScript) != "" {
+		script := "#!/bin/bash\n" + strings.TrimSuffix(pkg.CleanupScript, "\n") + "\n"
+		err = common.WriteFile(filepath.Join(controlPath, "postrm"), []byte(script), 0755, buildReproducibly)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	//compress directory
 	cmd := exec.Command(
@@ -205,6 +230,31 @@ func compilePackageRelations(relType string, rels []common.PackageRelation) (str
 	}
 
 	return strings.Join(lines, "\n") + "\n", nil
+}
+
+func writeMD5SumsFile(pkg *common.Package, controlPath string, buildReproducibly bool) error {
+	//calculate MD5 sums for all regular files in this package
+	paths := make([]string, 0, len(pkg.FSEntries))
+	md5ForPath := make(map[string]string, len(pkg.FSEntries))
+
+	for _, entry := range pkg.FSEntries {
+		if entry.Type != common.FSEntryTypeRegular {
+			continue
+		}
+		paths = append(paths, entry.Path)
+		sum := md5.Sum([]byte(entry.Content))
+		md5ForPath[entry.Path] = hex.EncodeToString(sum[:])
+	}
+
+	//order by path for deterministic behavior
+	sort.Strings(paths)
+	lines := make([]string, len(paths))
+	for _, path := range paths {
+		lines = append(lines, fmt.Sprintf("%s  %s\n", md5ForPath[path], strings.TrimPrefix(path, "/")))
+	}
+	contents := strings.Join(lines, "")
+
+	return common.WriteFile(filepath.Join(controlPath, "md5sums"), []byte(contents), 0644, buildReproducibly)
 }
 
 func buildArArchive(entries []arArchiveEntry) ([]byte, error) {
