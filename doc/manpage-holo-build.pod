@@ -211,6 +211,9 @@ can be specified with the same syntax as for C<requires>.
     name     = "rewrite-of-foo"
     provides = [ "foo = 2.1" ] # this package acts like foo-2.1
 
+For C<--debian>, the provided version syntax is not allowed. C<provides> may
+only contain plain package names.
+
 =item B<conflicts> (array of strings)
 
 A list of other packages that may not be installed when this package is
