@@ -6,6 +6,7 @@
 [package]
 name = "foo"
 version = "1.0"
+author = "Holo Build <holo.build@example.org>"
 
 [[file]]
 path = "/etc/foo.conf"

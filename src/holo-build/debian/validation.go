@@ -21,6 +21,7 @@
 package debian
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 
@@ -38,7 +39,10 @@ func validatePackage(pkg *common.Package) error {
 	if !packageVersionRx.MatchString(pkg.Version) {
 		//this check is only some Defense in Depth; a stricted version format
 		//is already enforced by the generator-independent validation
-		return fmt.Errorf("Package version \"%s\" is not acceptable for Pacman packages", pkg.Version)
+		return fmt.Errorf("Package version \"%s\" is not acceptable for Debian packages", pkg.Version)
+	}
+	if pkg.Author == "" {
+		return errors.New("The \"package.author\" field is required for Debian packages")
 	}
 
 	err := validatePackageRelations("requires", pkg.Requires)
@@ -64,7 +68,7 @@ func validatePackage(pkg *common.Package) error {
 func validatePackageRelations(relType string, rels []common.PackageRelation) error {
 	for _, rel := range rels {
 		if !packageNameRx.MatchString(rel.RelatedPackage) {
-			return fmt.Errorf("Package name \"%s\" is not acceptable for Pacman packages (found in %s)", rel.RelatedPackage, relType)
+			return fmt.Errorf("Package name \"%s\" is not acceptable for Debian packages (found in %s)", rel.RelatedPackage, relType)
 		}
 
 		for _, constraint := range rel.Constraints {

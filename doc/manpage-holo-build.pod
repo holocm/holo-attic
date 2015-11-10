@@ -30,6 +30,7 @@ installs and configures C<systemd-timesyncd> with a custom NTP server:
     [package]
     name     = "hologram-systemd-timesyncd"
     version  = "1.0"
+    author   = "Jane Doe <jane.doe@example.org>"
     requires = ["systemd"]
     setupScript   = "systemctl daemon-reload && systemctl start systemd-timesyncd"
     cleanupScript = "systemctl stop systemd-timesyncd"
@@ -107,6 +108,7 @@ This section is required and contains global properties for the package.
     epoch   = 2
     release = 3
     description = "An example package"
+    author      = "Jane Doe <jane.doe@example.org>"
     requires    = [ "other-package >= 2.0" ]
     provides    = [ "example-package-api = 1.2" ]
     conflicts   = [ "bloatware-package" ]
@@ -156,6 +158,13 @@ to be distinguishable from one another.
 =item B<description> (string)
 
 A description of the purpose and contents of this package.
+
+=item B<author> (string, required for C<--debian>)
+
+The name and mail address of the package author, in the form C<< Name <address> >>:
+
+    [package]
+    author = "Jane Doe <jane.doe@example.org>"
 
 =item B<requires> (array of strings)
 

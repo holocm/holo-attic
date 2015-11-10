@@ -59,6 +59,10 @@ type Package struct {
 	Epoch uint
 	//Description is the optional package description.
 	Description string
+	//Author contains the package's author's name and mail address in the form
+	//"Firstname Lastname <email.address@server.tld>", if this information is
+	//available.
+	Author string
 	//Requires contains a list of other packages that are required dependencies
 	//for this package and thus must be installed together with this package.
 	//This is called "Depends" by some package managers.

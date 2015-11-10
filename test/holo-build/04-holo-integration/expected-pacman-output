@@ -13,7 +13,7 @@ XZ-compressed data
         >> .MTREE is regular file (mode: 644, owner: 0, group: 0), content is GZip-compressed data
             mtree metadata archive
                 >> ./.INSTALL gid=0 md5digest=fbd3fb7da1cb992110f7ef1bf53585c0 mode=644 sha256digest=b70aa02ba785fba0f705b062789dfb84326c843aa3df6e5340618425fb5d5a27 size=91 time=0.0 type=file uid=0
-                >> ./.PKGINFO gid=0 md5digest=6407c5ab41d9a755c1edc23ae0f2a6dd mode=644 sha256digest=bd5137f8847945c88b7917c399b1f94145976a68f52ca4533a7d0dbff8ae99f1 size=398 time=0.0 type=file uid=0
+                >> ./.PKGINFO gid=0 md5digest=b1408acee84b0496de762af1a97053c1 mode=644 sha256digest=fe21cee84fa35aa7eb96518b44fbf3c0261db3eea8edc41a335cc68a68ab95de size=417 time=0.0 type=file uid=0
                 >> ./usr gid=0 mode=755 time=0.0 type=dir uid=0
                 >> ./usr/share gid=0 mode=755 time=0.0 type=dir uid=0
                 >> ./usr/share/holo gid=0 mode=755 time=0.0 type=dir uid=0
@@ -27,7 +27,7 @@ XZ-compressed data
             pkgver = 1.0-1
             pkgdesc = 
             url = 
-            packager = Unknown Packager
+            packager = Holo Build <holo.build@example.org>
             size = 28676
             arch = any
             license = custom:none

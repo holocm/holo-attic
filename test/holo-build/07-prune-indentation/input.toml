@@ -8,6 +8,7 @@
 [package]
 name    = "prune-indentation"
 version = "1.0.0"
+author  = "Holo Build <holo.build@example.org>"
 
 [[file]]
 path = "/etc/no-indent.conf"

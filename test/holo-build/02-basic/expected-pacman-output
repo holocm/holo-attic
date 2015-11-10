@@ -17,11 +17,11 @@ XZ-compressed data
         >> .MTREE is regular file (mode: 644, owner: 0, group: 0), content is GZip-compressed data
             mtree metadata archive
                 >> ./.INSTALL gid=0 md5digest=dede37e36f956199c27abdba15861fd2 mode=644 sha256digest=3474c87b37f73e91a2afab69177e62f798e623671c396c8e56b9037602bb8f20 size=186 time=0.0 type=file uid=0
-                >> ./.PKGINFO gid=0 md5digest=828279d2c515944b158cf390afda2739 mode=644 sha256digest=fbdf9c00f472da4a2c5eb4e9fb98572d911be149c75088a77f9feaf397d595fb size=603 time=0.0 type=file uid=0
+                >> ./.PKGINFO gid=0 md5digest=0656513236456a983940ed7127ef0605 mode=644 sha256digest=cb595ff54d0d8e273e9e5a2e5dc74b6174ff30ac55e75f913261ca77c9bf7458 size=622 time=0.0 type=file uid=0
                 >> ./etc gid=0 mode=755 time=0.0 type=dir uid=0
                 >> ./etc/files gid=0 mode=755 time=0.0 type=dir uid=0
                 >> ./etc/files/foo.conf gid=0 md5digest=5fb7ba7e8447a836e774b66155f5776a mode=644 sha256digest=f13a55b71d31ec3df35f99d6b6332b23a4967312314456941aff922a7d354818 size=8 time=0.0 type=file uid=0
-                >> ./etc/files/foo.toml gid=0 md5digest=710850aaa40441c164e170e87c7a0f2f mode=644 sha256digest=d5030e09250e77ac65a8c194444c6c9e2e192b89c9167a1fdf4d7cde97a802d6 size=824 time=0.0 type=file uid=0
+                >> ./etc/files/foo.toml gid=0 md5digest=8eb767b9913231a6718ef4360f910448 mode=644 sha256digest=e09539c2b812622fc0fc389bf09dd7ff8be2a6d92f726753797cf32e57cc6f64 size=871 time=0.0 type=file uid=0
                 >> ./etc/links gid=0 mode=755 time=0.0 type=dir uid=0
                 >> ./etc/links/bar.conf gid=0 link=bar.target mode=777 time=0.0 type=link uid=0
                 >> ./etc/links/foo.conf gid=0 link=/etc/files/foo.conf mode=777 time=0.0 type=link uid=0
@@ -36,8 +36,8 @@ XZ-compressed data
             pkgver = 1.0.2.3-1
             pkgdesc = my foo bar package
             url = 
-            packager = Unknown Packager
-            size = 37725
+            packager = Holo Build <holo.build@example.org>
+            size = 37772
             arch = any
             license = custom:none
             replaces = foo-bar<2.1
@@ -72,6 +72,7 @@ XZ-compressed data
             name = "foo"
             version = "1.0.2.3"
             description = "my foo bar package"
+            author = "Holo Build <holo.build@example.org>"
             requires = ["bar>=2.1", "bar<3.0", "baz"]
             provides = ["foo-bar=2.1", "foo-baz"]
             conflicts = ["qux>2.0", "qux<=1.2.0"]

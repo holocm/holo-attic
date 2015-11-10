@@ -9,6 +9,7 @@
 [package]
 name    = "pacman-group-dependencies"
 version = "1.0.0"
+author  = "Holo Build <holo.build@example.org>"
 requires = [
     "eee",
     "group:aaa-bbbb-cc-ddd-gg",

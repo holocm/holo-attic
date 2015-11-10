@@ -2,6 +2,7 @@
 read package definition
 !! Invalid package name "invalid/package" (may not contain slashes or newlines)
 !! Invalid package version "1.0-alpha.1" (must be a chain of numbers like "1.2.0" or "20151104")
+!! Invalid package author "John Doe" (should look like "Jane Doe <jane.doe@example.org>")
 !! Invalid package reference in requires: "holo += 2.0"
 !! Invalid package reference in provides: "=1.1"
 !! Invalid package reference in conflicts: "bar< =2.0"

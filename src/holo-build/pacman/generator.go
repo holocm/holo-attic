@@ -109,7 +109,11 @@ func writePKGINFO(pkg *common.Package, rootPath string, buildReproducibly bool) 
 	if !buildReproducibly {
 		contents += fmt.Sprintf("builddate = %d\n", time.Now().Unix())
 	}
-	contents += "packager = Unknown Packager\n"
+	if pkg.Author == "" {
+		contents += "packager = Unknown Packager\n"
+	} else {
+		contents += fmt.Sprintf("packager = %s\n", pkg.Author)
+	}
 	contents += fmt.Sprintf("size = %d\n", pkg.InstalledSizeInBytes())
 	contents += "arch = any\n"
 	contents += "license = custom:none\n"

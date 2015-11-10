@@ -4,6 +4,7 @@
 [package]
 name = "holo-integration"
 version = "1.0"
+author = "Holo Build <holo.build@example.org>"
 # requires = ["holo"] will be added implicitly
 # setupScript = "holo apply" will be added implicitly
 # cleanupScript = "holo apply" will be added implicitly

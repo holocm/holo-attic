@@ -2,7 +2,7 @@ XZ-compressed data
     POSIX tar archive
         >> .MTREE is regular file (mode: 644, owner: 0, group: 0), content is GZip-compressed data
             mtree metadata archive
-                >> ./.PKGINFO gid=0 md5digest=7faae95d844cf6b30338c116dcdcab05 mode=644 sha256digest=f4020c2c99178a9849e1b97bd5e046ba87f10652fca0cafcafd7321ce268456e size=618 time=0.0 type=file uid=0
+                >> ./.PKGINFO gid=0 md5digest=608e7b392c872ef99bf2580f94c5a810 mode=644 sha256digest=537dcd6363aaa3f75d474fde54c311734dafaa53257f867a36da291df162610f size=637 time=0.0 type=file uid=0
                 >> ./etc gid=0 mode=755 time=0.0 type=dir uid=0
                 >> ./etc/no-indent.conf gid=0 md5digest=19336acc49f29b8dedbcf7321f19f726 mode=644 sha256digest=a2c199fd255e137c58a5324bae630d82fadf29b3b333b5f7598394188c7425af size=28 time=0.0 type=file uid=0
                 >> ./etc/noprune-explicitly.conf gid=0 md5digest=f46695565a30f8ccadafde741d7d8309 mode=644 sha256digest=eea38dc3968470f73064954bba3d10c2acb17d1704f36c6f4ac5d336dd2e6b8c size=40 time=0.0 type=file uid=0
@@ -16,7 +16,7 @@ XZ-compressed data
             pkgver = 1.0.0-1
             pkgdesc = 
             url = 
-            packager = Unknown Packager
+            packager = Holo Build <holo.build@example.org>
             size = 8367
             arch = any
             license = custom:none

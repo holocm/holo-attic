@@ -8,6 +8,7 @@ version = "1.0-alpha.1"      # only numbers allowed
 requires = [ "holo += 2.0" ] # unknown operator
 provides = [ "=1.1" ]        # missing package name
 conflicts = [ "bar< =2.0"]   # space inside operator
+author = "John Doe"          # missing mail address
 
 [[file]]
 path = "foo/bar.conf"        # relative path is not allowed

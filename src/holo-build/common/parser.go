@@ -51,6 +51,7 @@ type PackageSection struct {
 	Release       uint
 	Epoch         uint
 	Description   string
+	Author        string
 	Requires      []string
 	Provides      []string
 	Conflicts     []string
@@ -114,6 +115,9 @@ func (c *errorCollector) addf(format string, args ...interface{}) {
 //trailing zeros)
 var versionRx = regexp.MustCompile(`^(?:0|[1-9][0-9]*)(?:\.(?:0|[1-9][0-9]*))*$`)
 
+//the author information should be in the form "Firstname Lastname <email.address@server.tld>"
+var authorRx = regexp.MustCompile(`^[^<>]+\s+<[^<>\s]+>$`)
+
 //ParsePackageDefinition parses a package definition from the given input.
 //The operation is successful if the returned []error is nil or empty.
 func ParsePackageDefinition(input io.Reader) (*Package, []error) {
@@ -136,6 +140,7 @@ func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 		Release:       p.Package.Release,
 		Epoch:         p.Package.Epoch,
 		Description:   strings.TrimSpace(p.Package.Description),
+		Author:        strings.TrimSpace(p.Package.Author),
 		SetupScript:   strings.TrimSpace(p.Package.SetupScript),
 		CleanupScript: strings.TrimSpace(p.Package.CleanupScript),
 		FSEntries:     make([]FSEntry, 0, fsEntryCount),
@@ -163,6 +168,11 @@ func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 	}
 	if strings.ContainsAny(pkg.Description, "\r\n") {
 		ec.addf("Invalid package description \"%s\" (may not contain newlines)", pkg.Name)
+	}
+	//the author field is not required (except for --debian), but if it is
+	//given, check the format
+	if pkg.Author != "" && !authorRx.MatchString(pkg.Author) {
+		ec.addf("Invalid package author \"%s\" (should look like \"Jane Doe <jane.doe@example.org>\")", pkg.Author)
 	}
 
 	//parse relations to other packages
