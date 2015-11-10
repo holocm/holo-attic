@@ -221,15 +221,23 @@ func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 	return &pkg, ec.errors
 }
 
+//relatedPackageRx and providesPackageRx are nearly identical, except that for a "provides" relation, only the operator "=" is acceptable
 var relatedPackageRx = regexp.MustCompile(`^([^\s<=>]+)\s*(?:(<=?|>=?|=)\s*([^\s<=>]+))?$`)
+var providesPackageRx = regexp.MustCompile(`^([^\s<=>]+)\s*(?:(=)\s*([^\s<=>]+))?$`)
 
 func parseRelatedPackages(relType string, specs []string, ec *errorCollector) []PackageRelation {
 	rels := make([]PackageRelation, 0, len(specs))
 	idxByName := make(map[string]int, len(specs))
 
 	for _, spec := range specs {
+		//which format to use?
+		rx := relatedPackageRx
+		if relType == "provides" {
+			rx = providesPackageRx
+		}
+
 		//check format of spec
-		match := relatedPackageRx.FindStringSubmatch(spec)
+		match := rx.FindStringSubmatch(spec)
 		if match == nil {
 			ec.addf("Invalid package reference in %s: \"%s\"", relType, spec)
 			continue
