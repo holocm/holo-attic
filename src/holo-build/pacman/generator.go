@@ -27,7 +27,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -87,7 +86,7 @@ func fullVersionString(pkg *common.Package) string {
 
 func writePKGINFO(pkg *common.Package, rootPath string, buildReproducibly bool) error {
 	//gather metrics
-	installedSize, err := findPackageInstalledSize(rootPath)
+	installedSize, err := common.FindApparentSizeForPath(rootPath)
 	if err != nil {
 		return err
 	}
@@ -147,23 +146,6 @@ func writePKGINFO(pkg *common.Package, rootPath string, buildReproducibly bool) 
 
 	//write .PKGINFO
 	return common.WriteFile(filepath.Join(rootPath, ".PKGINFO"), []byte(contents), 0644, buildReproducibly)
-}
-
-//Returns the installed size of the package (in bytes).
-func findPackageInstalledSize(rootPath string) (int, error) {
-	//we use the same method as makepkg, which is `du -s --apparent-size`
-	cmd := exec.Command("du", "-s", "-B", "1", "--apparent-size", rootPath)
-	cmd.Stderr = os.Stderr
-	output, err := cmd.Output()
-	if err != nil {
-		return 0, err
-	}
-	//output is size in bytes + "\t" + path
-	match := regexp.MustCompile(`^([0-9]+)\s`).FindSubmatch(output)
-	if match == nil {
-		return 0, fmt.Errorf("invalid output returned from `du -s -B 1 --apparent-size %s`: \"%s\"", rootPath, string(output))
-	}
-	return strconv.Atoi(string(match[1]))
 }
 
 func compileBackupMarkers(pkg *common.Package) string {
