@@ -85,12 +85,6 @@ func fullVersionString(pkg *common.Package) string {
 }
 
 func writePKGINFO(pkg *common.Package, rootPath string, buildReproducibly bool) error {
-	//gather metrics
-	installedSize, err := common.FindApparentSizeForPath(rootPath)
-	if err != nil {
-		return err
-	}
-
 	//get fakeroot version
 	fakerootVersionString, err := exec.Command("fakeroot", "--version").Output()
 	if err != nil {
@@ -116,7 +110,7 @@ func writePKGINFO(pkg *common.Package, rootPath string, buildReproducibly bool) 
 		contents += fmt.Sprintf("builddate = %d\n", time.Now().Unix())
 	}
 	contents += "packager = Unknown Packager\n"
-	contents += fmt.Sprintf("size = %d\n", installedSize)
+	contents += fmt.Sprintf("size = %d\n", pkg.InstalledSizeInBytes())
 	contents += "arch = any\n"
 	contents += "license = custom:none\n"
 	contents += compilePackageRelations("replaces", pkg.Replaces)

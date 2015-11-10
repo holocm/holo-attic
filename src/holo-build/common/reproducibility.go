@@ -26,6 +26,7 @@ import "C"
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"syscall"
 	"unsafe"
 )
@@ -62,4 +63,39 @@ func WriteFile(path string, contents []byte, mode os.FileMode, buildReproducibly
 		return ResetTimestamp(path)
 	}
 	return nil
+}
+
+//InstalledSizeInBytes approximates the apparent size of the given directory
+//and everything in it, as calculated by `du -s --apparent-size`, but in a
+//filesystem-independent way.
+func (pkg *Package) InstalledSizeInBytes() int {
+	//count all directories in the package as contributing 4096 bytes, and all
+	//files and symlinks as contributing their content
+	contributions := make(map[string]int, len(pkg.FSEntries))
+
+	//the root directory is always there
+	contributions["/"] = 4096
+
+	for _, entry := range pkg.FSEntries {
+		//contributions for this entry
+		path := entry.Path
+		if entry.Type == FSEntryTypeDirectory {
+			contributions[path] = 4096
+		} else {
+			contributions[path] = len(entry.Content)
+		}
+
+		//contributions for all directories above it
+		for path != "/" {
+			path = filepath.Dir(path)
+			contributions[path] = 4096
+		}
+	}
+
+	//sum over all contributions
+	size := 0
+	for _, contribution := range contributions {
+		size += contribution
+	}
+	return size
 }

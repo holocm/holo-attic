@@ -1,6 +1,6 @@
 # Holo - minimalistic config management
 
-[![Build Status](https://travis-ci.org/holocm/holo.svg?branch=master)](https://travis-ci.org/holocm/holo) << Sometimes the build fails because of a [known issue with Travis](https://github.com/travis-ci/travis-ci/issues/5061).
+[![Build Status](https://travis-ci.org/holocm/holo.svg?branch=master)](https://travis-ci.org/holocm/holo)
 
 Today's DevOps is all about configuration management tools like Chef and
 Puppet, humongous software suites that intend to manage your system

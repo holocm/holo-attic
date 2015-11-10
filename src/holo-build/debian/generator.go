@@ -130,19 +130,11 @@ func buildControlTar(pkg *common.Package, rootPath string, buildReproducibly boo
 func writeControlFile(pkg *common.Package, rootPath, controlPath string, buildReproducibly bool) error {
 	//reference for this file:
 	//https://www.debian.org/doc/debian-policy/ch-controlfields.html#s-binarycontrolfiles
-
-	//gather metrics
-	installedSize, err := common.FindApparentSizeForPath(rootPath)
-	if err != nil {
-		return err
-	}
-
-	//generate file contents
 	contents := fmt.Sprintf("Package: %s\n", pkg.Name)
 	contents += fmt.Sprintf("Version: %s\n", fullVersionString(pkg))
 	contents += "Architecture: all\n"
-	contents += "Maintainer: Unknown <unknown@example.org>\n"                //TODO This needs to be a field in the package definition, and its existence must be validated for Debian packages.
-	contents += fmt.Sprintf("Installed-Size: %d\n", int(installedSize/1024)) // convert bytes to KiB
+	contents += "Maintainer: Unknown <unknown@example.org>\n"                             //TODO This needs to be a field in the package definition, and its existence must be validated for Debian packages.
+	contents += fmt.Sprintf("Installed-Size: %d\n", int(pkg.InstalledSizeInBytes()/1024)) // convert bytes to KiB
 	contents += "Section: misc\n"
 	contents += "Priority: optional\n"
 
