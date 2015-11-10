@@ -1,6 +1,7 @@
 # artifacts from failing testcases
 holo-build-*-*
-# pacman generator
-*.pkg.tar.xz
+# artifacts from successful testcases
+debian-output
+debian-error-output
 pacman-output
 pacman-error-output

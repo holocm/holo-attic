@@ -22,7 +22,7 @@ run_testcase() {
     local EXIT_CODE=0
 
     # run test for all available generators
-    for GENERATOR in pacman; do
+    for GENERATOR in debian pacman; do
 
         # run holo-build, decompose result with dump-package (see dump-package.go in the same directory as this script)
         ../../../build/holo-build --stdout --reproducible --$GENERATOR < input.toml 2> $GENERATOR-error-output \

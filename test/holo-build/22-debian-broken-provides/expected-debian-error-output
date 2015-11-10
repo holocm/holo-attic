@@ -1,0 +1,4 @@
+
+build foo-1.0.2.3
+!! version constraints on "Provides: foo-bar" are not allowed for Debian packages
+

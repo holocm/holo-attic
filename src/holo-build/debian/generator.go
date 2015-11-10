@@ -158,7 +158,7 @@ func writeControlFile(pkg *common.Package, rootPath, controlPath string, buildRe
 	contents := fmt.Sprintf("Package: %s\n", pkg.Name)
 	contents += fmt.Sprintf("Version: %s\n", fullVersionString(pkg))
 	contents += "Architecture: all\n"
-	contents += "Maintainer: Unknown <unknown@example.org>\n"                             //TODO This needs to be a field in the package definition, and its existence must be validated for Debian packages.
+	contents += fmt.Sprintf("Maintainer: %s\n", pkg.Author)
 	contents += fmt.Sprintf("Installed-Size: %d\n", int(pkg.InstalledSizeInBytes()/1024)) // convert bytes to KiB
 	contents += "Section: misc\n"
 	contents += "Priority: optional\n"
