@@ -242,7 +242,13 @@ func writeMD5SumsFile(pkg *common.Package, controlPath string, buildReproducibly
 			continue
 		}
 		paths = append(paths, entry.Path)
-		sum := md5.Sum([]byte(entry.Content))
+
+		//the following is equivalent to sum := md5.Sum([]byte(entry.Content)),
+		//but also is backwards-compatible to Go 1.1
+		digest := md5.New()
+		digest.Write([]byte(entry.Content))
+		sum := digest.Sum(nil)
+
 		md5ForPath[entry.Path] = hex.EncodeToString(sum[:])
 	}
 
