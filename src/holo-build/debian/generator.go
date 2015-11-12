@@ -203,10 +203,10 @@ func compilePackageRelations(relType string, rels []common.PackageRelation) (str
 		return "", nil
 	}
 
-	lines := make([]string, 0, len(rels))
+	entries := make([]string, 0, len(rels))
 	//foreach related package...
 	for _, rel := range rels {
-		line := fmt.Sprintf("%s: %s", relType, rel.RelatedPackage)
+		entry := rel.RelatedPackage
 
 		//...compile constraints into a list like ">= 2.4, << 3.0" (operators "<" and ">" become "<<" and ">>" here)
 		if len(rel.Constraints) > 0 {
@@ -224,12 +224,12 @@ func compilePackageRelations(relType string, rels []common.PackageRelation) (str
 				}
 				constraints = append(constraints, fmt.Sprintf("%s %s", operator, c.Version))
 			}
-			line += fmt.Sprintf(" (%s)", strings.Join(constraints, ", "))
+			entry += fmt.Sprintf(" (%s)", strings.Join(constraints, ", "))
 		}
-		lines = append(lines, line)
+		entries = append(entries, entry)
 	}
 
-	return strings.Join(lines, "\n") + "\n", nil
+	return fmt.Sprintf("%s: %s\n", relType, strings.Join(entries, ", ")), nil
 }
 
 func writeMD5SumsFile(pkg *common.Package, controlPath string, buildReproducibly bool) error {
