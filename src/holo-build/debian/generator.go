@@ -206,14 +206,13 @@ func compilePackageRelations(relType string, rels []common.PackageRelation) (str
 	entries := make([]string, 0, len(rels))
 	//foreach related package...
 	for _, rel := range rels {
-		entry := rel.RelatedPackage
+		name := rel.RelatedPackage
 
 		//...compile constraints into a list like ">= 2.4, << 3.0" (operators "<" and ">" become "<<" and ">>" here)
 		if len(rel.Constraints) > 0 {
 			if relType == "Provides" {
 				return "", fmt.Errorf("version constraints on \"Provides: %s\" are not allowed for Debian packages", rel.RelatedPackage)
 			}
-			constraints := make([]string, 0, len(rel.Constraints))
 			for _, c := range rel.Constraints {
 				operator := c.Relation
 				if operator == "<" {
@@ -222,11 +221,11 @@ func compilePackageRelations(relType string, rels []common.PackageRelation) (str
 				if operator == ">" {
 					operator = ">>"
 				}
-				constraints = append(constraints, fmt.Sprintf("%s %s", operator, c.Version))
+				entries = append(entries, fmt.Sprintf("%s (%s %s)", name, operator, c.Version))
 			}
-			entry += fmt.Sprintf(" (%s)", strings.Join(constraints, ", "))
+		} else {
+			entries = append(entries, name)
 		}
-		entries = append(entries, entry)
 	}
 
 	return fmt.Sprintf("%s: %s\n", relType, strings.Join(entries, ", ")), nil

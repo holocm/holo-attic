@@ -10,9 +10,9 @@ ar archive
                 Installed-Size: 36
                 Section: misc
                 Priority: optional
-                Depends: bar (>= 2.1, << 3.0), baz
+                Depends: bar (>= 2.1), bar (<< 3.0), baz
                 Provides: foo-bar, foo-baz
-                Conflicts: qux (>> 2.0, <= 1.2.0)
+                Conflicts: qux (>> 2.0), qux (<= 1.2.0)
                 Replaces: foo-bar (<< 2.1)
                 Description: my foo bar package
                  my foo bar package
