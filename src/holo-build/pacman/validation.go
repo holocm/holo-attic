@@ -33,6 +33,16 @@ import (
 var packageNameRx = regexp.MustCompile(`^[a-z0-9@._+][a-z0-9@._+-]*$`)
 var packageVersionRx = regexp.MustCompile(`^[a-zA-Z0-9.-_]*$`)
 
+//Validate implements the common.Generator interface.
+func (g *Generator) Validate(pkg *common.Package) []error {
+	//TODO: refactor to show all errors at once
+	err := validatePackage(pkg)
+	if err != nil {
+		return []error{err}
+	}
+	return nil
+}
+
 func validatePackage(pkg *common.Package) error {
 	if !packageNameRx.MatchString(pkg.Name) {
 		return fmt.Errorf("Package name \"%s\" is not acceptable for Pacman packages", pkg.Name)

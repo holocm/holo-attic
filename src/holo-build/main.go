@@ -74,6 +74,18 @@ func actualMain() {
 		os.Exit(1)
 	}
 
+	//validate package
+	//TODO: move into common.ParsePackageDefinition() to show all validation errors at once
+	errs = generator.Validate(pkg)
+	if len(errs) > 0 {
+		r = shared.Report{Action: "build", Target: fmt.Sprintf("%s-%s", pkg.Name, pkg.Version)}
+		for _, err := range errs {
+			r.AddError(err.Error())
+		}
+		r.Print()
+		os.Exit(2)
+	}
+
 	//build package
 	err := pkg.Build(generator, opts.printToStdout, opts.reproducible)
 	if err != nil {

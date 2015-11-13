@@ -24,6 +24,13 @@ package common
 //One Generator exists for every target package format (e.g. pacman, dpkg, RPM)
 //supported by holo-build.
 type Generator interface {
+	//Validate performs additional validations on pkg that are specific to the
+	//concrete generator. For example, if the package format imposes additional
+	//restrictions on the format of certain fields (names, versions, etc.), they
+	//should be checked here.
+	//
+	//If the package is valid, an empty slice is to be returned.
+	Validate(pkg *Package) []error
 	//Build produces the final package (usually a compressed tar file) in the
 	//return argument. When it is called, all files and directories contained
 	//in the package definition have already been materialized in the temporary

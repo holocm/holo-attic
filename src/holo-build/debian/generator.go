@@ -60,12 +60,6 @@ type arArchiveEntry struct {
 
 //Build implements the common.Generator interface.
 func (g *Generator) Build(pkg *common.Package, rootPath string, buildReproducibly bool) ([]byte, error) {
-	//validate package
-	err := validatePackage(pkg)
-	if err != nil {
-		return nil, err
-	}
-
 	//compress data.tar.xz
 	dataTar, err := buildDataTar(rootPath)
 	if err != nil {

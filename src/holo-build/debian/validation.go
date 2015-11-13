@@ -32,6 +32,16 @@ import (
 var packageNameRx = regexp.MustCompile(`^[a-z0-9][a-z0-9+-.]+$`)
 var packageVersionRx = regexp.MustCompile(`^[0-9][A-Za-z0-9.+:~-]*$`)
 
+//Validate implements the common.Generator interface.
+func (g *Generator) Validate(pkg *common.Package) []error {
+	//TODO: refactor to show all errors at once
+	err := validatePackage(pkg)
+	if err != nil {
+		return []error{err}
+	}
+	return nil
+}
+
 func validatePackage(pkg *common.Package) error {
 	if !packageNameRx.MatchString(pkg.Name) {
 		return fmt.Errorf("Package name \"%s\" is not acceptable for Debian packages", pkg.Name)
