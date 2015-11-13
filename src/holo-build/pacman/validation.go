@@ -21,7 +21,6 @@
 package pacman
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -35,45 +34,26 @@ var packageVersionRx = regexp.MustCompile(`^[a-zA-Z0-9.-_]*$`)
 
 //Validate implements the common.Generator interface.
 func (g *Generator) Validate(pkg *common.Package) []error {
-	//TODO: refactor to show all errors at once
-	err := validatePackage(pkg)
-	if err != nil {
-		return []error{err}
-	}
-	return nil
-}
+	ec := common.ErrorCollector{}
 
-func validatePackage(pkg *common.Package) error {
 	if !packageNameRx.MatchString(pkg.Name) {
-		return fmt.Errorf("Package name \"%s\" is not acceptable for Pacman packages", pkg.Name)
+		ec.Addf("Package name \"%s\" is not acceptable for Pacman packages", pkg.Name)
 	}
 	if !packageVersionRx.MatchString(pkg.Version) {
 		//this check is only some Defense in Depth; a stricted version format
 		//is already enforced by the generator-independent validation
-		return fmt.Errorf("Package version \"%s\" is not acceptable for Pacman packages", pkg.Version)
+		ec.Addf("Package version \"%s\" is not acceptable for Pacman packages", pkg.Version)
 	}
 
-	err := validatePackageRelations("requires", pkg.Requires)
-	if err != nil {
-		return err
-	}
-	err = validatePackageRelations("provides", pkg.Provides)
-	if err != nil {
-		return err
-	}
-	err = validatePackageRelations("conflicts", pkg.Conflicts)
-	if err != nil {
-		return err
-	}
-	err = validatePackageRelations("replaces", pkg.Replaces)
-	if err != nil {
-		return err
-	}
+	validatePackageRelations("requires", pkg.Requires, &ec)
+	validatePackageRelations("provides", pkg.Provides, &ec)
+	validatePackageRelations("conflicts", pkg.Conflicts, &ec)
+	validatePackageRelations("replaces", pkg.Replaces, &ec)
 
-	return nil
+	return ec.Errors
 }
 
-func validatePackageRelations(relType string, rels []common.PackageRelation) error {
+func validatePackageRelations(relType string, rels []common.PackageRelation, ec *common.ErrorCollector) {
 	for _, rel := range rels {
 		name := rel.RelatedPackage
 		//for requirements, allow special syntaxes "group:foo", "except:bar"
@@ -84,9 +64,7 @@ func validatePackageRelations(relType string, rels []common.PackageRelation) err
 		}
 
 		if !packageNameRx.MatchString(name) {
-			return fmt.Errorf("Package name \"%s\" is not acceptable for Pacman packages (found in %s)", rel.RelatedPackage, relType)
+			ec.Addf("Package name \"%s\" is not acceptable for Pacman packages (found in %s)", rel.RelatedPackage, relType)
 		}
 	}
-
-	return nil
 }
