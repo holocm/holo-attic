@@ -22,7 +22,6 @@ package common
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -93,24 +92,6 @@ type SymlinkSection struct {
 	Target string
 }
 
-type errorCollector struct {
-	errors []error
-}
-
-func (c *errorCollector) add(err error) {
-	if err != nil {
-		c.errors = append(c.errors, err)
-	}
-}
-
-func (c *errorCollector) addf(format string, args ...interface{}) {
-	if len(args) > 0 {
-		c.errors = append(c.errors, fmt.Errorf(format, args...))
-	} else {
-		c.errors = append(c.errors, errors.New(format))
-	}
-}
-
 //versions are dot-separated numbers like (0|[1-9][0-9]*) (this enforces no
 //trailing zeros)
 var versionRx = regexp.MustCompile(`^(?:0|[1-9][0-9]*)(?:\.(?:0|[1-9][0-9]*))*$`)
@@ -153,26 +134,26 @@ func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 
 	//do some basic validation on the package name and version since we're
 	//going to use these to construct a path
-	ec := &errorCollector{}
+	ec := &ErrorCollector{}
 	switch {
 	case pkg.Name == "":
-		ec.addf("Missing package name")
+		ec.Addf("Missing package name")
 	case strings.ContainsAny(pkg.Name, "/\r\n"):
-		ec.addf("Invalid package name \"%s\" (may not contain slashes or newlines)", pkg.Name)
+		ec.Addf("Invalid package name \"%s\" (may not contain slashes or newlines)", pkg.Name)
 	}
 	switch {
 	case pkg.Version == "":
-		ec.addf("Missing package version")
+		ec.Addf("Missing package version")
 	case !versionRx.MatchString(pkg.Version):
-		ec.addf("Invalid package version \"%s\" (must be a chain of numbers like \"1.2.0\" or \"20151104\")", pkg.Version)
+		ec.Addf("Invalid package version \"%s\" (must be a chain of numbers like \"1.2.0\" or \"20151104\")", pkg.Version)
 	}
 	if strings.ContainsAny(pkg.Description, "\r\n") {
-		ec.addf("Invalid package description \"%s\" (may not contain newlines)", pkg.Name)
+		ec.Addf("Invalid package description \"%s\" (may not contain newlines)", pkg.Name)
 	}
 	//the author field is not required (except for --debian), but if it is
 	//given, check the format
 	if pkg.Author != "" && !authorRx.MatchString(pkg.Author) {
-		ec.addf("Invalid package author \"%s\" (should look like \"Jane Doe <jane.doe@example.org>\")", pkg.Author)
+		ec.Addf("Invalid package author \"%s\" (should look like \"Jane Doe <jane.doe@example.org>\")", pkg.Author)
 	}
 
 	//parse relations to other packages
@@ -218,7 +199,7 @@ func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 		validatePath(path, &wasPathSeen, ec, "symlink", idx)
 
 		if symlinkSection.Target == "" {
-			ec.addf("symlink \"%s\" is invalid: missing target", path)
+			ec.Addf("symlink \"%s\" is invalid: missing target", path)
 		}
 
 		pkg.FSEntries = append(pkg.FSEntries, FSEntry{
@@ -228,14 +209,14 @@ func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 		})
 	}
 
-	return &pkg, ec.errors
+	return &pkg, ec.Errors
 }
 
 //relatedPackageRx and providesPackageRx are nearly identical, except that for a "provides" relation, only the operator "=" is acceptable
 var relatedPackageRx = regexp.MustCompile(`^([^\s<=>]+)\s*(?:(<=?|>=?|=)\s*([^\s<=>]+))?$`)
 var providesPackageRx = regexp.MustCompile(`^([^\s<=>]+)\s*(?:(=)\s*([^\s<=>]+))?$`)
 
-func parseRelatedPackages(relType string, specs []string, ec *errorCollector) []PackageRelation {
+func parseRelatedPackages(relType string, specs []string, ec *ErrorCollector) []PackageRelation {
 	rels := make([]PackageRelation, 0, len(specs))
 	idxByName := make(map[string]int, len(specs))
 
@@ -249,7 +230,7 @@ func parseRelatedPackages(relType string, specs []string, ec *errorCollector) []
 		//check format of spec
 		match := rx.FindStringSubmatch(spec)
 		if match == nil {
-			ec.addf("Invalid package reference in %s: \"%s\"", relType, spec)
+			ec.Addf("Invalid package reference in %s: \"%s\"", relType, spec)
 			continue
 		}
 
@@ -277,28 +258,28 @@ func parseRelatedPackages(relType string, specs []string, ec *errorCollector) []
 //wasPathSeen tracks usage of paths to detect duplicate entries.
 //ec collects errors.
 //entryType and entryIdx are
-func validatePath(path string, wasPathSeen *map[string]bool, ec *errorCollector, entryType string, entryIdx int) bool {
+func validatePath(path string, wasPathSeen *map[string]bool, ec *ErrorCollector, entryType string, entryIdx int) bool {
 	if path == "" {
-		ec.addf("%s %d is invalid: missing \"path\" attribute", entryType, entryIdx)
+		ec.Addf("%s %d is invalid: missing \"path\" attribute", entryType, entryIdx)
 		return false
 	}
 	if !strings.HasPrefix(path, "/") {
-		ec.addf("%s \"%s\" is invalid: must be an absolute path", entryType, path)
+		ec.Addf("%s \"%s\" is invalid: must be an absolute path", entryType, path)
 		return false
 	}
 	if strings.HasSuffix(path, "/") {
-		ec.addf("%s \"%s\" is invalid: trailing slash(es)", entryType, path)
+		ec.Addf("%s \"%s\" is invalid: trailing slash(es)", entryType, path)
 		return false
 	}
 	if (*wasPathSeen)[path] {
-		ec.addf("multiple entries for path \"%s\"", path)
+		ec.Addf("multiple entries for path \"%s\"", path)
 		return false
 	}
 	(*wasPathSeen)[path] = true
 	return true
 }
 
-func parseFileMode(modeStr string, defaultMode os.FileMode, ec *errorCollector, entryDesc string) os.FileMode {
+func parseFileMode(modeStr string, defaultMode os.FileMode, ec *ErrorCollector, entryDesc string) os.FileMode {
 	//default value
 	if modeStr == "" {
 		return defaultMode
@@ -307,7 +288,7 @@ func parseFileMode(modeStr string, defaultMode os.FileMode, ec *errorCollector, 
 	//parse modeStr as uint in base 8 to uint32 (== os.FileMode)
 	value, err := strconv.ParseUint(modeStr, 8, 32)
 	if err != nil {
-		ec.addf("%s is invalid: cannot parse mode \"%s\" (%s)", entryDesc, modeStr, err.Error())
+		ec.Addf("%s is invalid: cannot parse mode \"%s\" (%s)", entryDesc, modeStr, err.Error())
 	}
 	return os.FileMode(value)
 }
@@ -315,7 +296,7 @@ func parseFileMode(modeStr string, defaultMode os.FileMode, ec *errorCollector, 
 //this regexp copied from useradd(8) manpage
 var userOrGroupRx = regexp.MustCompile(`^[a-z_][a-z0-9_-]*\$?$`)
 
-func parseUserOrGroupRef(value interface{}, ec *errorCollector, entryDesc string) *IntOrString {
+func parseUserOrGroupRef(value interface{}, ec *ErrorCollector, entryDesc string) *IntOrString {
 	//default value
 	if value == nil {
 		return nil
@@ -324,28 +305,28 @@ func parseUserOrGroupRef(value interface{}, ec *errorCollector, entryDesc string
 	switch val := value.(type) {
 	case int64:
 		if val < 0 {
-			ec.addf("%s is invalid: user or group ID \"%d\" may not be negative", entryDesc, val)
+			ec.Addf("%s is invalid: user or group ID \"%d\" may not be negative", entryDesc, val)
 		}
 		if val >= 1<<32 {
-			ec.addf("%s is invalid: user or group ID \"%d\" does not fit in uint32", entryDesc, val)
+			ec.Addf("%s is invalid: user or group ID \"%d\" does not fit in uint32", entryDesc, val)
 		}
 		return &IntOrString{Int: uint32(val)}
 	case string:
 		if !userOrGroupRx.MatchString(val) {
-			ec.addf("%s is invalid: \"%s\" is not an acceptable user or group name", entryDesc, val)
+			ec.Addf("%s is invalid: \"%s\" is not an acceptable user or group name", entryDesc, val)
 		}
 		return &IntOrString{Str: val}
 	default:
-		ec.addf("%s is invalid: \"owner\"/\"group\" attributes must be strings or integers, found type %T", entryDesc, value)
+		ec.Addf("%s is invalid: \"owner\"/\"group\" attributes must be strings or integers, found type %T", entryDesc, value)
 		return nil
 	}
 }
 
-func parseFileContent(content string, contentFrom string, dontPruneIndent bool, ec *errorCollector, entryDesc string) string {
+func parseFileContent(content string, contentFrom string, dontPruneIndent bool, ec *ErrorCollector, entryDesc string) string {
 	//option 1: content given verbatim in "content" field
 	if content != "" {
 		if contentFrom != "" {
-			ec.addf("%s is invalid: cannot use both `content` and `contentFrom`", entryDesc)
+			ec.Addf("%s is invalid: cannot use both `content` and `contentFrom`", entryDesc)
 		}
 		if dontPruneIndent {
 			return content
@@ -355,11 +336,11 @@ func parseFileContent(content string, contentFrom string, dontPruneIndent bool, 
 
 	//option 2: content referenced in "contentFrom" field
 	if contentFrom == "" {
-		ec.addf("%s is invalid: missing content", entryDesc)
+		ec.Addf("%s is invalid: missing content", entryDesc)
 		return ""
 	}
 	bytes, err := ioutil.ReadFile(contentFrom)
-	ec.add(err)
+	ec.Add(err)
 	return string(bytes)
 }
 
