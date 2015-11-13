@@ -205,6 +205,7 @@ func compilePackageRelations(relType string, rels []common.PackageRelation) (str
 		//...compile constraints into a list like ">= 2.4, << 3.0" (operators "<" and ">" become "<<" and ">>" here)
 		if len(rel.Constraints) > 0 {
 			if relType == "Provides" {
+				//TODO: this should be checked during Validate
 				return "", fmt.Errorf("version constraints on \"Provides: %s\" are not allowed for Debian packages", rel.RelatedPackage)
 			}
 			for _, c := range rel.Constraints {

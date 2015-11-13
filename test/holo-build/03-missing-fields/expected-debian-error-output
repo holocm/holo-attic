@@ -6,4 +6,5 @@ read package definition
 !! file 1 is invalid: missing "path" attribute
 !! file "/etc/this-not-either.conf" is invalid: missing content
 !! symlink 0 is invalid: missing "path" attribute
+!! The "package.author" field is required for Debian packages
 

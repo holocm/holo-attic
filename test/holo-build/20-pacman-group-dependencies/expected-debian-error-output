@@ -1,5 +1,5 @@
 
-build pacman-group-dependencies-1.0.0
+read package definition
 !! Package name "group:aaa-bbbb-cc-ddd-gg" is not acceptable for Debian packages (found in requires)
 !! Package name "except:bbbb" is not acceptable for Debian packages (found in requires)
 !! Package name "except:gg" is not acceptable for Debian packages (found in requires)

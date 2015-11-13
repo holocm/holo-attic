@@ -140,15 +140,18 @@ func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 		ec.Addf("Missing package name")
 	case strings.ContainsAny(pkg.Name, "/\r\n"):
 		ec.Addf("Invalid package name \"%s\" (may not contain slashes or newlines)", pkg.Name)
+		pkg.Name = "" // don't complain about the broken value again in generator.Validate()
 	}
 	switch {
 	case pkg.Version == "":
 		ec.Addf("Missing package version")
 	case !versionRx.MatchString(pkg.Version):
 		ec.Addf("Invalid package version \"%s\" (must be a chain of numbers like \"1.2.0\" or \"20151104\")", pkg.Version)
+		pkg.Version = "" // don't complain about the broken value again in generator.Validate()
 	}
 	if strings.ContainsAny(pkg.Description, "\r\n") {
 		ec.Addf("Invalid package description \"%s\" (may not contain newlines)", pkg.Name)
+		pkg.Description = "" // don't complain about the broken value again in generator.Validate()
 	}
 	//the author field is not required (except for --debian), but if it is
 	//given, check the format

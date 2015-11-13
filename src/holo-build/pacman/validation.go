@@ -36,10 +36,12 @@ var packageVersionRx = regexp.MustCompile(`^[a-zA-Z0-9.-_]*$`)
 func (g *Generator) Validate(pkg *common.Package) []error {
 	ec := common.ErrorCollector{}
 
-	if !packageNameRx.MatchString(pkg.Name) {
+	//if name or version is empty, it was already rejected by the common/parser
+	//and we don't need to complain about it again
+	if pkg.Name != "" && !packageNameRx.MatchString(pkg.Name) {
 		ec.Addf("Package name \"%s\" is not acceptable for Pacman packages", pkg.Name)
 	}
-	if !packageVersionRx.MatchString(pkg.Version) {
+	if pkg.Version != "" && !packageVersionRx.MatchString(pkg.Version) {
 		//this check is only some Defense in Depth; a stricted version format
 		//is already enforced by the generator-independent validation
 		ec.Addf("Package version \"%s\" is not acceptable for Pacman packages", pkg.Version)
