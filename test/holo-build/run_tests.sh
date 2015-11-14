@@ -19,12 +19,17 @@ run_testcase() {
     # enable mock implementations for distribution-dependent implementations
     export HOLO_MOCK=1
 
-    local EXIT_CODE=0
-
     # run test for all available generators
+    local FILES_TO_DIFF="suggested-filenames"
+    rm -f -- suggested-filenames
     for GENERATOR in debian pacman; do
+        # check suggested filename
+        (
+            FILENAME="$(../../../build/holo-build --suggest-filename --$GENERATOR < input.toml 2>/dev/null)"
+            echo "$GENERATOR: ${FILENAME:-no output}"
+        ) >> suggested-filenames
 
-        # run holo-build, decompose result with dump-package (see dump-package.go in the same directory as this script)
+        # run holo-build, decompose result with dump-package (see src/dump-package/)
         ../../../build/holo-build --stdout --reproducible --$GENERATOR < input.toml 2> $GENERATOR-error-output \
             | ../../../build/dump-package &> $GENERATOR-output
 
@@ -32,17 +37,20 @@ run_testcase() {
         ../../strip-ansi-colors.sh < $GENERATOR-error-output > $GENERATOR-error-output.new
         mv $GENERATOR-error-output{.new,}
 
-        # use diff to check the actual run with our expectations
-        for FILE in $GENERATOR-error-output $GENERATOR-output; do
-            if [ -f $FILE ]; then
-                if diff -q expected-$FILE $FILE >/dev/null; then true; else
-                    echo "!! The $FILE deviates from our expectation. Diff follows:"
-                    diff -u expected-$FILE $FILE 2>&1 | sed 's/^/    /'
-                    EXIT_CODE=1
-                fi
-            fi
-        done
+        # remember output files
+        FILES_TO_DIFF="$FILES_TO_DIFF $GENERATOR-error-output $GENERATOR-output"
+    done
 
+    # use diff to check the actual run with our expectations
+    local EXIT_CODE=0
+    for FILE in $FILES_TO_DIFF; do
+        if [ -f $FILE ]; then
+            if diff -q expected-$FILE $FILE >/dev/null; then true; else
+                echo "!! The $FILE deviates from our expectation. Diff follows:"
+                diff -u expected-$FILE $FILE 2>&1 | sed 's/^/    /'
+                EXIT_CODE=1
+            fi
+        fi
     done
     return $EXIT_CODE
 }
