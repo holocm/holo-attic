@@ -54,6 +54,7 @@ type options struct {
 	format        int
 	printToStdout bool
 	reproducible  bool
+	filenameOnly  bool
 }
 
 func actualMain() {
@@ -81,6 +82,12 @@ func actualMain() {
 		}
 		r.Print()
 		os.Exit(1)
+	}
+
+	//print filename instead of building package, if requested
+	if opts.filenameOnly {
+		fmt.Println(generator.RecommendedFileName(pkg))
+		return
 	}
 
 	//build package
@@ -117,6 +124,8 @@ func parseArgs() (result options, exit bool) {
 			opts.printToStdout = true
 		case "--no-stdout":
 			opts.printToStdout = false
+		case "--suggest-filename":
+			opts.filenameOnly = true
 		case "--reproducible":
 			opts.reproducible = true
 		case "--no-reproducible":

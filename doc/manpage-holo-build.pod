@@ -70,6 +70,29 @@ the default under suitable distributions.
 Generate a Debian package (suitable for Debian and derivatives). This is
 the default under suitable distributions.
 
+=item B<--suggest-filename>
+
+Do not generate a package. After reading and validating the package definition,
+just print on standard output the suggested filename for this package. The
+printed file name is the same one that will be used when C<--no-stdout> is in
+effect. The format for package filenames follows the recommendations of the
+targeted distribution:
+
+    $ cat input.toml
+
+    [package]
+    name = "foo"
+    version = "1.0"
+
+    $ holo-build --suggest-filename --debian < input.toml
+    the-package_1.0-1_any.deb
+    $ holo-build --suggest-filename --pacman < input.toml
+    the-package-1.0-1-any.pkg.tar.xz
+
+This option can be used when auto-generating Makefiles, where the output
+filename needs to be known before C<holo-build> runs (for purposes of dependency
+resolution).
+
 =item B<--reproducible>
 
 Try to generate a package that is more reproducible, that is: does not contain
