@@ -24,19 +24,6 @@ import "os"
 
 //Package contains all information about a single package. This representation
 //will be passed into the generator backends.
-//
-//General note on package references: Various struct fields (Requires,
-//Provides, Conflicts, Replaces) are []string where the individual strings are
-//other packages. These strings may be just a package name, or the package name
-//may have a suffix like /[<>]?=?$version/ to specify a version constraint for
-//the referenced package. The package may be referenced multiple times with
-//different version constraints.
-//
-//    pkg.Requires = []string {
-//        "foo", # any version of foo required
-//        "bar<1.0", # requires a version of bar before 1.0
-//        "baz>=
-//    }
 type Package struct {
 	//Name is the package name.
 	Name string

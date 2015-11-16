@@ -6,6 +6,7 @@
 # name =
 # version =
 description = "not enough"
+definitionFile = "/usr/share/holo/03-missing-fields.toml"
 
 [[file]]
 path = "/etc/this-is-ok.conf"
@@ -34,3 +35,11 @@ mode = "0666"
 [[directory]]
 # path = "/var/lib/certainly-not-this"
 owner = "test"
+
+[[user]]
+# name =
+uid = 1000
+
+[[group]]
+# name =
+gid = 1000

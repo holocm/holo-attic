@@ -40,23 +40,26 @@ type PackageDefinition struct {
 	File      []FileSection
 	Directory []DirectorySection
 	Symlink   []SymlinkSection
+	User      []UserSection  //see common/entities.go
+	Group     []GroupSection //see common/entities.go
 }
 
 //PackageSection only needs a nice exported name for the TOML parser to produce
 //more meaningful error messages on malformed input data.
 type PackageSection struct {
-	Name          string
-	Version       string
-	Release       uint
-	Epoch         uint
-	Description   string
-	Author        string
-	Requires      []string
-	Provides      []string
-	Conflicts     []string
-	Replaces      []string
-	SetupScript   string
-	CleanupScript string
+	Name           string
+	Version        string
+	Release        uint
+	Epoch          uint
+	Description    string
+	Author         string
+	Requires       []string
+	Provides       []string
+	Conflicts      []string
+	Replaces       []string
+	SetupScript    string
+	CleanupScript  string
+	DefinitionFile string //see compileEntityDefinitions
 }
 
 //FileSection only needs a nice exported name for the TOML parser to produce
@@ -124,7 +127,8 @@ func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 		Author:        strings.TrimSpace(p.Package.Author),
 		SetupScript:   strings.TrimSpace(p.Package.SetupScript),
 		CleanupScript: strings.TrimSpace(p.Package.CleanupScript),
-		FSEntries:     make([]FSEntry, 0, fsEntryCount),
+		//"+1" to accommodate the optional entity definition
+		FSEntries: make([]FSEntry, 0, fsEntryCount+1),
 	}
 
 	//default value for Release is 1
@@ -165,9 +169,16 @@ func ParsePackageDefinition(input io.Reader) (*Package, []error) {
 	pkg.Conflicts = parseRelatedPackages("conflicts", p.Package.Conflicts, ec)
 	pkg.Replaces = parseRelatedPackages("replaces", p.Package.Replaces, ec)
 
-	//parse and validate FS entries
-	wasPathSeen := make(map[string]bool, fsEntryCount)
+	//compile entity definition file (we do this before all the other FS
+	//entries, so that this step does not need the wasPathSeen check)
+	wasPathSeen := make(map[string]bool, fsEntryCount+1)
+	entry := compileEntityDefinitions(p.Package, p.Group, p.User, ec)
+	if entry != nil {
+		wasPathSeen[entry.Path] = true
+		pkg.FSEntries = append(pkg.FSEntries, *entry)
+	}
 
+	//parse and validate FS entries
 	for idx, dirSection := range p.Directory {
 		path := dirSection.Path
 		validatePath(path, &wasPathSeen, ec, "directory", idx)
@@ -259,8 +270,7 @@ func parseRelatedPackages(relType string, specs []string, ec *ErrorCollector) []
 
 //path is the path to be validated.
 //wasPathSeen tracks usage of paths to detect duplicate entries.
-//ec collects errors.
-//entryType and entryIdx are
+//entryType and entryIdx are used for error messages and describe the entry.
 func validatePath(path string, wasPathSeen *map[string]bool, ec *ErrorCollector, entryType string, entryIdx int) bool {
 	if path == "" {
 		ec.Addf("%s %d is invalid: missing \"path\" attribute", entryType, entryIdx)
@@ -294,35 +304,6 @@ func parseFileMode(modeStr string, defaultMode os.FileMode, ec *ErrorCollector, 
 		ec.Addf("%s is invalid: cannot parse mode \"%s\" (%s)", entryDesc, modeStr, err.Error())
 	}
 	return os.FileMode(value)
-}
-
-//this regexp copied from useradd(8) manpage
-var userOrGroupRx = regexp.MustCompile(`^[a-z_][a-z0-9_-]*\$?$`)
-
-func parseUserOrGroupRef(value interface{}, ec *ErrorCollector, entryDesc string) *IntOrString {
-	//default value
-	if value == nil {
-		return nil
-	}
-
-	switch val := value.(type) {
-	case int64:
-		if val < 0 {
-			ec.Addf("%s is invalid: user or group ID \"%d\" may not be negative", entryDesc, val)
-		}
-		if val >= 1<<32 {
-			ec.Addf("%s is invalid: user or group ID \"%d\" does not fit in uint32", entryDesc, val)
-		}
-		return &IntOrString{Int: uint32(val)}
-	case string:
-		if !userOrGroupRx.MatchString(val) {
-			ec.Addf("%s is invalid: \"%s\" is not an acceptable user or group name", entryDesc, val)
-		}
-		return &IntOrString{Str: val}
-	default:
-		ec.Addf("%s is invalid: \"owner\"/\"group\" attributes must be strings or integers, found type %T", entryDesc, value)
-		return nil
-	}
 }
 
 func parseFileContent(content string, contentFrom string, dontPruneIndent bool, ec *ErrorCollector, entryDesc string) string {
