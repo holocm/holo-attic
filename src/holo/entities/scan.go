@@ -24,7 +24,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"sort"
 	"strings"
 
@@ -39,39 +38,19 @@ func Scan() common.Entities {
 	errorReport := shared.Report{Action: "scan", Target: "entity definitions"}
 
 	//look in the entity directory for entity definitions
-	entityDir := common.EntityDirectory()
-	dir, err := os.Open(entityDir)
+	paths, err := common.ScanDirectory(common.EntityDirectory(), func(fi os.FileInfo) bool {
+		return fi.Mode().IsRegular() && strings.HasSuffix(fi.Name(), ".toml")
+	})
 	if err != nil {
-		errorReport.AddError("Cannot read %s: %s", entityDir, err.Error())
+		errorReport.AddError(err.Error())
 		errorReport.Print()
 		return nil
 	}
-	fis, err := dir.Readdir(-1)
-	if err != nil {
-		errorReport.AddError("Cannot read %s: %s", entityDir, err.Error())
-		errorReport.Print()
-		return nil
-	}
-
-	//collect all definition files, sort by name
-	var definitionPaths []string
-	for _, fi := range fis {
-		if fi.Mode().IsRegular() {
-			definitionPath := filepath.Join(entityDir, fi.Name())
-			switch {
-			case strings.HasSuffix(fi.Name(), ".toml"):
-				definitionPaths = append(definitionPaths, definitionPath)
-			default:
-				//ignore files of unrecognized formats
-			}
-		}
-	}
-	sort.Strings(definitionPaths)
 
 	//parse entity definitions
 	groups := make(map[string]*Group)
 	users := make(map[string]*User)
-	for _, definitionPath := range definitionPaths {
+	for _, definitionPath := range paths {
 		err := readDefinitionFile(definitionPath, &groups, &users)
 		if len(err) > 0 {
 			errorReport.AddError("File %s is invalid:", definitionPath)
