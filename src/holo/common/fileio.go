@@ -36,6 +36,12 @@ func IsManageableFile(path string) bool {
 	return info.Mode().IsRegular() || IsFileInfoASymbolicLink(info)
 }
 
+//IsManageableFileInfo returns whether the given FileInfo refers to a
+//manageable file (i.e. a regular file or a symlink).
+func IsManageableFileInfo(info os.FileInfo) bool {
+	return info.Mode().IsRegular() || IsFileInfoASymbolicLink(info)
+}
+
 //IsFileInfoASymbolicLink returns whether the given FileInfo describes a symlink.
 func IsFileInfoASymbolicLink(fileInfo os.FileInfo) bool {
 	return (fileInfo.Mode() & os.ModeType) == os.ModeSymlink

@@ -39,6 +39,7 @@ type Report struct {
 	State     string
 	infoLines []reportLine
 	msgText   string
+	logText   string
 }
 
 //AddLine adds an information line to the given Report.
@@ -72,6 +73,12 @@ func (r *Report) AddWarning(text string, args ...interface{}) { r.addMessage("33
 //AddError adds an error message to the given Report. If args... are given,
 //fmt.Sprintf() is applied.
 func (r *Report) AddError(text string, args ...interface{}) { r.addMessage("31", "!!", text, args...) }
+
+//AddLog adds log text to the given Report. Log text is unstructured, and is
+//printed as a separate paragraph after everything else.
+func (r *Report) AddLog(text string) {
+	r.logText += text
+}
 
 var reportsWerePrinted bool
 
@@ -118,6 +125,14 @@ func (r *Report) Print() {
 	if r.msgText != "" {
 		out.Write([]byte(r.msgText))
 		out.Write([]byte{'\n'})
+	}
+
+	//print log text, if any
+	if r.logText != "" {
+		out.Write([]byte(r.logText))
+		if !strings.HasSuffix(r.logText, "\n") {
+			out.Write([]byte{'\n'})
+		}
 	}
 }
 

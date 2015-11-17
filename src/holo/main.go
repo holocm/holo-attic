@@ -28,6 +28,7 @@ import (
 	"./common"
 	"./entities"
 	"./files"
+	"./scripts"
 )
 
 const (
@@ -65,21 +66,26 @@ func main() {
 	//scan the repo
 	fileEntities := files.ScanRepo()
 	if fileEntities == nil {
-		//some fatal error occurred while scanning the repo - it was already
-		//reported, so just exit
+		//some fatal error occurred - it was already reported, so just exit
 		os.Exit(255)
 	}
 
 	//scan for entity definitions
 	userGroupEntities := entities.Scan()
 	if userGroupEntities == nil {
-		//some fatal error occurred while scanning the repo - it was already
-		//reported, so just exit
+		//some fatal error occurred - it was already reported, so just exit
+		os.Exit(255)
+	}
+
+	//scan for provisioning scripts
+	provisioningScripts := scripts.Scan()
+	if provisioningScripts == nil {
+		//some fatal error occurred - it was already reported, so just exit
 		os.Exit(255)
 	}
 
 	//build a lookup hash for all known entities (for argument parsing)
-	entities := append(fileEntities, userGroupEntities...)
+	entities := append(append(fileEntities, userGroupEntities...), provisioningScripts...)
 	isEntityID := make(map[string]bool, len(entities))
 	for _, entity := range entities {
 		isEntityID[entity.EntityID()] = true
