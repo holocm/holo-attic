@@ -112,6 +112,12 @@ definitions are stacked on each other, they are not allowed to contradict
 one another. (Different lists of auxiliary groups are allowed and will be
 merged.)
 
+=head2 Running custom scripts during provisioning
+
+Executable files placed at F</usr/share/holo/provision/> will be run (in
+alphabetical order) by C<holo apply> after all other entities (files, users and
+groups) have been provisioned.
+
 =head2 Dealing with manual changes
 
 When an entity (target file, user or group) provisioned by Holo is modified by
