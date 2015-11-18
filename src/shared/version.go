@@ -24,8 +24,8 @@ import "fmt"
 
 //Note: This line is parsed by the Makefile to get the version string. If you
 //change the format, adjust the Makefile too.
-var version = "v0.8.1"
-var codename = "Enthusiasm"
+var version = "v0.9.0"
+var codename = "Courage"
 
 //Version returns the plain version (without release codename).
 func Version() string {
