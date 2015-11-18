@@ -49,7 +49,7 @@ func (s ProvisioningScript) Report() *shared.Report {
 //Apply implements the common.Entity interface for ProvisioningScript.
 func (s ProvisioningScript) Apply(withForce bool) {
 	report := s.Report()
-	report.Action = "Running"
+	report.Action = "Executing"
 
 	//run program, buffer stdout/stderr
 	var stdout bytes.Buffer

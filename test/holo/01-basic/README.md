@@ -16,3 +16,10 @@ We also check if files not conforming to the repo file naming pattern are
 ignored correctly by the scanner.
 
 * `repo/not-a-repo-file.conf` is not within a subdirectory of the repo directory.
+
+Furthermore, provisioning script functionality is tested:
+
+    /usr/share/holo/provision/01-successful.sh          # prints output, exits successfully
+    /usr/share/holo/provision/02-failing.sh             # prints output, exits with failure
+    /usr/share/holo/provision/03-successful-nooutput.sh # does not print, exits successfully
+    /usr/share/holo/provision/04-failing-nooutput.sh    # does not print, exits with failure

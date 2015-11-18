@@ -23,3 +23,15 @@ target/etc/stock-file-missing.conf
     store at target/var/lib/holo/base/etc/stock-file-missing.conf
        apply target/usr/share/holo/repo/02-errors/etc/stock-file-missing.conf
 
+script:01-successful.sh
+    found at target/usr/share/holo/provision/01-successful.sh
+
+script:02-failing.sh
+    found at target/usr/share/holo/provision/02-failing.sh
+
+script:03-successful-nooutput.sh
+    found at target/usr/share/holo/provision/03-successful-nooutput.sh
+
+script:04-failing-nooutput.sh
+    found at target/usr/share/holo/provision/04-failing-nooutput.sh
+

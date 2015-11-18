@@ -133,6 +133,7 @@ func (r *Report) Print() {
 		if !strings.HasSuffix(r.logText, "\n") {
 			out.Write([]byte{'\n'})
 		}
+		out.Write([]byte{'\n'})
 	}
 }
 

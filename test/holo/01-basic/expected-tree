@@ -9,6 +9,25 @@ bbb
 aaa
 aaa
 >> ./etc/stock-file-is-directory.conf/.keep = regular
+>> ./usr/share/holo/provision/01-successful.sh = regular
+#!/bin/sh
+echo "Running provisioning script 01-successful.sh"
+echo "This is output on stdout"
+echo "This is output on stderr" >&2
+echo "Done with 01-successful.sh, exiting with code 0"
+>> ./usr/share/holo/provision/02-failing.sh = regular
+#!/bin/sh
+echo "Running provisioning script 02-failing.sh"
+echo "This is output on stdout"
+echo "This is output on stderr" >&2
+echo "Done with 02-failing.sh, exiting with code 1"
+exit 1
+>> ./usr/share/holo/provision/03-successful-nooutput.sh = regular
+#!/bin/sh
+exit 0
+>> ./usr/share/holo/provision/04-failing-nooutput.sh = regular
+#!/bin/sh
+exit 1
 >> ./usr/share/holo/repo/01-normal/etc/link-over-link.conf = symlink
 ddd
 >> ./usr/share/holo/repo/01-normal/etc/link-over-plain.conf = symlink

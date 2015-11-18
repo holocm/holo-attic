@@ -26,6 +26,7 @@ run_testcase() {
 
     # consistent file modes in the target/ directory (for test reproducability)
     find target/ -type f                     -exec chmod 0644 {} +
+    find target/ -type f -name \*.sh         -exec chmod 0755 {} +
     find target/ -type f -name \*.holoscript -exec chmod 0755 {} +
     find target/ -type d                     -exec chmod 0755 {} +
 
