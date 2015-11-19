@@ -116,16 +116,35 @@ func apply(target *TargetFile, report *shared.Report, withForce bool) (skipRepor
 		}
 	}
 
-	//step 4a: load the target base into a buffer as the start for the
-	//application algorithm
-	buffer, err := NewFileBuffer(targetBasePath, targetPath)
-	if err != nil {
-		report.AddError(err.Error())
-		return false
+	//check if we can skip any application steps (firstStep = -1 means: start
+	//with loading the target base and apply all steps, firstStep >= 0 means:
+	//start at that application step with an empty buffer)
+	firstStep := -1
+	repoEntries := target.RepoEntries()
+	for idx, repoFile := range repoEntries {
+		if repoFile.DiscardsPreviousBuffer() {
+			firstStep = idx
+		}
 	}
 
-	//step 4b: apply all the applicable repo files in order
-	repoEntries := target.RepoEntries()
+	//load the target base into a buffer as the start for the application
+	//algorithm, unless it will be discarded by an application step
+	var buffer *FileBuffer
+	if firstStep == -1 {
+		buffer, err = NewFileBuffer(targetBasePath, targetPath)
+		if err != nil {
+			report.AddError(err.Error())
+			return false
+		}
+	} else {
+		buffer = NewFileBufferFromContents([]byte(nil), targetPath)
+	}
+
+	//apply all the applicable repo files in order (starting from the first one
+	//that matters)
+	if firstStep > 0 {
+		repoEntries = repoEntries[firstStep:]
+	}
 	for _, repoFile := range repoEntries {
 		buffer, err = GetApplyImpl(repoFile)(buffer, report)
 		if err != nil {
@@ -134,7 +153,7 @@ func apply(target *TargetFile, report *shared.Report, withForce bool) (skipRepor
 		}
 	}
 
-	//step 4c: don't do anything more if nothing has changed
+	//don't do anything more if nothing has changed
 	if !withForce && lastProvisionedBuffer != nil {
 		if buffer.EqualTo(lastProvisionedBuffer) {
 			//since we did not do anything, don't report this
@@ -142,7 +161,7 @@ func apply(target *TargetFile, report *shared.Report, withForce bool) (skipRepor
 		}
 	}
 
-	//step 4c: save a copy of the provisioned config file to check for manual
+	//save a copy of the provisioned config file to check for manual
 	//modifications in the next Apply() run
 	provisionedDir := filepath.Dir(lastProvisionedPath)
 	err = os.MkdirAll(provisionedDir, 0755)
@@ -161,7 +180,7 @@ func apply(target *TargetFile, report *shared.Report, withForce bool) (skipRepor
 		return false
 	}
 
-	//step 4d: write the result buffer to the target location and copy
+	//write the result buffer to the target location and copy
 	//owners/permissions from target base to target file
 	newTargetPath := targetPath + ".holonew"
 	err = buffer.Write(newTargetPath)

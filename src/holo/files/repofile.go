@@ -72,6 +72,14 @@ func (file RepoFile) ApplicationStrategy() string {
 	return "apply"
 }
 
+//DiscardsPreviousBuffer indicates whether applying this file will discard the
+//previous file buffer (and thus the effect of all previous application steps).
+//This is used as a hint by the application algorithm to decide whether
+//application steps can be skipped completely.
+func (file RepoFile) DiscardsPreviousBuffer() bool {
+	return file.ApplicationStrategy() == "apply"
+}
+
 //RepoFiles holds a slice of RepoFile instances, and implements some methods
 //to satisfy the sort.Interface interface.
 type RepoFiles []RepoFile
