@@ -27,6 +27,7 @@ import (
 	"bytes"
 	"compress/bzip2"
 	"compress/gzip"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -123,6 +124,10 @@ func recognizeAndDump(data []byte) (string, error) {
 	//is it an ar archive?
 	if bytes.HasPrefix(data, []byte("!<arch>\n")) {
 		return dumpAr(data)
+	}
+	//is it an RPM package?
+	if bytes.HasPrefix(data, []byte{0xed, 0xab, 0xee, 0xdb}) {
+		return dumpRpm(data)
 	}
 
 	return "data as shown below\n" + indent(string(data)), nil
@@ -396,4 +401,48 @@ func dumpMtree(data []byte) (string, error) {
 	}
 
 	return "mtree metadata archive\n" + indent(strings.Join(outputLines, "\n")), nil
+}
+
+func dumpRpm(data []byte) (string, error) {
+	//We don't have a library for the RPM format, and unfortunately, it's an utter mess.
+	//The main reference that I used (apart from sample RPMs from Fedora, Mageia, and Suse)
+	//is <http://www.rpm.org/max-rpm/s1-rpm-file-format-rpm-file-format.html>.
+	reader := bytes.NewReader(data)
+
+	leadDump, err := dumpRpmLead(reader)
+	if err != nil {
+		return "", err
+	}
+
+	return "RPM package\n" + indent(leadDump) + indent(">> TODO: signature, header, payload"), nil
+}
+
+func dumpRpmLead(reader io.Reader) (string, error) {
+	//read the lead (the initial fixed-size header)
+	var lead struct {
+		Magic         uint32
+		MajorVersion  uint8
+		MinorVersion  uint8
+		Type          uint16
+		Architecture  uint16
+		Name          [66]byte
+		OSNum         uint16
+		SignatureType uint16
+		Reserved      [16]byte
+	}
+	err := binary.Read(reader, binary.BigEndian, &lead)
+	if err != nil {
+		return "", err
+	}
+
+	lines := []string{
+		fmt.Sprintf("RPM format version %d.%d", lead.MajorVersion, lead.MinorVersion),
+		fmt.Sprintf("Type: %d (0 = binary, 1 = source)", lead.Type),
+		fmt.Sprintf("Architecture: %d (0 = noarch, 1 = x86, ...)", lead.Architecture),
+		//lead.Name is a NUL-terminated (and NUL-padded) string; trim all the NULs at the end
+		fmt.Sprintf("Name: %s", strings.TrimRight(string(lead.Name[:]), "\x00")),
+		fmt.Sprintf("Built for OS: %d (1 = Linux, ...)", lead.OSNum),
+		fmt.Sprintf("Signature type: %d", lead.SignatureType),
+	}
+	return ">> lead section:\n" + indent(strings.Join(lines, "\n")), nil
 }
