@@ -14,7 +14,7 @@ build/%.8: doc/manpage-%.pod src/shared/version.go
 		$< $@
 
 # this utility is needed only for testing
-build/dump-package: src/dump-package/dump-package.go
+build/dump-package: src/dump-package/main.go src/dump-package/*/*.go
 	go build -o $@ $<
 
 test: check # just a synonym
