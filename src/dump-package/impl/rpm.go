@@ -26,7 +26,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"reflect"
 	"strings"
 )
 
@@ -142,85 +141,84 @@ func dumpRpmHeader(reader io.Reader, sectionIdent string) (string, error) {
 	//decode and dump entries
 	lines := make([]string, 0, len(indexEntries)) //lower estimate only
 	for _, entry := range indexEntries {
-		value, err := decodeIndexEntry(entry, bufferedReader)
+		//seek to start of entry
+		_, err := bufferedReader.Seek(int64(entry.Offset), 0)
 		if err != nil {
 			return "", err
 		}
 
-		//value is either a number or string which can be printed directly, or
-		//a slice of these values which we print on individual lines
-		var representation string
-		r := reflect.ValueOf(value)
-		switch {
-		case !r.IsValid():
-			representation = "null"
-		case r.Kind() == reflect.Slice:
-			l := r.Len()
-			sublines := make([]string, 0, l)
-			for idx := 0; idx < l; idx++ {
-				sublines = append(sublines, fmt.Sprintf("%v", r.Index(idx)))
+		var sublines []string
+		if entry.Type == 7 {
+			//for entry.Type = 7 (BIN), entry.Count is the number of bytes to be read
+			data := make([]byte, entry.Count)
+			_, err = io.ReadFull(bufferedReader, data)
+			if err != nil {
+				return "", err
 			}
-			representation = strings.TrimSpace(
-				fmt.Sprintf("%s[] with %d elements:\n%s",
-					r.Type().Elem().Kind(), l, Indent(strings.Join(sublines, "\n")),
-				),
-			)
-		default:
-			representation = fmt.Sprintf("%s: %v", r.Kind(), r)
+			sublines = []string{hex.Dump(data)}
+		} else {
+			//for all other types, entry.Count tells the number of records to read
+			sublines = make([]string, 0, entry.Count)
+			for idx := uint32(0); idx < entry.Count; idx++ {
+				repr, err := decodeIndexEntry(entry.Type, bufferedReader)
+				if err != nil {
+					return "", err
+				}
+				sublines = append(sublines, repr)
+			}
 		}
 
-		lines = append(lines, fmt.Sprintf("tag %d: %s", entry.Tag, representation))
+		line := fmt.Sprintf("tag %d: %d elements\n", entry.Tag, entry.Count)
+		lines = append(lines, line+strings.TrimSuffix(Indent(strings.Join(sublines, "\n")), "\n"))
 	}
 
 	return identifier + Indent(strings.Join(lines, "\n")), nil
 }
 
-func decodeIndexEntry(entry IndexEntry, reader io.ReadSeeker) (interface{}, error) {
-	//seek to start of entry
-	_, err := reader.Seek(int64(entry.Offset), 0)
-	if err != nil {
-		return nil, err
-	}
-
+func decodeIndexEntry(dataType uint32, reader io.Reader) (string, error) {
 	//check data type
-	switch entry.Type {
+	switch dataType {
 	case 0: //NULL
-		return nil, nil
+		return "null", nil
 	case 1: //CHAR
-		//TODO: entry.Count
 		var value uint8
-		binary.Read(reader, binary.BigEndian, &value)
-		return rune(value), nil
+		err := binary.Read(reader, binary.BigEndian, &value)
+		return fmt.Sprintf("char: %c", rune(value)), err
 	case 2: //INT8
-		//TODO: entry.Count
 		var value int8
-		binary.Read(reader, binary.BigEndian, &value)
-		return value, nil
+		err := binary.Read(reader, binary.BigEndian, &value)
+		return fmt.Sprintf("int8: %d", value), err
 	case 3: //INT16
-		//TODO: entry.Count
 		var value int16
-		binary.Read(reader, binary.BigEndian, &value)
-		return value, nil
+		err := binary.Read(reader, binary.BigEndian, &value)
+		return fmt.Sprintf("int16: %d", value), err
 	case 4: //INT32
-		//TODO: entry.Count
 		var value int32
-		binary.Read(reader, binary.BigEndian, &value)
-		return value, nil
+		err := binary.Read(reader, binary.BigEndian, &value)
+		return fmt.Sprintf("int32: %d", value), err
 	case 5: //INT64
-		//TODO: entry.Count
 		var value int64
-		binary.Read(reader, binary.BigEndian, &value)
-		return value, nil
-	case 6: //STRING
-		fallthrough //TODO
+		err := binary.Read(reader, binary.BigEndian, &value)
+		return fmt.Sprintf("int64: %d", value), err
 	case 7: //BIN
-		fallthrough //TODO
-	case 8: //STRING_ARRAY
-		fallthrough //TODO
+		panic("Cannot be reached")
+	case 6, 8: //STRING or STRING_ARRAY (not different at this point)
+		//read NUL-terminated string (byte-wise)
+		var result []byte
+		buffer := make([]byte, 1)
+		for {
+			_, err := reader.Read(buffer)
+			if err != nil {
+				return "", nil
+			}
+			if buffer[0] == 0 {
+				break
+			} else {
+				result = append(result, buffer[0])
+			}
+		}
+		return fmt.Sprintf("string: %s", string(result)), nil
 	default:
-		return fmt.Sprintf(
-			"don't know how to decode data type %d (offset %d, count %d)",
-			entry.Type, entry.Offset, entry.Count,
-		), nil
+		return fmt.Sprintf("don't know how to decode data type %d", dataType), nil
 	}
 }
