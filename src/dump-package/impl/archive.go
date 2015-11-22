@@ -126,7 +126,7 @@ func DumpCpio(data []byte) (string, error) {
 	var err error
 
 	return dumpArchiveGeneric(
-		"cpio archive", &eofDetectingReader{cr},
+		"cpio archive", cr,
 		func() (string, error) { //func gotoNextEntry
 			header, err = cr.Next()
 			fmt.Printf("%v %v\n", header, err)
@@ -162,20 +162,6 @@ func DumpCpio(data []byte) (string, error) {
 			return str, isRegular, isSymlink, nil
 		},
 	)
-}
-
-//eofDetectingReader wraps an io.Reader that does not correctly report io.EOF, and
-//reports io.EOF when a Read() yields 0 bytes.
-type eofDetectingReader struct {
-	r io.Reader
-}
-
-func (r *eofDetectingReader) Read(b []byte) (int, error) {
-	n, err := r.r.Read(b)
-	if n == 0 {
-		return 0, io.EOF
-	}
-	return n, err
 }
 
 //The generic parts of DumpTar, DumpAr and DumpCpio.
