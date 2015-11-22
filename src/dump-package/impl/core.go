@@ -105,7 +105,7 @@ func dumpGZ(data []byte) (string, error) {
 
 	//`data2` now contains the decompressed data
 	dump, err := RecognizeAndDump(data2)
-	return "GZip-compressed data\n" + Indent(dump), err
+	return "GZip-compressed " + dump, err
 }
 
 func dumpBZ2(data []byte) (string, error) {
@@ -118,15 +118,15 @@ func dumpBZ2(data []byte) (string, error) {
 
 	//`data2` now contains the decompressed data
 	dump, err := RecognizeAndDump(data2)
-	return "BZip2-compressed data\n" + Indent(dump), err
+	return "BZip2-compressed " + dump, err
 }
 
 func dumpXZ(data []byte) (string, error) {
-	return dumpUsingProgram(data, "XZ-compressed data", "xz", "-d")
+	return dumpUsingProgram(data, "XZ", "xz", "-d")
 }
 
 func dumpLZMA(data []byte) (string, error) {
-	return dumpUsingProgram(data, "LZMA-compressed data", "lzmadec")
+	return dumpUsingProgram(data, "LZMA", "lzmadec")
 }
 
 func dumpUsingProgram(data []byte, format string, command string, args ...string) (string, error) {
@@ -140,5 +140,5 @@ func dumpUsingProgram(data []byte, format string, command string, args ...string
 
 	//`output` now contains the decompressed data
 	dump, err := RecognizeAndDump(output)
-	return format + "\n" + Indent(dump), err
+	return format + "-compressed " + dump, err
 }
