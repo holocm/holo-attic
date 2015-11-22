@@ -26,6 +26,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"strings"
 )
 
@@ -36,20 +37,31 @@ func DumpRpm(data []byte) (string, error) {
 	//is <http://www.rpm.org/max-rpm/s1-rpm-file-format-rpm-file-format.html>.
 	reader := bytes.NewReader(data)
 
+	//decode the various header structures
 	leadDump, err := dumpRpmLead(reader)
 	if err != nil {
 		return "", err
 	}
-	signatureDump, err := dumpRpmHeader(reader, "signature")
+	signatureDump, err := dumpRpmHeader(reader, "signature", true)
 	if err != nil {
 		return "", err
 	}
-	headerDump, err := dumpRpmHeader(reader, "header")
+	headerDump, err := dumpRpmHeader(reader, "header", false)
 	if err != nil {
 		return "", err
 	}
 
-	return "RPM package\n" + Indent(leadDump) + Indent(signatureDump) + Indent(headerDump) + Indent(">> TODO: header entries, payload"), nil
+	//decode payload
+	payloadData, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return "", err
+	}
+	payloadDump, err := RecognizeAndDump(payloadData)
+	if err != nil {
+		return "", err
+	}
+
+	return "RPM package\n" + Indent(leadDump) + Indent(signatureDump) + Indent(headerDump) + Indent(">> payload: "+payloadDump), nil
 }
 
 func dumpRpmLead(reader io.Reader) (string, error) {
@@ -90,7 +102,7 @@ type IndexEntry struct {
 	Count  uint32 //number of data items in this field
 }
 
-func dumpRpmHeader(reader io.Reader, sectionIdent string) (string, error) {
+func dumpRpmHeader(reader io.Reader, sectionIdent string, readAligned bool) (string, error) {
 	//the header has a header (I'm So Meta, Even This Acronym)
 	var header struct {
 		Magic      [3]byte
@@ -132,10 +144,12 @@ func dumpRpmHeader(reader io.Reader, sectionIdent string) (string, error) {
 	}
 	bufferedReader := bytes.NewReader(buffer)
 
-	//next structure in reader is aligned to 4-byte boundary -- skip over padding
-	_, err = io.ReadFull(reader, make([]byte, 4-header.DataSize%4))
-	if err != nil {
-		return "", err
+	if readAligned {
+		//next structure in reader is aligned to 4-byte boundary -- skip over padding
+		_, err = io.ReadFull(reader, make([]byte, 4-header.DataSize%4))
+		if err != nil {
+			return "", err
+		}
 	}
 
 	//decode and dump entries
@@ -168,7 +182,7 @@ func dumpRpmHeader(reader io.Reader, sectionIdent string) (string, error) {
 			}
 		}
 
-		line := fmt.Sprintf("tag %d: %d elements\n", entry.Tag, entry.Count)
+		line := fmt.Sprintf("tag %d: length %d\n", entry.Tag, entry.Count)
 		lines = append(lines, line+strings.TrimSuffix(Indent(strings.Join(sublines, "\n")), "\n"))
 	}
 

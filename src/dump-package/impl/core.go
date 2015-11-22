@@ -75,6 +75,10 @@ func RecognizeAndDump(data []byte) (string, error) {
 	if bytes.HasPrefix(data, []byte("!<arch>\n")) {
 		return DumpAr(data)
 	}
+	//is it a cpio archive?
+	if bytes.HasPrefix(data, []byte("070701")) {
+		return DumpCpio(data)
+	}
 	//is it an RPM package?
 	if bytes.HasPrefix(data, []byte{0xed, 0xab, 0xee, 0xdb}) {
 		return DumpRpm(data)

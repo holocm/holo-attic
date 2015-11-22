@@ -4,3 +4,6 @@
 [submodule "src/internal/ar"]
 	path = src/internal/ar
 	url = https://github.com/blakesmith/ar.git
+[submodule "src/internal/cpio"]
+	path = src/internal/cpio
+	url = https://github.com/blakesmith/gocpio.git

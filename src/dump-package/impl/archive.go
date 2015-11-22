@@ -31,87 +31,155 @@ import (
 	"strings"
 
 	"../../internal/ar"
+	"../../internal/cpio"
 )
 
 //DumpTar dumps tar archives.
 func DumpTar(data []byte) (string, error) {
 	//use "archive/tar" package to read the tar archive
 	tr := tar.NewReader(bytes.NewReader(data))
-	dumps := make(map[string]string)
-	var names []string
+	var header *tar.Header
+	var err error
 
-	//iterate through the entries in the archive
-	for {
-		//get next entry
-		header, err := tr.Next()
-		if err == io.EOF {
-			break //end of archive
-		}
-		if err != nil {
-			return "", err
-		}
-		info := header.FileInfo()
-
-		//get contents of entry
-		data, err := ioutil.ReadAll(tr)
-		if err != nil {
-			return "", err
-		}
-
-		//recognize entry type
-		typeStr := ""
-		switch info.Mode() & os.ModeType {
-		case os.ModeDir:
-			typeStr = "directory"
-		case os.ModeSymlink:
-			typeStr = "symlink"
-		case 0:
-			typeStr = "regular file"
-		default:
-			return "", fmt.Errorf("tar entry %s has unrecognized file mode (%o)", header.Name, info.Mode())
-		}
-
-		//compile metadata description
-		str := fmt.Sprintf(">> %s is %s", header.Name, typeStr)
-
-		if typeStr == "symlink" {
-			str += fmt.Sprintf(" to %s", header.Linkname)
-		} else {
-			str += fmt.Sprintf(" (mode: %o, owner: %d, group: %d)",
-				info.Mode()&os.ModePerm, header.Uid, header.Gid,
-			)
-		}
-
-		//RecognizeAndDump contents of regular files with indentation
-		if typeStr == "regular file" {
-			dump, err := RecognizeAndDump(data)
+	return dumpArchiveGeneric(
+		"POSIX tar archive", tr,
+		func() (string, error) { //func gotoNextEntry
+			header, err = tr.Next()
 			if err != nil {
 				return "", err
 			}
+			return header.Name, nil
+		},
+		func(idx int) (string, bool, bool, error) { //func describeEntry
+			info := header.FileInfo()
 
-			str += ", content is " + dump
-		} else {
-			str += "\n"
-		}
+			//recognize entry type
+			str := ""
+			isRegular := false
+			switch info.Mode() & os.ModeType {
+			case os.ModeDir:
+				str = "directory"
+			case os.ModeSymlink:
+				str = "symlink"
+			case 0:
+				str = "regular file"
+				isRegular = true
+			default:
+				return "", false, false, fmt.Errorf("tar entry %s has unrecognized file mode (%o)", header.Name, info.Mode())
+			}
 
-		names = append(names, header.Name)
-		dumps[header.Name] = str
-	}
+			//add metadata
+			if str == "symlink" {
+				str += fmt.Sprintf(" to %s", header.Linkname)
+			} else {
+				str += fmt.Sprintf(" (mode: %o, owner: %d, group: %d)",
+					info.Mode()&os.ModePerm, header.Uid, header.Gid,
+				)
+			}
 
-	//dump entries ordered by name
-	sort.Strings(names)
-	dump := ""
-	for _, name := range names {
-		dump += dumps[name]
-	}
-
-	return "POSIX tar archive\n" + Indent(dump), nil
+			return str, isRegular, false, nil
+		},
+	)
 }
 
 //DumpAr dumps ar archives.
 func DumpAr(data []byte) (string, error) {
+	var header *ar.Header
+	var err error
 	//use "github.com/blakesmith/ar" package to read the ar archive
 	ar := ar.NewReader(bytes.NewReader(data))
+
+	return dumpArchiveGeneric(
+		"ar archive", ar,
+		func() (string, error) { //func gotoNextEntry
+			header, err = ar.Next()
+			if err != nil {
+				return "", err
+			}
+			return header.Name, nil
+		},
+		func(idx int) (string, bool, bool, error) { //func describeEntry
+			//our ar parser only works with a small subset of all the varieties of
+			//ar files (large enough to handle Debian packages whose toplevel ar
+			//packages contain just plain files with short names), so we assume
+			//that everything that it reads without crashing is a regular file
+			str := fmt.Sprintf("regular file (mode: %o, owner: %d, group: %d)",
+				header.Mode, header.Uid, header.Gid,
+			)
+
+			//for Debian packages, we need to check that the file "debian-binary"
+			//is the first entry
+			if header.Name == "debian-binary" {
+				str += fmt.Sprintf(" at archive position %d", idx)
+			}
+
+			return str, true, false, nil
+		},
+	)
+}
+
+//DumpCpio dumps cpio archives.
+func DumpCpio(data []byte) (string, error) {
+	//use "github.com/blakesmith/gocpio" package to read the ar archive
+	cr := cpio.NewReader(bytes.NewReader(data))
+	var header *cpio.Header
+	var err error
+
+	return dumpArchiveGeneric(
+		"cpio archive", &eofDetectingReader{cr},
+		func() (string, error) { //func gotoNextEntry
+			header, err = cr.Next()
+			fmt.Printf("%v %v\n", header, err)
+			if err != nil {
+				return "", err
+			}
+			if header.IsTrailer() {
+				return "", io.EOF
+			}
+			return header.Name, nil
+		},
+		func(idx int) (string, bool, bool, error) { //func describeEntry
+			str := ""
+			switch header.Type {
+			case cpio.TYPE_SOCK:
+				str = "socket"
+			case cpio.TYPE_SYMLINK:
+				str = "symlink"
+			case cpio.TYPE_REG:
+				str = "regular file"
+			case cpio.TYPE_BLK:
+				str = "block special devices"
+			case cpio.TYPE_DIR:
+				str = "directory"
+			case cpio.TYPE_CHAR:
+				str = "character special device"
+			case cpio.TYPE_FIFO:
+				str = "named pipe (FIFO)"
+			}
+
+			isRegular := header.Type == cpio.TYPE_REG
+			isSymlink := header.Type == cpio.TYPE_SYMLINK
+			return str, isRegular, isSymlink, nil
+		},
+	)
+}
+
+//eofDetectingReader wraps an io.Reader that does not correctly report io.EOF, and
+//reports io.EOF when a Read() yields 0 bytes.
+type eofDetectingReader struct {
+	r io.Reader
+}
+
+func (r *eofDetectingReader) Read(b []byte) (int, error) {
+	n, err := r.r.Read(b)
+	if n == 0 {
+		return 0, io.EOF
+	}
+	return n, err
+}
+
+//The generic parts of DumpTar, DumpAr and DumpCpio.
+func dumpArchiveGeneric(typeString string, reader io.Reader, gotoNextEntry func() (string, error), describeEntry func(idx int) (string, bool, bool, error)) (string, error) {
 	dumps := make(map[string]string)
 	var names []string
 
@@ -121,7 +189,7 @@ func DumpAr(data []byte) (string, error) {
 		idx++
 
 		//get next entry
-		header, err := ar.Next()
+		name, err := gotoNextEntry()
 		if err == io.EOF {
 			break //end of archive
 		}
@@ -130,34 +198,32 @@ func DumpAr(data []byte) (string, error) {
 		}
 
 		//get contents of entry
-		data, err := ioutil.ReadAll(ar)
+		data, err := ioutil.ReadAll(reader)
 		if err != nil {
 			return "", err
 		}
 
-		//our ar parser only works with a small subset of all the varieties of
-		//ar files (large enough to handle Debian packages whose toplevel ar
-		//packages contain just plain files with short names), so we assume
-		//that everything that it reads without crashing is a regular file
-		str := fmt.Sprintf(">> %s is regular file (mode: %o, owner: %d, group: %d)",
-			header.Name, header.Mode, header.Uid, header.Gid,
-		)
+		//get entry description (containing a serialization of metadata)
+		description, isRegular, isSymlink, err := describeEntry(idx)
+		str := fmt.Sprintf(">> %s is %s", name, description)
 
-		//for Debian packages, we need to check that the file "debian-binary"
-		//is the first entry
-		if header.Name == "debian-binary" {
-			str += fmt.Sprintf(" at archive position %d", idx)
+		//for regular files, include a dump of the contents
+		if isRegular {
+			dump, err := RecognizeAndDump(data)
+			if err != nil {
+				return "", err
+			}
+			str += ", content is " + dump
+		} else {
+			//if isSymlink is set, `data` contains the symlink target
+			if isSymlink {
+				str += " to " + string(data)
+			}
+			str += "\n"
 		}
 
-		//RecognizeAndDump contents of regular files with indentation
-		dump, err := RecognizeAndDump(data)
-		if err != nil {
-			return "", err
-		}
-		str += ", content is " + dump
-
-		names = append(names, header.Name)
-		dumps[header.Name] = str
+		names = append(names, name)
+		dumps[name] = str
 	}
 
 	//dump entries ordered by name
@@ -167,7 +233,7 @@ func DumpAr(data []byte) (string, error) {
 		dump += dumps[name]
 	}
 
-	return "ar archive\n" + Indent(dump), nil
+	return typeString + "\n" + Indent(dump), nil
 }
 
 //DumpMtree dumps mtree metadata archives.
