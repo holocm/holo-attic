@@ -129,7 +129,6 @@ func DumpCpio(data []byte) (string, error) {
 		"cpio archive", cr,
 		func() (string, error) { //func gotoNextEntry
 			header, err = cr.Next()
-			fmt.Printf("%v %v\n", header, err)
 			if err != nil {
 				return "", err
 			}
