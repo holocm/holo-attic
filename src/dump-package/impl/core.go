@@ -63,6 +63,10 @@ func RecognizeAndDump(data []byte) (string, error) {
 	if bytes.HasPrefix(data, []byte{0xfd, 0x37, 0x7a, 0x58, 0x5a, 0x00}) {
 		return dumpXZ(data)
 	}
+	//is it LZMA-compressed?
+	if bytes.HasPrefix(data, []byte{0x5d, 0x00, 0x00}) {
+		return dumpLZMA(data)
+	}
 	//is it a POSIX tar archive?
 	if len(data) >= 512 && bytes.Equal(data[257:262], []byte("ustar")) {
 		return DumpTar(data)
@@ -118,8 +122,15 @@ func dumpBZ2(data []byte) (string, error) {
 }
 
 func dumpXZ(data []byte) (string, error) {
-	//the Go stdlib does not have a compress/xz package, so use the command-line utility
-	cmd := exec.Command("xz", "-d")
+	return dumpUsingProgram(data, "XZ-compressed data", "xz", "-d")
+}
+
+func dumpLZMA(data []byte) (string, error) {
+	return dumpUsingProgram(data, "LZMA-compressed data", "lzmadec")
+}
+
+func dumpUsingProgram(data []byte, format string, command string, args ...string) (string, error) {
+	cmd := exec.Command(command, args...)
 	cmd.Stdin = bytes.NewReader(data)
 	cmd.Stderr = os.Stderr
 	output, err := cmd.Output()
@@ -129,5 +140,5 @@ func dumpXZ(data []byte) (string, error) {
 
 	//`output` now contains the decompressed data
 	dump, err := RecognizeAndDump(output)
-	return "XZ-compressed data\n" + Indent(dump), err
+	return format + "\n" + Indent(dump), err
 }

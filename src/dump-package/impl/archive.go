@@ -120,7 +120,7 @@ func DumpAr(data []byte) (string, error) {
 
 //DumpCpio dumps cpio archives.
 func DumpCpio(data []byte) (string, error) {
-	//use "github.com/blakesmith/gocpio" package to read the ar archive
+	//use "github.com/surma/gocpio" package to read the ar archive
 	cr := cpio.NewReader(bytes.NewReader(data))
 	var header *cpio.Header
 	var err error
@@ -139,14 +139,18 @@ func DumpCpio(data []byte) (string, error) {
 			return header.Name, nil
 		},
 		func(idx int) (string, bool, bool, error) { //func describeEntry
+			//recognize entry type
 			str := ""
+			isRegular, isSymlink := false, false
 			switch header.Type {
 			case cpio.TYPE_SOCK:
 				str = "socket"
 			case cpio.TYPE_SYMLINK:
 				str = "symlink"
+				isSymlink = true
 			case cpio.TYPE_REG:
 				str = "regular file"
+				isRegular = true
 			case cpio.TYPE_BLK:
 				str = "block special devices"
 			case cpio.TYPE_DIR:
@@ -157,8 +161,13 @@ func DumpCpio(data []byte) (string, error) {
 				str = "named pipe (FIFO)"
 			}
 
-			isRegular := header.Type == cpio.TYPE_REG
-			isSymlink := header.Type == cpio.TYPE_SYMLINK
+			//add metadata
+			if !isSymlink {
+				str += fmt.Sprintf(" (mode: %o, owner: %d, group: %d)",
+					header.Mode, header.Uid, header.Gid,
+				)
+			}
+
 			return str, isRegular, isSymlink, nil
 		},
 	)
