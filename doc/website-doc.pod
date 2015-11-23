@@ -49,11 +49,11 @@ by configuration packages as a dependency, and can provision configuration
 files, user accounts and groups. It can also check whether these things were
 changed manually since being provisioned.
 
-=for html <p class="follow"><a href="./man-holo.html">Manpage for holo(8) »</a></p>
+=for html <p class="follow"><a href="./man-holo.8.html">Manpage for holo(8) »</a></p>
 
 The second utility, C<holo-build>, provides a simple, distribution-independent
 language for specifying and building configuration packages. It can be used for
 configuration packages instead of the distribution-specific package building
 method.
 
-=for html <p class="follow"><a href="./man-holo-build.html">Manpage for holo-build(8) »</a></p>
+=for html <p class="follow"><a href="./man-holo-build.8.html">Manpage for holo-build(8) »</a></p>

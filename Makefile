@@ -8,12 +8,8 @@ build/holo-build: src/holo-build/main.go src/holo-build/*/*.go src/shared/*.go
 
 # manpages are generated using pod2man (which comes with Perl and therefore
 # should be readily available on almost every Unix system)
-build/man/%.7: doc/manpage-%.pod src/shared/version.go
-	pod2man --name="$*" --section=7 --center="Configuration Management" \
-		--release="Holo $(shell grep 'var version =' src/shared/version.go | cut -d'"' -f2)" \
-		$< $@
-build/man/%.8: doc/manpage-%.pod src/shared/version.go
-	pod2man --name="$*" --section=8 --center="Configuration Management" \
+build/man/%: doc/man/%.pod src/shared/version.go
+	pod2man --name="$(shell echo $* | cut -d. -f1)" --section=$(shell echo $* | cut -d. -f2) --center="Configuration Management" \
 		--release="Holo $(shell grep 'var version =' src/shared/version.go | cut -d'"' -f2)" \
 		$< $@
 
@@ -52,7 +48,7 @@ prepare-website-repo:
 
 # the manpages are also used for man-*.html, but the manpage-style all-caps
 # headings need to be converted to title case
-doc/website-man-%.pod: doc/manpage-%.pod
+doc/website-man-%.pod: doc/man/%.pod
 	perl -pE 's/^=head1\s+([A-Z ]+)/=head1 \u\L\1/' $< > $@
 .SECONDARY: doc/website-man-holo.pod doc/website-man-holo-build.pod
 
@@ -60,4 +56,4 @@ website/%.html: doc/website-%.pod doc/template.html build/holo-makewebsite prepa
 	build/holo-makewebsite $*
 
 .PHONY: website
-website: prepare-website-repo website/man-holo.html website/man-holo-build.html $(patsubst doc/website-%.pod,website/%.html,$(wildcard doc/website-*.pod))
+website: prepare-website-repo $(patsubst doc/man/%.pod,website/man-%.html,$(wildcard doc/man/*.pod)) $(patsubst doc/website-%.pod,website/%.html,$(wildcard doc/website-*.pod))
