@@ -9,7 +9,8 @@
         '(--stdout --no-stdout)--no-stdout[Write resulting package to the working directory]' \
         '(--reproducible --no-reproducible)--reproducible[Build a reproducible package with bogus timestamps etc.]' \
         '(--reproducible --no-reproducible)--no-reproducible[Build a non-reproducible package with actual timestamps etc.]' \
-        '--pacman[Build a pacman package]'
+        '(--debian --pacman)--debian[Build a Debian package]'
+        '(--debian --pacman)--pacman[Build a pacman package]'
     return 0
 }
 
