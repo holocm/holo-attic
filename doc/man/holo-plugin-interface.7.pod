@@ -42,9 +42,9 @@ provisioned in the directory F</usr/share/holo/$PLUGIN_ID/>. This directory must
 be created when the plugin is installed, as Holo will check for its existence
 and refuse to use the plugin if it is missing.
 
-For historical reasons, two plugins shipped with Holo itself do not follow this
-convention: The C<files> plugin reads from F</usr/share/holo/repo/>, and the
-C<users-groups> plugin reads from F</usr/share/holo>.
+For historical reasons, the C<files> plugin shipped with Holo itself does not
+follow this convention, reading from F</usr/share/holo/repo/> instead of
+C</usr/share/holo/files/>.
 
 =item *
 
@@ -66,7 +66,7 @@ It is recommended that plugins install a holoscript to achieve this:
     #!/bin/sh
     # This file is part of the holo-foosql package.
     cat
-    echo plugin holo-foosql
+    echo plugin foosql
 
 =head2 Runtime environment
 
@@ -88,9 +88,87 @@ In test mode, any operations that talk to other daemons or write files outside
 the C<$HOLO_ROOT_DIR> are forbidden. Appropriate mock implementations shall be
 used instead. Modifying files below C<$HOLO_ROOT_DIR> is allowed.
 
-=head2 Invocation
+=head2 The C<scan> operation
 
-TODO: C<$PLUGIN scan>, C<$PLUGIN apply $TARGET_ID>, C<$PLUGIN diff $TARGET_ID>
+The plugin binary is executed one or multiple times when Holo is run. The first
+invocation is always with the single argument C<scan>:
+
+    PLUGIN_BINARY=/usr/lib/holo/holo-$PLUGIN_ID
+    $PLUGIN_BINARY scan
+
+The plugin shall then scan for the entities that it can provision. Any errors
+encountered shall be reported on stderr. If any fatal errors are encountered,
+the plugin shall exit with non-zero exit code.
+
+At the end of scanning, the plugin shall provide on stdout a report for each of
+the entities found in the following form (this example being from the C<files>
+plugin from core Holo):
+
+    ENTITY: /etc/locale.gen
+    store at: /var/lib/holo/base/etc/locale.gen
+    apply: /usr/share/holo/repo/00-base/etc/locale.gen
+
+The first line is always C<ENTITY:>, followed by the ID of the entity that is
+being described. The recommended format for entity IDs is C<type:value>. For
+example, the hypothetical C<foosql> plugin could report entities like
+C<foosql-db:production> or C<foosql-user:sarah>.
+
+The following lines contain further information in the form C<attribute:
+value>. These informational lines are not processed further by Holo (except for
+pretty-printing), and can be used to convey any sort of information about the
+entity to the user. In the example above, the information lines show the
+application steps that are being performed by C<holo apply>.
+
+Another special line syntax is C<ACTION: verb (reason)>. This is used when
+applying the entity will do something else than provisioning it. The line shall
+contain a verb describing the action taken, and a reason for doing so.
+For example, the C<files> plugin uses the action verb C<Scrubbing> to signal
+that a deleted configuration file is being cleaned up after.
+
+    ENTITY: target/etc/targetfile-deleted.conf
+    ACTION: Scrubbing (target was deleted)
+    delete: target/var/lib/holo/base/etc/targetfile-deleted.conf
+
+The report for an entity ends at the next C<ENTITY: ID> line, or when EOF is
+encountered.
+
+If scanning for entities is expensive, plugins may cache results of their
+scanning in C</tmp/holo-cache/$PLUGIN_ID/>. This directory is created by Holo
+before the scan operation, and will be cleaned up when Holo exists.
+
+=head2 The C<apply> operation
+
+If the user requests that one or multiple entities be provisioned (with the
+C<holo apply> command), then for each of the selected entities, the
+corresponding plugin will be called like this:
+
+    $PLUGIN_BINARY apply $ENTITY_ID
+
+During this operation, the plugin can reuse results from the previously
+conducted scanning operation if they have been cached in
+C</tmp/holo-cache/$PLUGIN_ID/>. Informational output shall be printed on
+stdout, errors and warnings shall be printed on stderr. This output will be
+passed on to the user directly. If an error occurred during provisioning,
+the plugin shall exit with non-zero exit code.
+
+=head2 The C<diff> operation
+
+If the user requests that a diff be printed for one or multiple entities (with
+the C<holo diff> command), then for each of the selected entities, the
+corresponding plugin will be called like this:
+
+    $PLUGIN_BINARY diff $ENTITY_ID
+
+If the plugin cannot produce a meaningful diff (e.g. for the C<run-scripts>
+plugin), the plugin shall exit with zero exit code without printing any output.
+In any other event, a unified diff shall be printed on stdout. If errors occur
+while producing the diff, they shall be reported on stderr. If the error
+results in the plugin not being able to produce meaningful output, it shall
+exit with non-zero exit code.
+
+For entities that are not backed by a file, the plugin is allowed to make up a
+diff by choosing a useful textual representation of the entity. An example of
+this is the C<users-groups> plugin included in Holo.
 
 =head1 SEE ALSO
 
