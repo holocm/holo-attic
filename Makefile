@@ -1,4 +1,4 @@
-default: build/holo build/holo-build build/holo.8 build/holo-build.8
+default: build/holo build/holo-build build/man/holo.8 build/man/holo-build.8 build/man/holo-plugin-interface.7
 .PHONY: install check test
 
 build/holo: src/holo/main.go src/holo/*/*.go src/shared/*.go
@@ -6,9 +6,13 @@ build/holo: src/holo/main.go src/holo/*/*.go src/shared/*.go
 build/holo-build: src/holo-build/main.go src/holo-build/*/*.go src/shared/*.go
 	go build -o $@ $<
 
-# the manpage is generated using pod2man (which comes with Perl and therefore
+# manpages are generated using pod2man (which comes with Perl and therefore
 # should be readily available on almost every Unix system)
-build/%.8: doc/manpage-%.pod src/shared/version.go
+build/man/%.7: doc/manpage-%.pod src/shared/version.go
+	pod2man --name="$*" --section=7 --center="Configuration Management" \
+		--release="Holo $(shell grep 'var version =' src/shared/version.go | cut -d'"' -f2)" \
+		$< $@
+build/man/%.8: doc/manpage-%.pod src/shared/version.go
 	pod2man --name="$*" --section=8 --center="Configuration Management" \
 		--release="Holo $(shell grep 'var version =' src/shared/version.go | cut -d'"' -f2)" \
 		$< $@
@@ -21,17 +25,17 @@ test: check # just a synonym
 check: build/holo build/holo-build build/dump-package
 	@bash test/run_tests.sh
 
-install: build/holo build/holo-build build/holo.8 build/holo-build.8 util/completions/holo.bash util/completions/holo-build.bash util/completions/holo.zsh util/completions/holo-build.zsh
+install: build/holo build/holo-build build/man/holo.8 build/man/holo-build.8 util/completions/holo.bash util/completions/holo-build.bash util/completions/holo.zsh util/completions/holo-build.zsh
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo"
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo/base"
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo/provisioned"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo/provision"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo/repo"
-	install -D -m 0755 build/holo         "$(DESTDIR)/usr/bin/holo"
-	install -D -m 0755 build/holo-build   "$(DESTDIR)/usr/bin/holo-build"
-	install -D -m 0644 build/holo.8       "$(DESTDIR)/usr/share/man/man8/holo.8"
-	install -D -m 0644 build/holo-build.8 "$(DESTDIR)/usr/share/man/man8/holo-build.8"
+	install -D -m 0755 build/holo             "$(DESTDIR)/usr/bin/holo"
+	install -D -m 0755 build/holo-build       "$(DESTDIR)/usr/bin/holo-build"
+	install -D -m 0644 build/man/holo.8       "$(DESTDIR)/usr/share/man/man8/holo.8"
+	install -D -m 0644 build/man/holo-build.8 "$(DESTDIR)/usr/share/man/man8/holo-build.8"
 	install -D -m 0644 util/completions/holo.bash       "$(DESTDIR)/usr/share/bash-completion/completions/holo"
 	install -D -m 0644 util/completions/holo-build.bash "$(DESTDIR)/usr/share/bash-completion/completions/holo-build"
 	install -D -m 0644 util/completions/holo.zsh        "$(DESTDIR)/usr/share/zsh/site-functions/_holo"

@@ -1,0 +1,107 @@
+=encoding UTF-8
+
+=head1 NAME
+
+holo-plugin-interface - API specification for Holo plugins
+
+=head1 DESCRIPTION
+
+Holo can leverage plugins to provision previously unknown entity types. For
+example, given a hypothetical "FooSQL" database, someone could implement a
+plugin for Holo that provisions FooSQL databases or database users. This
+document describes the interface that Holo uses to find, invoke, and communicate
+with its plugins.
+
+This interface is deliberately designed around classic files and text streams,
+so that it can easily be implemented even by shell scripts without needing to
+resort to complex parser libraries.
+
+=head2 File/Directory naming conventions
+
+Each plugin must have an ID following the format C<[a-z0-9][a-z0-9-]*>.  When
+choosing the plugin ID, avoid redundant verbs like C<manage> or C<provision>.
+For example, an appropriate plugin ID for the aforementioned FooSQL plugin would
+be C<foosql>. The things provisioned may be referenced in plural form if
+disambiguation is required. For example, f FooSQL is configured by multiple
+plugins, appropriate plugin IDs could include C<foosql-databases> and
+C<foosql-users>.
+
+This identifier is used in various places as described below, using the
+placeholder C<$PLUGIN_ID> for the actual plugin ID:
+
+=over 4
+
+=item *
+
+Plugin executables shall be installed to F</usr/lib/holo/holo-$PLUGIN_ID>.
+
+=item *
+
+Configuration packages shall place information about which things are to be
+provisioned in the directory F</usr/share/holo/$PLUGIN_ID/>. This directory must
+be created when the plugin is installed, as Holo will check for its existence
+and refuse to use the plugin if it is missing.
+
+For historical reasons, two plugins shipped with Holo itself do not follow this
+convention: The C<files> plugin reads from F</usr/share/holo/repo/>, and the
+C<users-groups> plugin reads from F</usr/share/holo>.
+
+=item *
+
+The plugin's data cache is located at F</tmp/holo-cache/$PLUGIN_ID/> (see
+below).
+
+=back
+
+=head2 Plugin discovery
+
+Plugins are not discovered automatically. They must be referenced in
+F</etc/holorc> (see L<holorc(5)>) by adding the line:
+
+    plugin $PLUGIN_ID
+
+It is recommended that plugins install a holoscript to achieve this:
+
+    $ cat /usr/share/holo/repo/50-holo-foosql/etc/holorc.holoscript
+    #!/bin/sh
+    # This file is part of the holo-foosql package.
+    cat
+    echo plugin holo-foosql
+
+=head2 Runtime environment
+
+When Holo runs, it creates the empty directory F</tmp/holo-cache/$PLUGIN_ID/>
+for each plugin and ensures that this directory is cleaned up when Holo exists.
+This directory can be used to store calculated data from an initial scan
+operation.
+
+Plugins must recognize the environment variable C<HOLO_ROOT_DIR>: If this
+variable exists, plugins shall assume that Holo is running in test mode. The
+variable holds the path to a directory which contains a test scenario resembling
+a normal root partition (at least the parts needed for the test scenario). Among
+other things, this means that the following facts are true:
+
+    test -d "$HOLO_ROOT_DIR/tmp/holo-cache/$PLUGIN_ID"
+    test -d "$HOLO_ROOT_DIR/usr/share/holo/$PLUGIN_ID"
+
+In test mode, any operations that talk to other daemons or write files outside
+the C<$HOLO_ROOT_DIR> are forbidden. Appropriate mock implementations shall be
+used instead. Modifying files below C<$HOLO_ROOT_DIR> is allowed.
+
+=head2 Invocation
+
+TODO: C<$PLUGIN scan>, C<$PLUGIN apply $TARGET_ID>, C<$PLUGIN diff $TARGET_ID>
+
+=head1 SEE ALSO
+
+L<holo(8)>
+
+=head1 AUTHOR
+
+Stefan Majewsky
+
+Further documentation is available at the project homepage: http://holocm.org
+
+Please report any issues and feature requests at Github: http://github.com/holocm/holo/issues
+
+=cut
