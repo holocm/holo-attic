@@ -23,6 +23,7 @@ run_testcase() {
     mkdir -p target/usr/share/holo/repo
     mkdir -p target/var/lib/holo/base
     mkdir -p target/var/lib/holo/provisioned
+    [ ! -f target/etc/holorc ] && cp ../../../src/holo/holorc target/etc/holorc
 
     # consistent file modes in the target/ directory (for test reproducability)
     find target/ -type f                     -exec chmod 0644 {} +

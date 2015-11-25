@@ -7,6 +7,16 @@ jjj
 >> ./etc/contents2 = regular
 mmm
 mmm
+>> ./etc/holorc = regular
+# Use `man 5 holorc` for documentation.
+
+# core plugins (right now, these three plugins have to appear at the top of
+# this file in this exact order)
+plugin files
+plugin users-groups
+plugin run-scripts
+
+# ADD YOUR OWN PLUGINS BELOW THIS LINE
 >> ./etc/link-and-script.conf = regular
 ljj
 ljj

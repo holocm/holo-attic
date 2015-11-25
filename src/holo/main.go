@@ -26,6 +26,7 @@ import (
 
 	"../shared"
 	"./common"
+	"./config"
 	"./entities"
 	"./files"
 	"./scripts"
@@ -61,6 +62,13 @@ func main() {
 	default:
 		commandHelp()
 		return
+	}
+
+	//load configuration
+	config := config.Read()
+	if config == nil {
+		//some fatal error occurred - it was already reported, so just exit
+		os.Exit(255)
 	}
 
 	//scan the repo
