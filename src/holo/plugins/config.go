@@ -18,7 +18,7 @@
 *
 *******************************************************************************/
 
-package config
+package plugins
 
 import (
 	"io/ioutil"
@@ -34,8 +34,8 @@ type Configuration struct {
 	Plugins []string
 }
 
-//Read reads the configuration file /etc/holorc.
-func Read() *Configuration {
+//ReadConfiguration reads the configuration file /etc/holorc.
+func ReadConfiguration() *Configuration {
 	path := filepath.Join(common.TargetDirectory(), "etc/holorc")
 
 	contents, err := ioutil.ReadFile(path)
@@ -55,10 +55,10 @@ func Read() *Configuration {
 			continue
 		}
 
-		//collect plugin names
+		//collect plugin IDs
 		if strings.HasPrefix(line, "plugin ") {
-			line = strings.TrimSpace(strings.TrimPrefix(line, "plugin"))
-			result.Plugins = append(result.Plugins, line)
+			pluginID := strings.TrimSpace(strings.TrimPrefix(line, "plugin"))
+			result.Plugins = append(result.Plugins, pluginID)
 			continue
 		} else {
 			//unknown line

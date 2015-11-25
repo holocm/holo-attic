@@ -26,9 +26,9 @@ import (
 
 	"../shared"
 	"./common"
-	"./config"
 	"./entities"
 	"./files"
+	"./plugins"
 	"./scripts"
 )
 
@@ -65,7 +65,7 @@ func main() {
 	}
 
 	//load configuration
-	config := config.Read()
+	config := plugins.ReadConfiguration()
 	if config == nil {
 		//some fatal error occurred - it was already reported, so just exit
 		os.Exit(255)
@@ -136,6 +136,9 @@ func main() {
 
 	//execute command
 	command(entities, options)
+
+	//cleanup
+	plugins.CleanupRuntimeCache()
 }
 
 func commandHelp() {
