@@ -21,10 +21,9 @@
 package plugins
 
 import (
-	"../common"
-	"../entities"
-	"../files"
-	"../scripts"
+	"fmt"
+
+	"../../shared"
 )
 
 //InfoLine represents a line in the information section of an Entity.
@@ -39,24 +38,32 @@ type Entity struct {
 	id           string
 	actionVerb   string
 	actionReason string
+	infoLines    []InfoLine
 }
 
-//Scan discovers entities available for the given entity. Errors are reported
-//immediately and will result in nil being returned. "No entities found" will
-//be reported as a non-nil empty slice.
-//there are no entities.
-func (p *Plugin) Scan() common.Entities {
-	//plugins with the "built-in" flag do their processing in other scan functions
-	switch p.ID() {
-	case "files":
-		return files.ScanRepo()
-	case "users-groups":
-		return entities.Scan()
-	case "run-scripts":
-		return scripts.Scan()
-	default: //follows below
-	}
+//EntityID implements the common.Entity interface.
+func (e *Entity) EntityID() string { return e.id }
 
-	//TODO
-	return nil
+//Report implements the common.Entity interface.
+func (e *Entity) Report() *shared.Report {
+	r := shared.Report{Target: e.id, State: e.actionReason}
+	for _, infoLine := range e.infoLines {
+		r.AddLine(infoLine.attribute, infoLine.value)
+	}
+	return &r
+}
+
+//Apply implements the common.Entity interface.
+func (e *Entity) Apply(withForce bool) {
+	r := e.Report()
+	r.Action = e.actionVerb
+
+	r.AddError("TODO: apply %s\n", e.id)
+	r.Print()
+}
+
+//RenderDiff implements the common.Entity interface.
+func (e *Entity) RenderDiff() ([]byte, error) {
+	fmt.Printf("TODO: diff %s\n", e.id)
+	return nil, nil
 }
