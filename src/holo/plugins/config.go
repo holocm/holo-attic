@@ -22,6 +22,7 @@ package plugins
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -31,7 +32,7 @@ import (
 
 //Configuration contains the parsed contents of /etc/holorc.
 type Configuration struct {
-	Plugins []string
+	Plugins []*Plugin
 }
 
 //ReadConfiguration reads the configuration file /etc/holorc.
@@ -58,7 +59,14 @@ func ReadConfiguration() *Configuration {
 		//collect plugin IDs
 		if strings.HasPrefix(line, "plugin ") {
 			pluginID := strings.TrimSpace(strings.TrimPrefix(line, "plugin"))
-			result.Plugins = append(result.Plugins, pluginID)
+			if strings.Contains(pluginID, "=") {
+				fields := strings.SplitN(pluginID, "=", 2)
+				result.Plugins = append(result.Plugins,
+					NewPluginWithExecutablePath(fields[0], fields[1]),
+				)
+			} else {
+				result.Plugins = append(result.Plugins, NewPlugin(pluginID))
+			}
 			continue
 		} else {
 			//unknown line
@@ -67,6 +75,40 @@ func ReadConfiguration() *Configuration {
 			r.Print()
 			return nil
 		}
+	}
+
+	//check existence of resource directories
+	errorReport := shared.Report{Action: "Errors occurred during", Target: "plugin discovery"}
+	hasError := false
+	for _, plugin := range result.Plugins {
+		dir := plugin.ResourceDirectory()
+		fi, err := os.Stat(dir)
+		switch {
+		case err != nil:
+			errorReport.AddError("Cannot open %s: %s", dir, err.Error())
+			hasError = true
+		case !fi.IsDir():
+			errorReport.AddError("Cannot open %s: not a directory!", dir)
+			hasError = true
+		}
+	}
+	if hasError {
+		errorReport.Print()
+		return nil
+	}
+
+	//ensure existence of cache directories
+	for _, plugin := range result.Plugins {
+		dir := plugin.CacheDirectory()
+		err := os.MkdirAll(dir, 0755)
+		if err != nil {
+			errorReport.AddError(err.Error())
+			hasError = true
+		}
+	}
+	if hasError {
+		errorReport.Print()
+		return nil
 	}
 
 	return &result

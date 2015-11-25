@@ -20,44 +20,25 @@
 
 package plugins
 
-import (
-	"os"
-	"path/filepath"
+import "../common"
 
-	"../../shared"
-	"../common"
-)
-
-var cachePath string
-
-func init() {
-	cachePath = filepath.Join(common.TargetDirectory(), "tmp/holo-cache")
-	err := doInit()
-	if err != nil {
-		r := shared.Report{Action: "Errors occurred during", Target: "startup"}
-		r.AddError(err.Error())
-		r.Print()
-		panic("startup failed")
-	}
+//InfoLine represents a line in the information section of an Entity.
+type InfoLine struct {
+	attribute string
+	value     string
 }
 
-func doInit() error {
-	//if the cache directory exists from a previous run, remove it recursively
-	err := os.RemoveAll(cachePath)
-	if err != nil {
-		return err
-	}
-
-	//create the cache directory
-	return os.MkdirAll(cachePath, 0700)
+//Entity represents an entity known to some Holo plugin.
+type Entity struct {
+	plugin       *Plugin
+	id           string
+	actionVerb   string
+	actionReason string
 }
 
-//CachePath returns the path below which plugin cache directories can be allocated.
-func CachePath() string {
-	return cachePath
-}
-
-//CleanupRuntimeCache tries to cleanup /tmp/holo-cache.
-func CleanupRuntimeCache() {
-	_ = os.RemoveAll(cachePath) //fail silently
+//Scan discovers entities available for the given entity. Errors are reported
+//immediately and will result in an empty slice being returned, like when
+//there are no entities.
+func (p *Plugin) Scan() common.Entities {
+	return nil
 }

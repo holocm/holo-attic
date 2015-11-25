@@ -48,7 +48,7 @@ C</usr/share/holo/files/>.
 
 =item *
 
-The plugin's data cache is located at F</tmp/holo-cache/$PLUGIN_ID/> (see
+The plugin's data cache is located at F<$HOLO_CACHE_DIR/$PLUGIN_ID/> (see
 below).
 
 =back
@@ -70,18 +70,19 @@ It is recommended that plugins install a holoscript to achieve this:
 
 =head2 Runtime environment
 
-When Holo runs, it creates the empty directory F</tmp/holo-cache/$PLUGIN_ID/>
-for each plugin and ensures that this directory is cleaned up when Holo exists.
-This directory can be used to store calculated data from an initial scan
-operation.
+When Holo runs, it creates the empty directory F<$HOLO_CACHE_DIR/$PLUGIN_ID/>
+(where the path C<$HOLO_CACHE_DIR> is published as an environment variable of
+the same name), for each plugin and ensures that this directory is cleaned up
+when Holo exists. This directory can be used to store calculated data from an
+initial scan operation.
 
-Plugins must recognize the environment variable C<HOLO_ROOT_DIR>: If this
+Plugins must recognize the environment variable C<$HOLO_ROOT_DIR>: If this
 variable exists, plugins shall assume that Holo is running in test mode. The
 variable holds the path to a directory which contains a test scenario resembling
 a normal root partition (at least the parts needed for the test scenario). Among
 other things, this means that the following facts are true:
 
-    test -d "$HOLO_ROOT_DIR/tmp/holo-cache/$PLUGIN_ID"
+    test -d "$HOLO_CACHE_DIR/$PLUGIN_ID"
     test -d "$HOLO_ROOT_DIR/usr/share/holo/$PLUGIN_ID"
 
 In test mode, any operations that talk to other daemons or write files outside

@@ -44,8 +44,10 @@ func init() {
 		provisionedDirectory = filepath.Join(value, provisionedDirectory[1:])
 	}
 
-	//all these directories need to exist
-	dirs := []string{targetDirectory, entityDirectory, repoDirectory, scriptDirectory, targetBaseDirectory, provisionedDirectory}
+	//all these directories need to exist (most directories are checked for
+	//existence in plugins.ReadConfiguration now, so we limit ourselves to the
+	//stuff in /var)
+	dirs := []string{targetBaseDirectory, provisionedDirectory}
 	errorReport := shared.Report{Action: "Errors occurred during", Target: "startup"}
 	hasError := false
 	for _, dir := range dirs {
