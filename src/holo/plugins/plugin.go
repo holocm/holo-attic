@@ -85,6 +85,7 @@ func (p *Plugin) Run(arguments []string, stdout io.Writer, stderr io.Writer) err
 	//setup environment, mapping old-style variable names to those mandated by
 	//holo-plugin-interface(7)
 	env := os.Environ()
+	env = append(env, "HOLO_API_VERSION=1")
 	env = append(env, "HOLO_CACHE_DIR="+p.CacheDirectory())
 	if common.TargetDirectory() != "/" {
 		env = append(env, "HOLO_ROOT_DIR="+common.TargetDirectory())

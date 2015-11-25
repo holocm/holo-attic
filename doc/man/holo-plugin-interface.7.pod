@@ -16,6 +16,8 @@ This interface is deliberately designed around classic files and text streams,
 so that it can easily be implemented even by shell scripts without needing to
 resort to complex parser libraries.
 
+This document describes B<version 1> of the Holo plugin interface.
+
 =head2 File/Directory naming conventions
 
 Each plugin must have an ID following the format C<[a-z0-9][a-z0-9-]*>.  When
@@ -70,11 +72,23 @@ It is recommended that plugins install a holoscript to achieve this:
 
 =head2 Runtime environment
 
+=head3 HOLO_API_VERSION
+
+Plugins should check the environment variable C<$HOLO_API_VERSION>, which is
+set by Holo to contain the current version number of this plugin interface. The
+value is always a single positive integer number, currently C<1>. Plugins
+should refuse to operate, and exit with an error message and non-zero exit code
+when running against an unknown Holo API version.
+
+=head3 HOLO_CACHE_DIR
+
 When Holo runs, it creates the empty directory F<$HOLO_CACHE_DIR/$PLUGIN_ID/>
 (where the path C<$HOLO_CACHE_DIR> is published as an environment variable of
 the same name), for each plugin and ensures that this directory is cleaned up
 when Holo exists. This directory can be used to store calculated data from an
 initial scan operation.
+
+=head3 HOLO_ROOT_DIR
 
 Plugins must recognize the environment variable C<$HOLO_ROOT_DIR>: If this
 variable exists, plugins shall assume that Holo is running in test mode. The
