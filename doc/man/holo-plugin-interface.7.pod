@@ -152,6 +152,18 @@ stdout, errors and warnings shall be printed on stderr. This output will be
 passed on to the user directly. If an error occurred during provisioning,
 the plugin shall exit with non-zero exit code.
 
+=head2 The C<force-apply> operation
+
+During the C<apply> operation, plugins shall refuse to provision entities that
+appear to have been edited or deleted by the user or an external application.
+("Refuse" means to display an error message and exit with non-zero exit code.)
+However, when the plugin is called like this:
+
+    $PLUGIN_BINARY force-apply $ENTITY_ID
+
+Then the plugin shall overwrite any external changes to the selected entity and
+bring it into the desired target state with all means possible.
+
 =head2 The C<diff> operation
 
 If the user requests that a diff be printed for one or multiple entities (with
