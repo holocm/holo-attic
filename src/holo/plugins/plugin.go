@@ -68,12 +68,6 @@ func (p *Plugin) ResourceDirectory() string {
 	return filepath.Join(common.EntityDirectory(), p.id)
 }
 
-//IsBuiltIn returns true for built-in plugins, that should be skipped when
-//executing actions on entities.
-func (p *Plugin) IsBuiltIn() bool {
-	return p.id == "files" || p.id == "users-groups" || p.id == "run-scripts"
-}
-
 //CacheDirectory returns the path to the directory where this plugin may
 //store temporary data.
 func (p *Plugin) CacheDirectory() string {

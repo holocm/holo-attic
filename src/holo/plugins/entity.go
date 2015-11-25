@@ -20,7 +20,12 @@
 
 package plugins
 
-import "../common"
+import (
+	"../common"
+	"../entities"
+	"../files"
+	"../scripts"
+)
 
 //InfoLine represents a line in the information section of an Entity.
 type InfoLine struct {
@@ -37,8 +42,21 @@ type Entity struct {
 }
 
 //Scan discovers entities available for the given entity. Errors are reported
-//immediately and will result in an empty slice being returned, like when
+//immediately and will result in nil being returned. "No entities found" will
+//be reported as a non-nil empty slice.
 //there are no entities.
 func (p *Plugin) Scan() common.Entities {
+	//plugins with the "built-in" flag do their processing in other scan functions
+	switch p.ID() {
+	case "files":
+		return files.ScanRepo()
+	case "users-groups":
+		return entities.Scan()
+	case "run-scripts":
+		return scripts.Scan()
+	default: //follows below
+	}
+
+	//TODO
 	return nil
 }
