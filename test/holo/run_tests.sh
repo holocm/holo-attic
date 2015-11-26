@@ -30,7 +30,7 @@ run_testcase() {
     # with the "git diff --no-index -- FILE FILE" syntax, which changes the
     # diff-output of the unit tests; to fix this, we put a temporary git root
     # at the $PWD)
-    git init
+    git init >/dev/null
 
     # consistent file modes in the target/ directory (for test reproducability)
     find target/ -type f                     -exec chmod 0644 {} +
