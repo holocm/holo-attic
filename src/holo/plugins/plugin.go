@@ -66,7 +66,7 @@ func (p *Plugin) ResourceDirectory() string {
 	case "run-scripts":
 		return common.ScriptDirectory()
 	}
-	return filepath.Join(common.EntityDirectory(), p.id)
+	return filepath.Join(common.TargetDirectory(), "usr/share/holo/"+p.id)
 }
 
 //CacheDirectory returns the path to the directory where this plugin may
@@ -93,10 +93,10 @@ func (p *Plugin) Run(arguments []string, stdout io.Writer, stderr io.Writer) err
 	//holo-plugin-interface(7)
 	env := os.Environ()
 	env = append(env, "HOLO_API_VERSION=1")
-	env = append(env, "HOLO_CACHE_DIR="+p.CacheDirectory())
-	if common.TargetDirectory() != "/" {
-		env = append(env, "HOLO_ROOT_DIR="+normalizePath(common.TargetDirectory()))
-	}
+	env = append(env, "HOLO_ROOT_DIR="+normalizePath(common.TargetDirectory()))
+	env = append(env, "HOLO_CACHE_DIR="+normalizePath(p.CacheDirectory()))
+	env = append(env, "HOLO_RESOURCE_DIR="+normalizePath(p.ResourceDirectory()))
+	env = append(env, "HOLO_STATE_DIR="+normalizePath(p.StateDirectory()))
 	cmd.Env = env
 
 	return cmd.Run()
@@ -104,6 +104,9 @@ func (p *Plugin) Run(arguments []string, stdout io.Writer, stderr io.Writer) err
 
 //For reproducibility in tests.
 func normalizePath(path string) string {
+	if path == "/" {
+		return "/"
+	}
 	//remove leading "./" from relative paths
 	path = strings.TrimPrefix(path, "./")
 	//remove trailing slash
