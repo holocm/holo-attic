@@ -1,11 +1,13 @@
 language: go
+sudo: false
 
 go:
     - 1.5
 
-before_install:
-    - sudo apt-get update -qq
-    - sudo apt-get install -y bsdtar
+addons:
+    apt:
+        packages:
+            - bsdtar
 
 install:
     - go get -u github.com/golang/lint/golint
