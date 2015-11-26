@@ -21,7 +21,9 @@
 package plugins
 
 import (
+	"bytes"
 	"fmt"
+	"os"
 
 	"../../shared"
 )
@@ -57,13 +59,24 @@ func (e *Entity) Report() *shared.Report {
 func (e *Entity) Apply(withForce bool) {
 	r := e.Report()
 	r.Action = e.actionVerb
-
-	r.AddError("TODO: apply %s\n", e.id)
 	r.Print()
+
+	command := "apply"
+	if withForce {
+		command = "apply-force"
+	}
+
+	err := e.plugin.Run([]string{command, e.id}, os.Stdout, os.Stderr)
+
+	if err != nil {
+		fmt.Printf("apply %s failed: %s\n", e.id, err.Error())
+	}
+	fmt.Println() //ensure newline between output and next report
 }
 
 //RenderDiff implements the common.Entity interface.
 func (e *Entity) RenderDiff() ([]byte, error) {
-	fmt.Printf("TODO: diff %s\n", e.id)
-	return nil, nil
+	var buffer bytes.Buffer
+	err := e.plugin.Run([]string{"diff", e.id}, &buffer, os.Stderr)
+	return buffer.Bytes(), err
 }
