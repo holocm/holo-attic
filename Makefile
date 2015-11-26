@@ -21,13 +21,14 @@ test: check # just a synonym
 check: build/holo build/holo-build build/dump-package
 	@bash test/run_tests.sh
 
-install: default util/completions/holo.bash util/completions/holo-build.bash util/completions/holo.zsh util/completions/holo-build.zsh
+install: default src/holo/holorc util/completions/holo.bash util/completions/holo-build.bash util/completions/holo.zsh util/completions/holo-build.zsh
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo"
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo/base"
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo/provisioned"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo/run-scripts"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo/repo"
+	install -D -m 0644 src/holo/holorc        "$(DESTDIR)/etc/holo/holorc"
 	install -D -m 0755 build/holo             "$(DESTDIR)/usr/bin/holo"
 	install -D -m 0755 build/holo-build       "$(DESTDIR)/usr/bin/holo-build"
 	install -D -m 0644 build/man/holo.8       "$(DESTDIR)/usr/share/man/man8/holo.8"
