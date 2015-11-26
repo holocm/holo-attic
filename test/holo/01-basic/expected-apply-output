@@ -38,12 +38,12 @@ Done with 01-successful.sh, exiting with code 0
 Executing script:02-failing.sh
  found at target/usr/share/holo/provision/02-failing.sh
 
-!! exit status 1
-
 Running provisioning script 02-failing.sh
 This is output on stdout
 This is output on stderr
 Done with 02-failing.sh, exiting with code 1
+
+!! exit status 1
 
 Executing script:03-successful-nooutput.sh
  found at target/usr/share/holo/provision/03-successful-nooutput.sh

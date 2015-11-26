@@ -25,6 +25,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"../common"
 )
@@ -94,9 +95,17 @@ func (p *Plugin) Run(arguments []string, stdout io.Writer, stderr io.Writer) err
 	env = append(env, "HOLO_API_VERSION=1")
 	env = append(env, "HOLO_CACHE_DIR="+p.CacheDirectory())
 	if common.TargetDirectory() != "/" {
-		env = append(env, "HOLO_ROOT_DIR="+common.TargetDirectory())
+		env = append(env, "HOLO_ROOT_DIR="+normalizePath(common.TargetDirectory()))
 	}
 	cmd.Env = env
 
 	return cmd.Run()
+}
+
+//For reproducibility in tests.
+func normalizePath(path string) string {
+	//remove leading "./" from relative paths
+	path = strings.TrimPrefix(path, "./")
+	//remove trailing slash
+	return strings.TrimSuffix(path, "/")
 }

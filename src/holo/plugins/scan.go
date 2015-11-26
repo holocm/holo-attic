@@ -30,7 +30,6 @@ import (
 	"../common"
 	"../entities"
 	"../files"
-	"../scripts"
 )
 
 //Scan discovers entities available for the given entity. Errors are reported
@@ -44,8 +43,6 @@ func (p *Plugin) Scan() common.Entities {
 		return files.ScanRepo()
 	case "users-groups":
 		return entities.Scan()
-	case "run-scripts":
-		return scripts.Scan()
 	default: //follows below
 	}
 
@@ -64,6 +61,11 @@ func (p *Plugin) Scan() common.Entities {
 	var currentEntity *Entity
 	var result common.Entities
 	for idx, line := range lines {
+		//skip empty lines
+		if line == "" {
+			continue
+		}
+
 		//keep format strings from getting too long
 		errorIntro := fmt.Sprintf("error in scan report, line %d", idx+1)
 
@@ -77,7 +79,7 @@ func (p *Plugin) Scan() common.Entities {
 		key, value := match[1], match[2]
 
 		switch {
-		case key == "ENTITY:":
+		case key == "ENTITY":
 			//starting new entity
 			if currentEntity != nil {
 				result = append(result, currentEntity)
@@ -92,8 +94,8 @@ func (p *Plugin) Scan() common.Entities {
 			//parse action verb/reason
 			match = actionRx.FindStringSubmatch(value)
 			if match == nil {
-				report.AddError("%s: parse error (line was \"%s\")", errorIntro, line)
-				hadError = true
+				currentEntity.actionVerb = value
+				currentEntity.actionReason = ""
 			} else {
 				currentEntity.actionVerb = match[1]
 				currentEntity.actionReason = match[2]
@@ -104,6 +106,11 @@ func (p *Plugin) Scan() common.Entities {
 				InfoLine{key, value},
 			)
 		}
+	}
+
+	//store last entity
+	if currentEntity != nil {
+		result = append(result, currentEntity)
 	}
 
 	//report errors

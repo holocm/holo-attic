@@ -23,6 +23,7 @@ package plugins
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 
 	"../../shared"
@@ -63,15 +64,27 @@ func (e *Entity) Apply(withForce bool) {
 
 	command := "apply"
 	if withForce {
-		command = "apply-force"
+		command = "force-apply"
 	}
 
-	err := e.plugin.Run([]string{command, e.id}, os.Stdout, os.Stderr)
+	var output bytes.Buffer
+	err := e.plugin.Run([]string{command, e.id},
+		io.MultiWriter(os.Stdout, &output),
+		io.MultiWriter(os.Stderr, &output),
+	)
+
+	//if output was written, insert a newline to preserve our own paragraph layout
+	if output.Len() > 0 {
+		if bytes.HasSuffix(output.Bytes(), []byte("\n")) {
+			os.Stdout.Write([]byte("\n"))
+		} else {
+			os.Stdout.Write([]byte("\n\n"))
+		}
+	}
 
 	if err != nil {
-		fmt.Printf("apply %s failed: %s\n", e.id, err.Error())
+		fmt.Printf("\x1b[31m\x1b[1m!!\x1b[0m %s\n\n", err.Error())
 	}
-	fmt.Println() //ensure newline between output and next report
 }
 
 //RenderDiff implements the common.Entity interface.

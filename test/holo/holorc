@@ -1,0 +1,3 @@
+plugin files
+plugin users-groups
+plugin run-scripts=../../../src/holo-run-scripts

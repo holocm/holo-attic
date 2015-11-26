@@ -42,15 +42,9 @@ systemd-network:x:193:
 systemd-bus-proxy:x:194:
 systemd-resolve:x:195:
 >> ./etc/holorc = regular
-# Use `man 5 holorc` for documentation.
-
-# core plugins (right now, these three plugins have to appear at the top of
-# this file in this exact order)
 plugin files
 plugin users-groups
-plugin run-scripts
-
-# ADD YOUR OWN PLUGINS BELOW THIS LINE
+plugin run-scripts=../../../src/holo-run-scripts
 >> ./etc/passwd = regular
 root:x:0:0:root:/root:/bin/bash
 bin:x:1:1:bin:/bin:/usr/bin/nologin
