@@ -13,29 +13,6 @@ bbb
 aaa
 aaa
 >> ./etc/stock-file-is-directory.conf/.keep = regular
->> ./usr/share/holo/provision/01-successful.sh = regular
-#!/bin/sh
-echo "Running provisioning script 01-successful.sh"
-echo "This is output on stdout"
-sleep 0.1 # ensure that output arrives in the correct order
-echo "This is output on stderr" >&2
-sleep 0.1 # ensure that output arrives in the correct order
-echo "Done with 01-successful.sh, exiting with code 0"
->> ./usr/share/holo/provision/02-failing.sh = regular
-#!/bin/sh
-echo "Running provisioning script 02-failing.sh"
-echo "This is output on stdout"
-sleep 0.1 # ensure that output arrives in the correct order
-echo "This is output on stderr" >&2
-sleep 0.1 # ensure that output arrives in the correct order
-echo "Done with 02-failing.sh, exiting with code 1"
-exit 1
->> ./usr/share/holo/provision/03-successful-nooutput.sh = regular
-#!/bin/sh
-exit 0
->> ./usr/share/holo/provision/04-failing-nooutput.sh = regular
-#!/bin/sh
-exit 1
 >> ./usr/share/holo/repo/01-normal/etc/link-over-link.conf = symlink
 ddd
 >> ./usr/share/holo/repo/01-normal/etc/link-over-plain.conf = symlink
@@ -52,6 +29,29 @@ stock file is directory D:
 no stock file D:
 >> ./usr/share/holo/repo/not-a-repo-file.conf = regular
 not a repo file
+>> ./usr/share/holo/run-scripts/01-successful.sh = regular
+#!/bin/sh
+echo "Running provisioning script 01-successful.sh"
+echo "This is output on stdout"
+sleep 0.1 # ensure that output arrives in the correct order
+echo "This is output on stderr" >&2
+sleep 0.1 # ensure that output arrives in the correct order
+echo "Done with 01-successful.sh, exiting with code 0"
+>> ./usr/share/holo/run-scripts/02-failing.sh = regular
+#!/bin/sh
+echo "Running provisioning script 02-failing.sh"
+echo "This is output on stdout"
+sleep 0.1 # ensure that output arrives in the correct order
+echo "This is output on stderr" >&2
+sleep 0.1 # ensure that output arrives in the correct order
+echo "Done with 02-failing.sh, exiting with code 1"
+exit 1
+>> ./usr/share/holo/run-scripts/03-successful-nooutput.sh = regular
+#!/bin/sh
+exit 0
+>> ./usr/share/holo/run-scripts/04-failing-nooutput.sh = regular
+#!/bin/sh
+exit 1
 >> ./var/lib/holo/base/etc/link-over-link.conf = symlink
 hhh
 >> ./var/lib/holo/base/etc/link-over-plain.conf = regular

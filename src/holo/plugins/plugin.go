@@ -63,8 +63,6 @@ func (p *Plugin) ResourceDirectory() string {
 		return common.RepoDirectory()
 	case "users-groups":
 		return common.EntityDirectory()
-	case "run-scripts":
-		return common.ScriptDirectory()
 	}
 	return filepath.Join(common.TargetDirectory(), "usr/share/holo/"+p.id)
 }

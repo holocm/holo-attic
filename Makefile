@@ -26,7 +26,7 @@ install: default util/completions/holo.bash util/completions/holo-build.bash uti
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo/base"
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo/provisioned"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo"
-	install -d -m 0755 "$(DESTDIR)/usr/share/holo/provision"
+	install -d -m 0755 "$(DESTDIR)/usr/share/holo/run-scripts"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo/repo"
 	install -D -m 0755 build/holo             "$(DESTDIR)/usr/bin/holo"
 	install -D -m 0755 build/holo-build       "$(DESTDIR)/usr/bin/holo-build"

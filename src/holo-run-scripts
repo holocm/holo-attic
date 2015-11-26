@@ -24,14 +24,14 @@ fi
 
 case "$1" in
     scan)
-        # list executables in /usr/share/holo/provision
+        # list executables in $HOLO_RESOURCE_DIR
         set -e
-        cd "$HOLO_ROOT_DIR/usr/share/holo/provision"
+        cd "$HOLO_RESOURCE_DIR"
         find -mindepth 1 -maxdepth 1 \( -type f -o -type l \) -executable \
             | cut -d/ -f2 | sort | while read FILENAME; do
             echo "ENTITY: script:$FILENAME"
             echo "ACTION: Executing"
-            echo "found at: $HOLO_ROOT_DIR/usr/share/holo/provision/$FILENAME"
+            echo "found at: $HOLO_RESOURCE_DIR/$FILENAME"
         done
         ;;
     diff)
@@ -40,8 +40,8 @@ case "$1" in
     apply|force-apply)
         ENTITY_ID="$2"
         FILENAME="${ENTITY_ID:7}" # strip "script:" suffix
-        cd "$HOLO_ROOT_DIR"
-        exec "./usr/share/holo/provision/$FILENAME"
+        cd "${HOLO_ROOT_DIR:-/}"
+        exec "./usr/share/holo/run-scripts/$FILENAME"
         ;;
     *)
         echo "holo-run-scripts plugin called with unknown command: $@" >&2

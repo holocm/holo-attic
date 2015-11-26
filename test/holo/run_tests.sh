@@ -19,8 +19,8 @@ run_testcase() {
     # setup chroot for holo run
     rm -rf -- target/
     cp -R source/ target/
-    mkdir -p target/usr/share/holo/provision
     mkdir -p target/usr/share/holo/repo
+    mkdir -p target/usr/share/holo/run-scripts
     mkdir -p target/var/lib/holo/base
     mkdir -p target/var/lib/holo/provisioned
     [ ! -f target/etc/holorc ] && cp ../holorc target/etc/holorc
