@@ -25,6 +25,13 @@ run_testcase() {
     mkdir -p target/var/lib/holo/provisioned
     [ ! -f target/etc/holorc ] && cp ../holorc target/etc/holorc
 
+    # fix a bug with Travis (Travis has an ancient git which incorrectly prints
+    # paths relative to the nearest git root instead of the $PWD when called
+    # with the "git diff --no-index -- FILE FILE" syntax, which changes the
+    # diff-output of the unit tests; to fix this, we put a temporary git root
+    # at the $PWD)
+    git init
+
     # consistent file modes in the target/ directory (for test reproducability)
     find target/ -type f                     -exec chmod 0644 {} +
     find target/ -type f -name \*.sh         -exec chmod 0755 {} +
@@ -45,6 +52,9 @@ run_testcase() {
     # if "holo apply" that certain operations will only be performed with --force, do so now
     grep -q -- --force apply-output && \
     ../../../build/holo apply --force 2>&1 | ../../strip-ansi-colors.sh > apply-force-output
+
+    # clean up the useless Git repo we created earlier to fix a Travis bug
+    rm -rf -- .git
 
     # dump the contents of the target directory into a single file for better diff'ing
     # (NOTE: I concede that this is slightly messy.)
