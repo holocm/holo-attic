@@ -74,6 +74,12 @@ func (p *Plugin) CacheDirectory() string {
 	return filepath.Join(CachePath(), p.id)
 }
 
+//StateDirectory returns the path to the directory where this plugin may
+//store persistent data.
+func (p *Plugin) StateDirectory() string {
+	return filepath.Join(common.TargetDirectory(), "var/lib/holo/"+p.id)
+}
+
 //Run runs the plugin with the given arguments, producing output on the given
 //output and error channels. Non-zero exit code is reported as a non-nil error.
 func (p *Plugin) Run(arguments []string, stdout io.Writer, stderr io.Writer) error {

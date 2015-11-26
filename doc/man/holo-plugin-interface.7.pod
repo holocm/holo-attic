@@ -40,13 +40,14 @@ Plugin executables shall be installed to F</usr/lib/holo/holo-$PLUGIN_ID>.
 =item *
 
 Configuration packages shall place information about which things are to be
-provisioned in the directory F</usr/share/holo/$PLUGIN_ID/>. This directory must
-be created when the plugin is installed, as Holo will check for its existence
-and refuse to use the plugin if it is missing.
+provisioned by a plugin in the directory F</usr/share/holo/$PLUGIN_ID/>. This
+directory must be created when the plugin is installed, as Holo will check for
+its existence and refuse to use the plugin if it is missing.
 
-For historical reasons, the C<files> plugin shipped with Holo itself does not
-follow this convention, reading from F</usr/share/holo/repo/> instead of
-C</usr/share/holo/files/>.
+For historical reasons, various core plugins shipping with Holo itself do not
+follow this convention. For example, the C<files> plugin shipped with Holo
+itself does not follow this convention, reading from F</usr/share/holo/repo/>
+instead of C</usr/share/holo/files/>.
 
 =item *
 
@@ -87,6 +88,16 @@ When Holo runs, it creates the empty directory F<$HOLO_CACHE_DIR/$PLUGIN_ID/>
 the same name), for each plugin and ensures that this directory is cleaned up
 when Holo exists. This directory can be used to store calculated data from an
 initial scan operation.
+
+=head3 HOLO_STATE_DIR
+
+When plugins need to store state persistently, between runs of Holo, they shall
+do so in F</var/lib/holo/$PLUGIN_ID/>. This path is published by Holo in the
+C<$HOLO_STATE_DIR> environment variable. Plugins should use this variable
+instead of its definition, since C<$HOLO_STATE_DIR> already accounts for
+C<$HOLO_ROOT_DIR> (see below). If the state directory is missing, Holo will
+create it before calling the plugin executable. However, plugins are encouraged
+to create the state directory at their installation time.
 
 =head3 HOLO_ROOT_DIR
 

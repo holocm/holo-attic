@@ -97,13 +97,15 @@ func ReadConfiguration() *Configuration {
 		return nil
 	}
 
-	//ensure existence of cache directories
+	//ensure existence of cache and state directories
 	for _, plugin := range result.Plugins {
-		dir := plugin.CacheDirectory()
-		err := os.MkdirAll(dir, 0755)
-		if err != nil {
-			errorReport.AddError(err.Error())
-			hasError = true
+		dirs := []string{plugin.CacheDirectory(), plugin.StateDirectory()}
+		for _, dir := range dirs {
+			err := os.MkdirAll(dir, 0755)
+			if err != nil {
+				errorReport.AddError(err.Error())
+				hasError = true
+			}
 		}
 	}
 	if hasError {
