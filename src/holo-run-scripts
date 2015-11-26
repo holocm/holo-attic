@@ -39,7 +39,7 @@ case "$1" in
         ;;
     apply|force-apply)
         ENTITY_ID="$2"
-        FILENAME="${ENTITY_ID:7}" # strip "script:" suffix
+        FILENAME="${ENTITY_ID:7}" # strip "script:" prefix
         cd "${HOLO_ROOT_DIR:-/}"
         exec "./usr/share/holo/run-scripts/$FILENAME"
         ;;
