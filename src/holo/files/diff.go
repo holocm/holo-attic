@@ -24,10 +24,11 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"os/exec"
 	"regexp"
 	"strings"
+	"syscall"
 
-	"../../shared"
 	"../common"
 )
 
@@ -45,199 +46,79 @@ const (
 //handles symlinks and missing files gracefully. The output is always a patch
 //that can be applied to last provisioned version into the current version.
 func (target *TargetFile) RenderDiff() ([]byte, error) {
-	//stat both files (non-existence is not an error here, we handle that later)
-	//and check that they are manageable
 	fromPath := target.PathIn(common.ProvisionedDirectory())
-	fromType, fromInfo, err := lstatForDiff(fromPath)
-	if err != nil {
-		return nil, err
-	}
-
 	toPath := target.PathIn(common.TargetDirectory())
-	toType, toInfo, err := lstatForDiff(toPath)
+
+	fromPathToUse, err := checkFile(fromPath)
+	if err != nil {
+		return nil, err
+	}
+	toPathToUse, err := checkFile(toPath)
 	if err != nil {
 		return nil, err
 	}
 
-	//part 1: both files are missing -> empty diff
-	if fromType == fileMissing && toType == fileMissing {
-		return []byte(nil), nil
-	}
+	//run git-diff to obtain the diff
+	var buffer bytes.Buffer
+	cmd := exec.Command("git", "diff", "--no-index", "--", fromPathToUse, toPathToUse)
+	cmd.Stdout = &buffer
+	cmd.Stderr = os.Stderr
 
-	//part 2: different file types -> act similarly to `git diff` and print a
-	//deletion diff, followed by a creation diff
-	if fromType != toType {
-		var result []byte
-		switch fromType {
-		case fileMissing:
-			//do nothing, the create diff is sufficient
-		case fileRegular:
-			//use `diff` with toPath = /dev/null, fabricate a suitable header
-			result = makeRegularDeleteDiff(fromPath, toPath, fromInfo.Mode())
-		case fileSymlink:
-			//fabricate the complete diff output
-			linkTarget, err := os.Readlink(fromPath)
-			if err != nil {
-				return nil, err
+	//error "exit code 1" is normal for different files, only exit code > 2 means trouble
+	err = cmd.Run()
+	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
+				if status.ExitStatus() == 1 {
+					err = nil
+				}
 			}
-			result = makeSymlinkDeleteDiff(linkTarget, toPath)
 		}
-		switch toType {
-		case fileMissing:
-			//do nothing, the delete diff is sufficient
-		case fileRegular:
-			//use `diff` with fromPath = /dev/null, fabricate a suitable header
-			result = append(result, makeRegularCreateDiff(toPath, toPath, toInfo.Mode())...)
-		case fileSymlink:
-			//fabricate the complete diff output
-			linkTarget, err := os.Readlink(toPath)
-			if err != nil {
-				return nil, err
-			}
-			result = append(result, makeSymlinkCreateDiff(linkTarget, toPath)...)
-		}
-		return result, nil
+	}
+	//did a relevant error occur?
+	if err != nil {
+		return nil, err
 	}
 
-	//part 3: both files are symlinks - fabricate a modification diff
-	if toType == fileSymlink {
-		fromLinkTarget, err := os.Readlink(fromPath)
-		if err != nil {
-			return nil, err
-		}
-		toLinkTarget, err := os.Readlink(toPath)
-		if err != nil {
-			return nil, err
-		}
-		return makeSymlinkModifyDiff(fromLinkTarget, toLinkTarget, toPath), nil
+	//remove "index <SHA1>..<SHA1> <mode>" lines
+	result := buffer.Bytes()
+	rx := regexp.MustCompile(`(?m:^index .*$)\n`)
+	result = rx.ReplaceAll(result, nil)
+
+	//remove "/var/lib/holo/provisioned" from path displays to make it appear like we
+	//just diff the target path
+	if fromPathToUse == fromPath {
+		fromPathQuoted := strings.TrimPrefix(regexp.QuoteMeta(fromPath), "/")
+		toPathQuoted := strings.TrimPrefix(regexp.QuoteMeta(toPath), "/")
+		toPathTrimmed := strings.TrimPrefix(toPath, "/")
+
+		rx = regexp.MustCompile(`(?m:^)diff --git a/` + fromPathQuoted)
+		result = rx.ReplaceAll(result, []byte("diff --git a/"+toPathTrimmed))
+
+		rx = regexp.MustCompile(`(?m:^)diff --git a/` + toPathQuoted + ` b/` + fromPathQuoted)
+		result = rx.ReplaceAll(result, []byte("diff --git a/"+toPathTrimmed+" b/"+toPathTrimmed))
+
+		rx = regexp.MustCompile(`(?m:^)--- a/` + fromPathQuoted)
+		result = rx.ReplaceAll(result, []byte("--- a/"+toPathTrimmed))
 	}
 
-	//part 4: both files are regular - use `diff` and fabricate a suitable header
-	return makeRegularModifyDiff(fromPath, toPath, toPath, fromInfo.Mode(), toInfo.Mode()), nil
+	return result, nil
 }
 
-func lstatForDiff(path string) (fileType fileType, fi os.FileInfo, e error) {
+func checkFile(path string) (pathToUse string, returnError error) {
+	//check that files are either non-existent (in which case git-diff needs to
+	//be given /dev/null instead or manageable (e.g. we can't diff directories
+	//or device files)
 	info, err := os.Lstat(path)
 	if err != nil {
-		if !os.IsNotExist(err) {
-			return fileUnknown, nil, err
+		if os.IsNotExist(err) {
+			return "/dev/null", nil
 		}
-		//missing file is not an error
-		return fileMissing, nil, nil
+		return path, err
 	}
-	if info.Mode().IsRegular() {
-		return fileRegular, info, nil
+
+	if !common.IsManageableFileInfo(info) {
+		return path, fmt.Errorf("%s is not a manageable file", path)
 	}
-	if common.IsFileInfoASymbolicLink(info) {
-		return fileSymlink, info, nil
-	}
-	return fileUnknown, nil, fmt.Errorf("%s is not a manageable file", path)
-}
-
-func getDiffBody(fromPath, toPath, reportedPath string) []byte {
-	//skip the error handling here; a non-empty diff produces a non-zero exit
-	//code and we don't want to fail in that case
-	errorReport := shared.Report{Action: "diff", Target: toPath}
-	output, _ := shared.ExecProgram(&errorReport, []byte{}, "diff", "-u", fromPath, toPath)
-	errorReport.PrintUnlessEmpty()
-	//remove the header, up to the first hunk (started by a line like "@@ -1 +0,0")
-	return regexp.MustCompile("^(?s:.+?)(?m:^@@)").ReplaceAll(output, []byte("@@"))
-}
-
-func makeRegularCreateDiff(path, reportedPath string, mode os.FileMode) []byte {
-	reportedPath = strings.TrimPrefix(reportedPath, "/")
-	header := []byte(strings.Join([]string{
-		fmt.Sprintf("diff --git a/%s b/%s\n", reportedPath, reportedPath),
-		fmt.Sprintf("new file mode 100%o\n", int(mode)),
-		"--- /dev/null\n",
-		fmt.Sprintf("+++ b/%s\n", reportedPath),
-	}, ""))
-	return append(header, getDiffBody("/dev/null", path, reportedPath)...)
-}
-
-func makeRegularModifyDiff(fromPath, toPath, reportedPath string, fromMode os.FileMode, toMode os.FileMode) []byte {
-	//is there a diff?
-	diffBody := getDiffBody(fromPath, toPath, reportedPath)
-	if len(bytes.TrimSpace(diffBody)) == 0 {
-		return []byte(nil)
-	}
-	//build header
-	reportedPath = strings.TrimPrefix(reportedPath, "/")
-	headers := []string{
-		fmt.Sprintf("diff --git a/%s b/%s\n", reportedPath, reportedPath),
-	}
-	if fromMode != toMode {
-		headers = append(headers,
-			fmt.Sprintf("old mode 100%o\n", int(fromMode)),
-			fmt.Sprintf("new mode 100%o\n", int(toMode)),
-		)
-	}
-	headers = append(headers,
-		fmt.Sprintf("--- a/%s\n", reportedPath),
-		fmt.Sprintf("+++ b/%s\n", reportedPath),
-	)
-	header := []byte(strings.Join(headers, ""))
-	return append(header, diffBody...)
-}
-
-func makeRegularDeleteDiff(path, reportedPath string, mode os.FileMode) []byte {
-	reportedPath = strings.TrimPrefix(reportedPath, "/")
-	header := []byte(strings.Join([]string{
-		fmt.Sprintf("diff --git a/%s b/%s\n", reportedPath, reportedPath),
-		fmt.Sprintf("deleted file mode 100%o\n", int(mode)),
-		fmt.Sprintf("--- a/%s\n", reportedPath),
-		"+++ /dev/null\n",
-	}, ""))
-	return append(header, getDiffBody(path, "/dev/null", reportedPath)...)
-}
-
-func makeSymlinkCreateDiff(linkTarget, reportedPath string) []byte {
-	reportedPath = strings.TrimPrefix(reportedPath, "/")
-	//NOTE: This function makes the reasonable assumption that
-	//      !strings.Contains(linkTarget, "\n").
-	return []byte(strings.Join([]string{
-		fmt.Sprintf("diff --git a/%s b/%s\n", reportedPath, reportedPath),
-		"new file mode 120000\n",
-		"--- /dev/null\n",
-		fmt.Sprintf("+++ b/%s\n", reportedPath),
-		"@@ -0,0 +1 @@\n",
-		fmt.Sprintf("+%s\n", linkTarget),
-		"\\ No newline at end of file\n",
-	}, ""))
-}
-
-func makeSymlinkModifyDiff(fromLinkTarget, toLinkTarget, reportedPath string) []byte {
-	//is there a diff?
-	if fromLinkTarget == toLinkTarget {
-		return []byte(nil)
-	}
-	//build header and body
-	reportedPath = strings.TrimPrefix(reportedPath, "/")
-	//NOTE: This function makes the reasonable assumption that
-	//      !strings.Contains(linkTarget, "\n").
-	return []byte(strings.Join([]string{
-		fmt.Sprintf("diff --git a/%s b/%s\n", reportedPath, reportedPath),
-		fmt.Sprintf("--- a/%s\n", reportedPath),
-		fmt.Sprintf("+++ b/%s\n", reportedPath),
-		"@@ -1 +1 @@\n",
-		fmt.Sprintf("-%s\n", fromLinkTarget),
-		"\\ No newline at end of file\n",
-		fmt.Sprintf("+%s\n", toLinkTarget),
-		"\\ No newline at end of file\n",
-	}, ""))
-}
-
-func makeSymlinkDeleteDiff(linkTarget, reportedPath string) []byte {
-	reportedPath = strings.TrimPrefix(reportedPath, "/")
-	//NOTE: This function makes the reasonable assumption that
-	//      !strings.Contains(linkTarget, "\n").
-	return []byte(strings.Join([]string{
-		fmt.Sprintf("diff --git a/%s b/%s\n", reportedPath, reportedPath),
-		"deleted file mode 120000\n",
-		fmt.Sprintf("--- a/%s\n", reportedPath),
-		"+++ /dev/null\n",
-		"@@ -1 +0,0 @@\n",
-		fmt.Sprintf("-%s\n", linkTarget),
-		"\\ No newline at end of file\n",
-	}, ""))
+	return path, nil
 }
