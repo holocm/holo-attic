@@ -58,11 +58,8 @@ func (p *Plugin) ID() string {
 //find its resources (entity definitions etc.).
 func (p *Plugin) ResourceDirectory() string {
 	//hard-coded resource directories for builtin plugins
-	switch p.id {
-	case "files":
+	if p.id == "files" {
 		return common.RepoDirectory()
-	case "users-groups":
-		return common.EntityDirectory()
 	}
 	return filepath.Join(common.TargetDirectory(), "usr/share/holo/"+p.id)
 }

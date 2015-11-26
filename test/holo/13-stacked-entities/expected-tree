@@ -60,14 +60,14 @@ systemd-timesync:x:192:192:systemd-timesync:/:/usr/bin/nologin
 systemd-network:x:193:193:systemd-network:/:/usr/bin/nologin
 systemd-bus-proxy:x:194:194:systemd-bus-proxy:/:/usr/bin/nologin
 systemd-resolve:x:195:195:systemd-resolve:/:/usr/bin/nologin
->> ./usr/share/holo/01-first.toml = regular
+>> ./usr/share/holo/users-groups/01-first.toml = regular
 [[group]]
 name   = "stacked"
 
 [[user]]
 name   = "stacked"
 groups = [ "foo", "bar" ]
->> ./usr/share/holo/02-second.toml = regular
+>> ./usr/share/holo/users-groups/02-second.toml = regular
 [[group]]
 name    = "stacked"
 gid     = 1001

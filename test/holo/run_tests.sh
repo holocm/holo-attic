@@ -21,6 +21,7 @@ run_testcase() {
     cp -R source/ target/
     mkdir -p target/usr/share/holo/repo
     mkdir -p target/usr/share/holo/run-scripts
+    mkdir -p target/usr/share/holo/users-groups
     mkdir -p target/var/lib/holo/base
     mkdir -p target/var/lib/holo/provisioned
     [ ! -f target/etc/holorc ] && cp ../holorc target/etc/holorc

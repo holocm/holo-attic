@@ -16,13 +16,13 @@ wronggid:x:102:
 plugin files
 plugin users-groups
 plugin run-scripts=../../../src/holo-run-scripts
->> ./usr/share/holo/01-groups.json = regular
+>> ./usr/share/holo/users-groups/01-groups.json = regular
 {
     "groups": [
         { "name": "jsonisdeprecated", "system": true, "gid": 43 }
     ]
 }
->> ./usr/share/holo/01-groups.toml = regular
+>> ./usr/share/holo/users-groups/01-groups.toml = regular
 [[group]]
 name = "new"
 system = true

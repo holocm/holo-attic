@@ -28,7 +28,7 @@ import (
 )
 
 var targetDirectory = "/"
-var entityDirectory = "/usr/share/holo"
+var entityDirectory = "/usr/share/holo/users-groups"
 var repoDirectory = "/usr/share/holo/repo"
 var targetBaseDirectory = "/var/lib/holo/base"
 var provisionedDirectory = "/var/lib/holo/provisioned"
