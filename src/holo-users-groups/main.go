@@ -22,7 +22,11 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
+
+	"../internal/toml"
 )
 
 func main() {
@@ -30,32 +34,76 @@ func main() {
 		fmt.Fprintf(os.Stderr, "!! holo-users-groups plugin called with unknown HOLO_API_VERSION %s\n", version)
 	}
 
+	if os.Args[1] == "scan" {
+		executeScanCommand()
+	} else {
+		executeNonScanCommand()
+	}
+}
+
+type cache struct {
+	Groups []Group
+	Users  []User
+}
+
+func pathToCacheFile() string {
+	return filepath.Join(os.Getenv("HOLO_CACHE_DIR"), "entities.toml")
+}
+
+func executeScanCommand() {
 	//scan for entities (TODO: cache results in HOLO_CACHE_DIR)
 	groups, users := Scan()
 	if groups == nil && users == nil {
 		//some fatal error occurred - it was already reported, so just exit
 		os.Exit(1)
 	}
-	if os.Args[1] == "scan" {
-		for _, group := range groups {
-			group.PrintReport()
-		}
-		for _, user := range users {
-			user.PrintReport()
-		}
-		return
+
+	//print reports
+	for _, group := range groups {
+		group.PrintReport()
+	}
+	for _, user := range users {
+		user.PrintReport()
+	}
+
+	//store scan result in cache
+	file, err := os.Create(pathToCacheFile())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "!! %s\n", err.Error())
+		os.Exit(1)
+	}
+	err = toml.NewEncoder(file).Encode(&cache{groups, users})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "!! %s\n", err.Error())
+		os.Exit(1)
+	}
+	file.Close()
+}
+
+func executeNonScanCommand() {
+	//retrieve entities from cache
+	blob, err := ioutil.ReadFile(pathToCacheFile())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "!! %s\n", err.Error())
+		os.Exit(1)
+	}
+	var cacheData cache
+	_, err = toml.Decode(string(blob), &cacheData)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "!! %s\n", err.Error())
+		os.Exit(1)
 	}
 
 	//all other actions require an entity selection
 	entityID := os.Args[2]
 	var selectedEntity Entity
-	for _, group := range groups {
+	for _, group := range cacheData.Groups {
 		if group.EntityID() == entityID {
 			selectedEntity = group
 			break
 		}
 	}
-	for _, user := range users {
+	for _, user := range cacheData.Users {
 		if user.EntityID() == entityID {
 			selectedEntity = user
 			break

@@ -15,11 +15,11 @@ Working on group:valid
   found in target/usr/share/holo/users-groups/01-first.toml
       with GID: 1010
 
->> MOCK: groupadd --gid 1010 valid
+MOCK: groupadd --gid 1010 valid
 
 Working on user:valid
   found in target/usr/share/holo/users-groups/01-first.toml
       with UID: 1010
 
->> MOCK: useradd --uid 1010 valid
+MOCK: useradd --uid 1010 valid
 
