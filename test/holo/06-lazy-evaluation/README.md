@@ -4,7 +4,7 @@ application steps are not even executed. It does so by using the fact that if a
 script is not executed, any errors that it causes will not be seen.
 
     target/etc/foo.conf
-        store at target/var/lib/holo/base/etc/foo.conf
+        store at target/var/lib/holo/files/base/etc/foo.conf
         passthru target/usr/share/holo/repo/01-first/etc/foo.conf.holoscript
            apply target/usr/share/holo/repo/02-second/etc/foo.conf
         passthru target/usr/share/holo/repo/03-third/etc/foo.conf.holoscript

@@ -19,9 +19,9 @@ new file
 >> ./usr/share/holo/repo/03-third/etc/foo.conf.holoscript = regular
 #!/bin/sh
 sed s/new/modified/
->> ./var/lib/holo/base/etc/bar.conf = regular
+>> ./var/lib/holo/files/base/etc/bar.conf = regular
 original bar
->> ./var/lib/holo/base/etc/foo.conf = regular
+>> ./var/lib/holo/files/base/etc/foo.conf = regular
 original
->> ./var/lib/holo/provisioned/etc/foo.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/foo.conf = regular
 modified file

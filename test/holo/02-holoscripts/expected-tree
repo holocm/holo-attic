@@ -55,46 +55,46 @@ exit 1
 echo 'First line of stderr output.' >&2
 sed s/a/o/
 echo 'Second line of stderr output.' >&2
->> ./var/lib/holo/base/etc/link-through-link.conf = symlink
+>> ./var/lib/holo/files/base/etc/link-through-link.conf = symlink
 contents
->> ./var/lib/holo/base/etc/link-through-plain.conf = symlink
+>> ./var/lib/holo/files/base/etc/link-through-plain.conf = symlink
 contents
->> ./var/lib/holo/base/etc/plain-through-link.conf = regular
+>> ./var/lib/holo/files/base/etc/plain-through-link.conf = regular
 tomato
 apple
 banana
->> ./var/lib/holo/base/etc/plain-through-plain.conf = regular
+>> ./var/lib/holo/files/base/etc/plain-through-plain.conf = regular
 foo
 bar
 baz
->> ./var/lib/holo/base/etc/plain-with-nonzero-exitcode.conf = regular
+>> ./var/lib/holo/files/base/etc/plain-with-nonzero-exitcode.conf = regular
 foo
 bar
 baz
->> ./var/lib/holo/base/etc/plain-with-stderr.conf = regular
+>> ./var/lib/holo/files/base/etc/plain-with-stderr.conf = regular
 foo
 bar
 baz
->> ./var/lib/holo/provisioned/etc/link-through-link.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/link-through-link.conf = regular
 foo
 baz
 bar
->> ./var/lib/holo/provisioned/etc/link-through-plain.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/link-through-plain.conf = regular
 foo
 foo
 foo
 buz
 bur
 bur
->> ./var/lib/holo/provisioned/etc/plain-through-link.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/plain-through-link.conf = regular
 apple
 banana
 tomato
->> ./var/lib/holo/provisioned/etc/plain-through-plain.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/plain-through-plain.conf = regular
 foo
 qux
 baz
->> ./var/lib/holo/provisioned/etc/plain-with-stderr.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/plain-with-stderr.conf = regular
 foo
 bor
 boz

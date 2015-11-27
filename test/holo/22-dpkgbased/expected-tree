@@ -12,17 +12,17 @@ bbb
 /usr/bin/sort
 >> ./usr/share/holo/repo/01-first/etc/targetfile-with-dpkg-old.conf.holoscript = symlink
 /usr/bin/uniq
->> ./var/lib/holo/base/etc/targetfile-with-dpkg-dist.conf = regular
+>> ./var/lib/holo/files/base/etc/targetfile-with-dpkg-dist.conf = regular
 d
 f
 e
->> ./var/lib/holo/base/etc/targetfile-with-dpkg-old.conf = regular
+>> ./var/lib/holo/files/base/etc/targetfile-with-dpkg-old.conf = regular
 bbb
 bbb
 bbb
->> ./var/lib/holo/provisioned/etc/targetfile-with-dpkg-dist.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/targetfile-with-dpkg-dist.conf = regular
 d
 e
 f
->> ./var/lib/holo/provisioned/etc/targetfile-with-dpkg-old.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/targetfile-with-dpkg-old.conf = regular
 bbb

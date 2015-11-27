@@ -71,41 +71,41 @@ bar
 >> ./usr/share/holo/repo/03-order/etc/check-ordering.conf.holoscript = regular
 #!/bin/sh
 sed 's/^/foo/'
->> ./var/lib/holo/base/etc/check-ordering.conf = regular
+>> ./var/lib/holo/files/base/etc/check-ordering.conf = regular
 test
->> ./var/lib/holo/base/etc/link-and-script.conf = regular
+>> ./var/lib/holo/files/base/etc/link-and-script.conf = regular
 kkk
 kkk
->> ./var/lib/holo/base/etc/link-through-scripts.conf = symlink
+>> ./var/lib/holo/files/base/etc/link-through-scripts.conf = symlink
 contents2
->> ./var/lib/holo/base/etc/plain-and-plain.conf = regular
+>> ./var/lib/holo/files/base/etc/plain-and-plain.conf = regular
 aaa
 aaa
->> ./var/lib/holo/base/etc/plain-and-script.conf = regular
+>> ./var/lib/holo/files/base/etc/plain-and-script.conf = regular
 ddd
 ddd
->> ./var/lib/holo/base/etc/script-and-script.conf = regular
+>> ./var/lib/holo/files/base/etc/script-and-script.conf = regular
 ggg
 ggg
->> ./var/lib/holo/provisioned/etc/check-ordering.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/check-ordering.conf = regular
 foofoo
 foobar
->> ./var/lib/holo/provisioned/etc/link-and-script.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/link-and-script.conf = regular
 ljj
 ljj
->> ./var/lib/holo/provisioned/etc/link-through-scripts.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/link-through-scripts.conf = regular
 nnn
 mmm
 mmm
 ooo
->> ./var/lib/holo/provisioned/etc/plain-and-plain.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/plain-and-plain.conf = regular
 ccc
 ccc
->> ./var/lib/holo/provisioned/etc/plain-and-script.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/plain-and-script.conf = regular
 eee
 eee
 fff
->> ./var/lib/holo/provisioned/etc/script-and-script.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/script-and-script.conf = regular
 hhh
 ggg
 ggg

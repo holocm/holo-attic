@@ -42,7 +42,7 @@ const (
 )
 
 //RenderDiff creates a unified diff of a target file and its last provisioned
-//version, similar to `diff /var/lib/holo/provisioned/$FILE $FILE`, but it also
+//version, similar to `diff /var/lib/holo/files/provisioned/$FILE $FILE`, but it also
 //handles symlinks and missing files gracefully. The output is always a patch
 //that can be applied to last provisioned version into the current version.
 func (target *TargetFile) RenderDiff() ([]byte, error) {
@@ -85,7 +85,7 @@ func (target *TargetFile) RenderDiff() ([]byte, error) {
 	rx := regexp.MustCompile(`(?m:^index .*$)\n`)
 	result = rx.ReplaceAll(result, nil)
 
-	//remove "/var/lib/holo/provisioned" from path displays to make it appear like we
+	//remove "/var/lib/holo/files/provisioned" from path displays to make it appear like we
 	//just diff the target path
 	if fromPathToUse == fromPath {
 		fromPathQuoted := strings.TrimPrefix(regexp.QuoteMeta(fromPath), "/")

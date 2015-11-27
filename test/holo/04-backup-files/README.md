@@ -13,7 +13,7 @@ orphaned target bases.
   installed target is no longer valid after removing the holograms that act on
   it, so we restore the target base to the target location.
 
-In this testcase, a `/var/lib/holo` directory is under source control,
+In this testcase, a `/var/lib/holo/files` directory is under source control,
 representing the state of Holo before the `holo apply` run that we're looking
 at. (Since we're testing the effects of package removal, we assume that
 `holo apply` has been run before.)

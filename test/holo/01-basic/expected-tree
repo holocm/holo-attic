@@ -52,23 +52,23 @@ exit 0
 >> ./usr/share/holo/run-scripts/04-failing-nooutput.sh = regular
 #!/bin/sh
 exit 1
->> ./var/lib/holo/base/etc/link-over-link.conf = symlink
+>> ./var/lib/holo/files/base/etc/link-over-link.conf = symlink
 hhh
->> ./var/lib/holo/base/etc/link-over-plain.conf = regular
+>> ./var/lib/holo/files/base/etc/link-over-plain.conf = regular
 fff
 fff
->> ./var/lib/holo/base/etc/plain-over-link.conf = symlink
+>> ./var/lib/holo/files/base/etc/plain-over-link.conf = symlink
 ggg
->> ./var/lib/holo/base/etc/plain-over-plain.conf = regular
+>> ./var/lib/holo/files/base/etc/plain-over-plain.conf = regular
 eee
 eee
->> ./var/lib/holo/provisioned/etc/link-over-link.conf = symlink
+>> ./var/lib/holo/files/provisioned/etc/link-over-link.conf = symlink
 ddd
->> ./var/lib/holo/provisioned/etc/link-over-plain.conf = symlink
+>> ./var/lib/holo/files/provisioned/etc/link-over-plain.conf = symlink
 ccc
->> ./var/lib/holo/provisioned/etc/plain-over-link.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/plain-over-link.conf = regular
 bbb
 bbb
->> ./var/lib/holo/provisioned/etc/plain-over-plain.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/plain-over-plain.conf = regular
 aaa
 aaa

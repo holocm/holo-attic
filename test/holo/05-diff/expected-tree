@@ -50,51 +50,51 @@ ccc
 /bin/true
 >> ./usr/share/holo/repo/01-first/etc/symlink-unmodified.conf = symlink
 /bin/true
->> ./var/lib/holo/base/etc/file-deleted.conf = regular
+>> ./var/lib/holo/files/base/etc/file-deleted.conf = regular
 ddd
 eee
 fff
->> ./var/lib/holo/base/etc/file-modified.conf = regular
+>> ./var/lib/holo/files/base/etc/file-modified.conf = regular
 ddd
 eee
 fff
->> ./var/lib/holo/base/etc/file-to-symlink.conf = regular
+>> ./var/lib/holo/files/base/etc/file-to-symlink.conf = regular
 ddd
 eee
 fff
->> ./var/lib/holo/base/etc/file-unmodified.conf = regular
+>> ./var/lib/holo/files/base/etc/file-unmodified.conf = regular
 ddd
 eee
 fff
->> ./var/lib/holo/base/etc/symlink-deleted.conf = symlink
+>> ./var/lib/holo/files/base/etc/symlink-deleted.conf = symlink
 /bin/false
->> ./var/lib/holo/base/etc/symlink-modified.conf = symlink
+>> ./var/lib/holo/files/base/etc/symlink-modified.conf = symlink
 /bin/false
->> ./var/lib/holo/base/etc/symlink-to-file.conf = symlink
+>> ./var/lib/holo/files/base/etc/symlink-to-file.conf = symlink
 /bin/false
->> ./var/lib/holo/base/etc/symlink-unmodified.conf = symlink
+>> ./var/lib/holo/files/base/etc/symlink-unmodified.conf = symlink
 /bin/false
->> ./var/lib/holo/provisioned/etc/file-deleted.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/file-deleted.conf = regular
 aaa
 bbb
 ccc
->> ./var/lib/holo/provisioned/etc/file-modified.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/file-modified.conf = regular
 aaa
 bbb
 ccc
->> ./var/lib/holo/provisioned/etc/file-to-symlink.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/file-to-symlink.conf = regular
 aaa
 bbb
 ccc
->> ./var/lib/holo/provisioned/etc/file-unmodified.conf = regular
+>> ./var/lib/holo/files/provisioned/etc/file-unmodified.conf = regular
 aaa
 bbb
 ccc
->> ./var/lib/holo/provisioned/etc/symlink-deleted.conf = symlink
+>> ./var/lib/holo/files/provisioned/etc/symlink-deleted.conf = symlink
 /bin/true
->> ./var/lib/holo/provisioned/etc/symlink-modified.conf = symlink
+>> ./var/lib/holo/files/provisioned/etc/symlink-modified.conf = symlink
 /bin/true
->> ./var/lib/holo/provisioned/etc/symlink-to-file.conf = symlink
+>> ./var/lib/holo/files/provisioned/etc/symlink-to-file.conf = symlink
 /bin/true
->> ./var/lib/holo/provisioned/etc/symlink-unmodified.conf = symlink
+>> ./var/lib/holo/files/provisioned/etc/symlink-unmodified.conf = symlink
 /bin/true

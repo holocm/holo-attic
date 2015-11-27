@@ -30,8 +30,8 @@ import (
 var targetDirectory = "/"
 var entityDirectory = "/usr/share/holo/users-groups"
 var repoDirectory = "/usr/share/holo/repo"
-var targetBaseDirectory = "/var/lib/holo/base"
-var provisionedDirectory = "/var/lib/holo/provisioned"
+var targetBaseDirectory = "/var/lib/holo/files/base"
+var provisionedDirectory = "/var/lib/holo/files/provisioned"
 
 func init() {
 	if value := os.Getenv("HOLO_CHROOT_DIR"); value != "" {
@@ -84,13 +84,13 @@ func RepoDirectory() string {
 }
 
 //TargetBaseDirectory is derived from the TargetDirectory() as
-//"$target_dir/var/lib/holo/base".
+//"$target_dir/var/lib/holo/files/base".
 func TargetBaseDirectory() string {
 	return targetBaseDirectory
 }
 
 //ProvisionedDirectory is derived from the TargetDirectory() as
-//"$target_dir/var/lib/holo/provisioned".
+//"$target_dir/var/lib/holo/files/provisioned".
 func ProvisionedDirectory() string {
 	return provisionedDirectory
 }

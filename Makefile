@@ -23,8 +23,9 @@ check: build/holo build/holo-build build/dump-package
 
 install: default src/holo/holorc util/completions/holo.bash util/completions/holo-build.bash util/completions/holo.zsh util/completions/holo-build.zsh
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo"
-	install -d -m 0755 "$(DESTDIR)/var/lib/holo/base"
-	install -d -m 0755 "$(DESTDIR)/var/lib/holo/provisioned"
+	install -d -m 0755 "$(DESTDIR)/var/lib/holo/files"
+	install -d -m 0755 "$(DESTDIR)/var/lib/holo/files/base"
+	install -d -m 0755 "$(DESTDIR)/var/lib/holo/files/provisioned"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo/run-scripts"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo/repo"

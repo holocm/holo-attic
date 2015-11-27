@@ -22,8 +22,8 @@ run_testcase() {
     mkdir -p target/usr/share/holo/repo
     mkdir -p target/usr/share/holo/run-scripts
     mkdir -p target/usr/share/holo/users-groups
-    mkdir -p target/var/lib/holo/base
-    mkdir -p target/var/lib/holo/provisioned
+    mkdir -p target/var/lib/holo/files/base
+    mkdir -p target/var/lib/holo/files/provisioned
     [ ! -f target/etc/holorc ] && cp ../holorc target/etc/holorc
 
     # fix a bug with Travis (Travis has an ancient git which incorrectly prints

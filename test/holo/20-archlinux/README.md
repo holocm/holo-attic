@@ -8,6 +8,6 @@ This test checks the platform integration for Arch Linux.
 * `/etc/targetfile-with-pacnew.conf` has a config file and repo file with an
   existing target base, and there is also a `.pacnew` file that the package manager
   has placed next to the config file as part of an update of the application
-  package. We should recognize this file and move it into `/var/lib/holo/base`.
+  package. We should recognize this file and move it into `/var/lib/holo/files/base`.
 
 [Reference](https://wiki.archlinux.org/index.php/Pacnew_and_Pacsave_files)

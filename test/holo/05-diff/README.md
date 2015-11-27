@@ -1,6 +1,6 @@
 This test checks the various situations that `holo diff` can encounter when
 diffing the current state of a target file to the last provisioned version,
-stored at `/var/lib/holo/provisioned`.
+stored at `/var/lib/holo/files/provisioned`.
 
 * targets that have been added by the user: This case is covered by
   `test/01-basic` already.

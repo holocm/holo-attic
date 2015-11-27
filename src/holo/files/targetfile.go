@@ -49,8 +49,8 @@ func NewTargetFileFromPathIn(directory, path string) *TargetFile {
 //PathIn returns the path to this target file relative to the given directory.
 //
 //    targetPath := target.pathIn(common.TargetDirectory())           // e.g. "/etc/foo.conf"
-//    targetBasePath := target.pathIn(common.TargetBaseDirectory())   // e.g. "/var/lib/holo/base/etc/foo.conf"
-//    provisionedPath := target.pathIn(common.ProvisionedDirectory()) // e.g. "/var/lib/holo/provisioned/etc/foo.conf"
+//    targetBasePath := target.pathIn(common.TargetBaseDirectory())   // e.g. "/var/lib/holo/files/base/etc/foo.conf"
+//    provisionedPath := target.pathIn(common.ProvisionedDirectory()) // e.g. "/var/lib/holo/files/provisioned/etc/foo.conf"
 //
 func (target *TargetFile) PathIn(directory string) string {
 	return filepath.Join(directory, target.relTargetPath)
