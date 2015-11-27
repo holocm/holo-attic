@@ -18,7 +18,7 @@
 *
 *******************************************************************************/
 
-package entities
+package main
 
 import (
 	"bytes"
@@ -26,10 +26,10 @@ import (
 	"strconv"
 	"strings"
 
-	"../../internal/toml"
+	"../internal/toml"
 )
 
-//RenderDiff implements the common.Entity interface.
+//RenderDiff implements the Entity interface.
 func (group Group) RenderDiff() ([]byte, error) {
 	//does this group exist already?
 	groupExists, actualGid, err := group.checkExists()
@@ -68,7 +68,7 @@ func (group Group) RenderDiff() ([]byte, error) {
 	return []byte(strings.Join(allLines, "\n") + "\n"), nil
 }
 
-//RenderDiff implements the common.Entity interface.
+//RenderDiff implements the Entity interface.
 func (user User) RenderDiff() ([]byte, error) {
 	//does this user exist already?
 	userExists, actualUser, err := user.checkExists()

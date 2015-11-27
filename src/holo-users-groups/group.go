@@ -18,17 +18,15 @@
 *
 *******************************************************************************/
 
-package entities
+package main
 
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
-
-	"../../shared"
-	"../common"
 )
 
 //Group represents a UNIX group (as registered in /etc/group). It implements
@@ -53,16 +51,15 @@ func (g *Group) setInvalid() { g.broken = true }
 //EntityID implements the Entity interface for Group.
 func (g Group) EntityID() string { return "group:" + g.name }
 
-//Report implements the Entity interface for Group.
-func (g Group) Report() *shared.Report {
-	r := shared.Report{Target: g.EntityID()}
+//PrintReport implements the Entity interface for Group.
+func (g Group) PrintReport() {
+	fmt.Printf("ENTITY: %s\n", g.EntityID())
 	for _, defFile := range g.definitionFiles {
-		r.AddLine("found in", defFile)
+		fmt.Printf("found in: %s\n", defFile)
 	}
 	if attributes := g.attributes(); attributes != "" {
-		r.AddLine("with", attributes)
+		fmt.Printf("with: %s\n", attributes)
 	}
-	return &r
 }
 
 func (g Group) attributes() string {
@@ -80,14 +77,8 @@ func (g Group) attributes() string {
 //If the group does not exist yet, it is created. If it does exist, but some
 //attributes do not match, it will be updated, but only if withForce is given.
 func (g Group) Apply(withForce bool) {
-	r := g.Report()
-	r.Action = "Working on"
-	entityHasChanged := g.doApply(r, withForce)
-	if entityHasChanged {
-		r.Print()
-	} else {
-		r.PrintUnlessEmpty()
-	}
+	entityHasChanged := g.doApply(withForce)
+	_ = entityHasChanged
 }
 
 type groupDiff struct {
@@ -96,11 +87,11 @@ type groupDiff struct {
 	expected string
 }
 
-func (g Group) doApply(report *shared.Report, withForce bool) (entityHasChanged bool) {
+func (g Group) doApply(withForce bool) (entityHasChanged bool) {
 	//check if we have that group already
 	groupExists, actualGid, err := g.checkExists()
 	if err != nil {
-		report.AddError("Cannot read group database: %s", err.Error())
+		fmt.Fprintf(os.Stderr, "!! Cannot read group database: %s\n", err.Error())
 		return false
 	}
 
@@ -114,36 +105,36 @@ func (g Group) doApply(report *shared.Report, withForce bool) (entityHasChanged 
 		if len(differences) != 0 {
 			if withForce {
 				for _, diff := range differences {
-					report.AddLine("fix", fmt.Sprintf("%s (was: %s)", diff.field, diff.actual))
+					fmt.Printf(">> fixing %s (was: %s)\n", diff.field, diff.actual)
 				}
-				err := g.callGroupmod(report)
+				err := g.callGroupmod()
 				if err != nil {
-					report.AddError(err.Error())
+					fmt.Fprintf(os.Stderr, "!! %s\n", err.Error())
 					return false
 				}
 				return true
 			}
 			for _, diff := range differences {
-				report.AddError("Group has %s: %s, expected %s (use --force to overwrite)", diff.field, diff.actual, diff.expected)
+				fmt.Fprintf(os.Stderr, "!! Group has %s: %s, expected %s (use --force to overwrite)\n", diff.field, diff.actual, diff.expected)
 			}
 		}
 		return false
 	}
 
 	//create the group if it does not exist
-	err = g.callGroupadd(report)
+	err = g.callGroupadd()
 	if err != nil {
-		report.AddError(err.Error())
+		fmt.Fprintf(os.Stderr, "!! %s\n", err.Error())
 		return false
 	}
 	return true
 }
 
 func (g Group) checkExists() (exists bool, gid int, e error) {
-	groupFile := filepath.Join(common.TargetDirectory(), "etc/group")
+	groupFile := filepath.Join(os.Getenv("HOLO_ROOT_DIR"), "etc/group")
 
 	//fetch entry from /etc/group
-	fields, err := common.Getent(groupFile, func(fields []string) bool { return fields[0] == g.name })
+	fields, err := Getent(groupFile, func(fields []string) bool { return fields[0] == g.name })
 	if err != nil {
 		return false, 0, err
 	}
@@ -161,7 +152,7 @@ func (g Group) checkExists() (exists bool, gid int, e error) {
 	return true, actualGid, err
 }
 
-func (g Group) callGroupadd(report *shared.Report) error {
+func (g Group) callGroupadd() error {
 	//assemble arguments for groupadd call
 	args := []string{}
 	if g.system {
@@ -173,11 +164,10 @@ func (g Group) callGroupadd(report *shared.Report) error {
 	args = append(args, g.name)
 
 	//call groupadd
-	_, err := shared.ExecProgramOrMock(report, []byte{}, "groupadd", args...)
-	return err
+	return ExecProgramOrMock("groupadd", args...)
 }
 
-func (g Group) callGroupmod(report *shared.Report) error {
+func (g Group) callGroupmod() error {
 	//assemble arguments for groupmod call
 	args := []string{}
 	if g.gid > 0 {
@@ -186,6 +176,5 @@ func (g Group) callGroupmod(report *shared.Report) error {
 	args = append(args, g.name)
 
 	//call groupmod
-	_, err := shared.ExecProgramOrMock(report, []byte{}, "groupmod", args...)
-	return err
+	return ExecProgramOrMock("groupmod", args...)
 }

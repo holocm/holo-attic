@@ -18,34 +18,43 @@
 *
 *******************************************************************************/
 
-package entities
+package main
 
 import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
-	"../../internal/toml"
-	"../../shared"
-	"../common"
+	"../internal/toml"
 )
 
 //Scan returns a slice of all the defined entities. If an error is encountered
-//during the scan, it will be reported on stdout, and nil is returned.
-func Scan() common.Entities {
-	errorReport := shared.Report{Action: "scan", Target: "entity definitions"}
-
-	//look in the entity directory for entity definitions
-	paths, err := common.ScanDirectory(common.EntityDirectory(), func(fi os.FileInfo) bool {
-		return fi.Mode().IsRegular() && strings.HasSuffix(fi.Name(), ".toml")
-	})
+//during the scan, it will be reported on stderr, and nil is returned.
+func Scan() Entities {
+	//open resource directory
+	dirPath := os.Getenv("HOLO_RESOURCE_DIR")
+	dir, err := os.Open(dirPath)
 	if err != nil {
-		errorReport.AddError(err.Error())
-		errorReport.Print()
+		fmt.Fprintln(os.Stderr, err.Error())
 		return nil
 	}
+	fis, err := dir.Readdir(-1)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		return nil
+	}
+
+	//find entity definitions
+	var paths []string
+	for _, fi := range fis {
+		if fi.Mode().IsRegular() && strings.HasSuffix(fi.Name(), ".toml") {
+			paths = append(paths, filepath.Join(dirPath, fi.Name()))
+		}
+	}
+	sort.Strings(paths)
 
 	//parse entity definitions
 	groups := make(map[string]*Group)
@@ -53,15 +62,15 @@ func Scan() common.Entities {
 	for _, definitionPath := range paths {
 		err := readDefinitionFile(definitionPath, &groups, &users)
 		if len(err) > 0 {
-			errorReport.AddError("File %s is invalid:", definitionPath)
+			fmt.Fprintf(os.Stderr, "!! File %s is invalid:\n", definitionPath)
 			for _, suberr := range err {
-				errorReport.AddError("    " + suberr.Error())
+				fmt.Fprintf(os.Stderr, ">> %s\n", suberr.Error())
 			}
 		}
 	}
 
 	//flatten result into a list sorted by EntityID and filter invalid entities
-	entities := make(common.Entities, 0, len(groups)+len(users))
+	entities := make(Entities, 0, len(groups)+len(users))
 	for _, group := range groups {
 		if group.isValid() {
 			entities = append(entities, group)
@@ -74,7 +83,6 @@ func Scan() common.Entities {
 	}
 	sort.Sort(entities)
 
-	errorReport.PrintUnlessEmpty()
 	return entities
 }
 

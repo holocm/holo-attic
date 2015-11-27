@@ -22,19 +22,9 @@ package shared
 
 import (
 	"bytes"
-	"fmt"
-	"os"
 	"os/exec"
 	"strings"
 )
-
-var mock = false
-
-func init() {
-	if value := os.Getenv("HOLO_MOCK"); value == "1" {
-		mock = true
-	}
-}
 
 //ExecProgram is a wrapper around exec.Command that reports any stderr output
 //of the child process to the given Report automatically.
@@ -53,28 +43,4 @@ func ExecProgram(report *Report, stdin []byte, command string, arguments ...stri
 		}
 	}
 	return stdout.Bytes(), err
-}
-
-//ExecProgramOrMock works like ExecProgram, but when the environment variable
-//HOLO_MOCK=1 is set, it will only print the command name and return success
-//and empty stdout without executing the command.
-func ExecProgramOrMock(report *Report, stdin []byte, command string, arguments ...string) (output []byte, err error) {
-	if mock {
-		report.AddWarning("MOCK: %s", shellEscapeArgs(append([]string{command}, arguments...)))
-		return []byte{}, nil
-	}
-	o, e := ExecProgram(report, stdin, command, arguments...)
-	return o, e
-}
-
-func shellEscapeArgs(arguments []string) string {
-	//a puny caricature of an actual shell-escape
-	var escapedArgs []string
-	for _, arg := range arguments {
-		if arg == "" || strings.Contains(arg, " ") {
-			arg = fmt.Sprintf("'%s'", arg)
-		}
-		escapedArgs = append(escapedArgs, arg)
-	}
-	return strings.Join(escapedArgs, " ")
 }

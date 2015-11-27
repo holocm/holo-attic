@@ -23,12 +23,12 @@ package plugins
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 
 	"../../shared"
 	"../common"
-	"../entities"
 	"../files"
 )
 
@@ -41,8 +41,6 @@ func (p *Plugin) Scan() common.Entities {
 	switch p.ID() {
 	case "files":
 		return files.ScanRepo()
-	case "users-groups":
-		return entities.Scan()
 	default: //follows below
 	}
 
@@ -136,15 +134,8 @@ func (p *Plugin) runScanOperation() (stdout string, hadError bool) {
 		if err != nil {
 			report.AddError(err.Error())
 		}
-		stderr := strings.TrimSpace(string(stderrBuffer.Bytes()))
-		if stderr != "" {
-			report.AddWarning("produced error output:")
-			lines := strings.Split(stderr, "\n")
-			for _, line := range lines {
-				report.AddWarning("    " + line)
-			}
-		}
 		report.Print()
+		fmt.Fprintf(os.Stderr, "\n%s\n\n", strings.TrimSpace(string(stderrBuffer.Bytes())))
 	}
 
 	return string(stdoutBuffer.Bytes()), err != nil

@@ -18,18 +18,16 @@
 *
 *******************************************************************************/
 
-package entities
+package main
 
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
-
-	"../../shared"
-	"../common"
 )
 
 //User represents a UNIX user account (as registered in /etc/passwd). It
@@ -59,16 +57,15 @@ func (u *User) setInvalid() { u.broken = true }
 //EntityID implements the Entity interface for User.
 func (u User) EntityID() string { return "user:" + u.name }
 
-//Report implements the Entity interface for User.
-func (u User) Report() *shared.Report {
-	r := shared.Report{Target: u.EntityID()}
+//PrintReport implements the Entity interface for User.
+func (u User) PrintReport() {
+	fmt.Printf("ENTITY: %s\n", u.EntityID())
 	for _, defFile := range u.definitionFiles {
-		r.AddLine("found in", defFile)
+		fmt.Printf("found in: %s\n", defFile)
 	}
 	if attributes := u.attributes(); attributes != "" {
-		r.AddLine("with", attributes)
+		fmt.Printf("with: %s\n", attributes)
 	}
-	return &r
 }
 
 func (u User) attributes() string {
@@ -101,14 +98,8 @@ func (u User) attributes() string {
 //If the group does not exist yet, it is created. If it does exist, but some
 //attributes do not match, it will be updated, but only if withForce is given.
 func (u User) Apply(withForce bool) {
-	r := u.Report()
-	r.Action = "Working on"
-	entityHasChanged := u.doApply(r, withForce)
-	if entityHasChanged {
-		r.Print()
-	} else {
-		r.PrintUnlessEmpty()
-	}
+	entityHasChanged := u.doApply(withForce)
+	_ = entityHasChanged
 }
 
 type userDiff struct {
@@ -117,11 +108,11 @@ type userDiff struct {
 	expected string
 }
 
-func (u User) doApply(report *shared.Report, withForce bool) (entityHasChanged bool) {
+func (u User) doApply(withForce bool) (entityHasChanged bool) {
 	//check if we have that group already
 	userExists, actualUser, err := u.checkExists()
 	if err != nil {
-		report.AddError("Cannot read user database: %s", err.Error())
+		fmt.Fprintf(os.Stderr, "!! Cannot read user database: %s\n", err.Error())
 		return false
 	}
 
@@ -157,26 +148,26 @@ func (u User) doApply(report *shared.Report, withForce bool) (entityHasChanged b
 		if len(differences) != 0 {
 			if withForce {
 				for _, diff := range differences {
-					report.AddLine("fix", fmt.Sprintf("%s (was: %s)", diff.field, diff.actual))
+					fmt.Printf(">> fixing %s (was: %s)\n", diff.field, diff.actual)
 				}
-				err := u.callUsermod(report)
+				err := u.callUsermod()
 				if err != nil {
-					report.AddError(err.Error())
+					fmt.Fprintf(os.Stderr, "!! %s\n", err.Error())
 					return false
 				}
 				return true
 			}
 			for _, diff := range differences {
-				report.AddError("User has %s: %s, expected %s (use --force to overwrite)", diff.field, diff.actual, diff.expected)
+				fmt.Fprintf(os.Stderr, "!! User has %s: %s, expected %s (use --force to overwrite)\n", diff.field, diff.actual, diff.expected)
 			}
 		}
 		return false
 	}
 
 	//create the user if it does not exist
-	err = u.callUseradd(report)
+	err = u.callUseradd()
 	if err != nil {
-		report.AddError(err.Error())
+		fmt.Fprintf(os.Stderr, "!! %s\n", err.Error())
 		return false
 	}
 	return true
@@ -185,11 +176,12 @@ func (u User) doApply(report *shared.Report, withForce bool) (entityHasChanged b
 //checkExists checks if the user exists in /etc/passwd. If it does, its actual
 //properties will be returned in the second return argument.
 func (u User) checkExists() (exists bool, currentUser *User, e error) {
-	passwdFile := filepath.Join(common.TargetDirectory(), "etc/passwd")
-	groupFile := filepath.Join(common.TargetDirectory(), "etc/group")
+	rootDir := os.Getenv("HOLO_ROOT_DIR")
+	passwdFile := filepath.Join(rootDir, "etc/passwd")
+	groupFile := filepath.Join(rootDir, "etc/group")
 
 	//fetch entry from /etc/passwd
-	fields, err := common.Getent(passwdFile, func(fields []string) bool { return fields[0] == u.name })
+	fields, err := Getent(passwdFile, func(fields []string) bool { return fields[0] == u.name })
 	if err != nil {
 		return false, nil, err
 	}
@@ -211,7 +203,7 @@ func (u User) checkExists() (exists bool, currentUser *User, e error) {
 	//fetch entry for login group from /etc/group (to resolve actualGID into a
 	//group name)
 	actualGIDString := fields[3]
-	groupFields, err := common.Getent(groupFile, func(fields []string) bool {
+	groupFields, err := Getent(groupFile, func(fields []string) bool {
 		if len(fields) <= 2 {
 			return false
 		}
@@ -227,7 +219,7 @@ func (u User) checkExists() (exists bool, currentUser *User, e error) {
 
 	//check /etc/group for the supplementary group memberships of this user
 	groupNames := []string{}
-	_, err = common.Getent(groupFile, func(fields []string) bool {
+	_, err = Getent(groupFile, func(fields []string) bool {
 		if len(fields) <= 3 {
 			return false
 		}
@@ -257,7 +249,7 @@ func (u User) checkExists() (exists bool, currentUser *User, e error) {
 	}, nil
 }
 
-func (u User) callUseradd(report *shared.Report) error {
+func (u User) callUseradd() error {
 	//assemble arguments for useradd call
 	args := []string{}
 	if u.system {
@@ -284,11 +276,10 @@ func (u User) callUseradd(report *shared.Report) error {
 	args = append(args, u.name)
 
 	//call useradd
-	_, err := shared.ExecProgramOrMock(report, []byte{}, "useradd", args...)
-	return err
+	return ExecProgramOrMock("useradd", args...)
 }
 
-func (u User) callUsermod(report *shared.Report) error {
+func (u User) callUsermod() error {
 	//assemble arguments for usermod call
 	args := []string{}
 	if u.uid > 0 {
@@ -312,6 +303,5 @@ func (u User) callUsermod(report *shared.Report) error {
 	args = append(args, u.name)
 
 	//call usermod
-	_, err := shared.ExecProgramOrMock(report, []byte{}, "usermod", args...)
-	return err
+	return ExecProgramOrMock("usermod", args...)
 }

@@ -9,7 +9,7 @@ mmm
 mmm
 >> ./etc/holorc = regular
 plugin files
-plugin users-groups
+plugin users-groups=../../../build/holo-users-groups
 plugin run-scripts=../../../src/holo-run-scripts
 >> ./etc/link-and-script.conf = regular
 ljj

@@ -14,7 +14,7 @@ existing:x:101:
 wronggid:x:102:
 >> ./etc/holorc = regular
 plugin files
-plugin users-groups
+plugin users-groups=../../../build/holo-users-groups
 plugin run-scripts=../../../src/holo-run-scripts
 >> ./usr/share/holo/users-groups/01-groups.json = regular
 {
