@@ -8,9 +8,9 @@ e
 f
 >> ./etc/targetfile-with-rpmsave.conf = regular
 bbb
->> ./usr/share/holo/repo/01-first/etc/targetfile-with-rpmnew.conf.holoscript = symlink
+>> ./usr/share/holo/files/01-first/etc/targetfile-with-rpmnew.conf.holoscript = symlink
 /usr/bin/sort
->> ./usr/share/holo/repo/01-first/etc/targetfile-with-rpmsave.conf.holoscript = symlink
+>> ./usr/share/holo/files/01-first/etc/targetfile-with-rpmsave.conf.holoscript = symlink
 /usr/bin/uniq
 >> ./var/lib/holo/files/base/etc/targetfile-with-rpmnew.conf = regular
 d

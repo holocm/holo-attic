@@ -1,15 +1,15 @@
 
 Working on target/etc/bar.conf
   store at target/var/lib/holo/files/base/etc/bar.conf
-  passthru target/usr/share/holo/repo/01-first/etc/bar.conf.holoscript
+  passthru target/usr/share/holo/files/01-first/etc/bar.conf.holoscript
 
->> execution of target/usr/share/holo/repo/01-first/etc/bar.conf.holoscript produced error output:
+>> execution of target/usr/share/holo/files/01-first/etc/bar.conf.holoscript produced error output:
 >>     ERROR
-!! execution of target/usr/share/holo/repo/01-first/etc/bar.conf.holoscript failed: exit status 1
+!! execution of target/usr/share/holo/files/01-first/etc/bar.conf.holoscript failed: exit status 1
 
 Working on target/etc/foo.conf
   store at target/var/lib/holo/files/base/etc/foo.conf
-  passthru target/usr/share/holo/repo/01-first/etc/foo.conf.holoscript
-     apply target/usr/share/holo/repo/02-second/etc/foo.conf
-  passthru target/usr/share/holo/repo/03-third/etc/foo.conf.holoscript
+  passthru target/usr/share/holo/files/01-first/etc/foo.conf.holoscript
+     apply target/usr/share/holo/files/02-second/etc/foo.conf
+  passthru target/usr/share/holo/files/03-third/etc/foo.conf.holoscript
 

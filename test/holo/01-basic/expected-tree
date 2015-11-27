@@ -13,21 +13,21 @@ bbb
 aaa
 aaa
 >> ./etc/stock-file-is-directory.conf/.keep = regular
->> ./usr/share/holo/repo/01-normal/etc/link-over-link.conf = symlink
+>> ./usr/share/holo/files/01-normal/etc/link-over-link.conf = symlink
 ddd
->> ./usr/share/holo/repo/01-normal/etc/link-over-plain.conf = symlink
+>> ./usr/share/holo/files/01-normal/etc/link-over-plain.conf = symlink
 ccc
->> ./usr/share/holo/repo/01-normal/etc/plain-over-link.conf = regular
+>> ./usr/share/holo/files/01-normal/etc/plain-over-link.conf = regular
 bbb
 bbb
->> ./usr/share/holo/repo/01-normal/etc/plain-over-plain.conf = regular
+>> ./usr/share/holo/files/01-normal/etc/plain-over-plain.conf = regular
 aaa
 aaa
->> ./usr/share/holo/repo/02-errors/etc/stock-file-is-directory.conf = regular
+>> ./usr/share/holo/files/02-errors/etc/stock-file-is-directory.conf = regular
 stock file is directory D:
->> ./usr/share/holo/repo/02-errors/etc/stock-file-missing.conf = regular
+>> ./usr/share/holo/files/02-errors/etc/stock-file-missing.conf = regular
 no stock file D:
->> ./usr/share/holo/repo/not-a-repo-file.conf = regular
+>> ./usr/share/holo/files/not-a-repo-file.conf = regular
 not a repo file
 >> ./usr/share/holo/run-scripts/01-successful.sh = regular
 #!/bin/sh

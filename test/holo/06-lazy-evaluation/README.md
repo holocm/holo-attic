@@ -5,9 +5,9 @@ script is not executed, any errors that it causes will not be seen.
 
     target/etc/foo.conf
         store at target/var/lib/holo/files/base/etc/foo.conf
-        passthru target/usr/share/holo/repo/01-first/etc/foo.conf.holoscript
-           apply target/usr/share/holo/repo/02-second/etc/foo.conf
-        passthru target/usr/share/holo/repo/03-third/etc/foo.conf.holoscript
+        passthru target/usr/share/holo/files/01-first/etc/foo.conf.holoscript
+           apply target/usr/share/holo/files/02-second/etc/foo.conf
+        passthru target/usr/share/holo/files/03-third/etc/foo.conf.holoscript
 
 The `01-first` holoscript will fail with error output and exit code 1, but this
 is not seen because `02-second` is a plain file that discards the previous

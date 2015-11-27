@@ -4,5 +4,5 @@ target/etc/targetfile-deleted-with-pacsave.conf (target was deleted)
 
 target/etc/targetfile-with-pacnew.conf
     store at target/var/lib/holo/files/base/etc/targetfile-with-pacnew.conf
-    passthru target/usr/share/holo/repo/01-first/etc/targetfile-with-pacnew.conf.holoscript
+    passthru target/usr/share/holo/files/01-first/etc/targetfile-with-pacnew.conf.holoscript
 

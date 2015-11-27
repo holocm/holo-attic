@@ -29,7 +29,7 @@ import (
 
 var targetDirectory = "/"
 var entityDirectory = "/usr/share/holo/users-groups"
-var repoDirectory = "/usr/share/holo/repo"
+var repoDirectory = "/usr/share/holo/files"
 var targetBaseDirectory = "/var/lib/holo/files/base"
 var provisionedDirectory = "/var/lib/holo/files/provisioned"
 
@@ -78,7 +78,7 @@ func EntityDirectory() string {
 }
 
 //RepoDirectory is derived from the TargetDirectory() as
-//"$target_dir/usr/share/holo/repo".
+//"$target_dir/usr/share/holo/files".
 func RepoDirectory() string {
 	return repoDirectory
 }

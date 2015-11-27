@@ -1,9 +1,9 @@
 
 Working on target/etc/targetfile-with-rpmnew.conf
     update target/etc/targetfile-with-rpmnew.conf.rpmnew -> target/var/lib/holo/files/base/etc/targetfile-with-rpmnew.conf
-  passthru target/usr/share/holo/repo/01-first/etc/targetfile-with-rpmnew.conf.holoscript
+  passthru target/usr/share/holo/files/01-first/etc/targetfile-with-rpmnew.conf.holoscript
 
 Working on target/etc/targetfile-with-rpmsave.conf
     update target/etc/targetfile-with-rpmsave.conf (with .rpmsave) -> target/var/lib/holo/files/base/etc/targetfile-with-rpmsave.conf
-  passthru target/usr/share/holo/repo/01-first/etc/targetfile-with-rpmsave.conf.holoscript
+  passthru target/usr/share/holo/files/01-first/etc/targetfile-with-rpmsave.conf.holoscript
 

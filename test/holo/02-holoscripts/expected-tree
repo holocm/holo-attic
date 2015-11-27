@@ -36,21 +36,21 @@ baz
 foo
 bor
 boz
->> ./usr/share/holo/repo/02-holoscripts/etc/link-through-link.conf.holoscript = symlink
+>> ./usr/share/holo/files/02-holoscripts/etc/link-through-link.conf.holoscript = symlink
 /usr/bin/uniq
->> ./usr/share/holo/repo/02-holoscripts/etc/link-through-plain.conf.holoscript = regular
+>> ./usr/share/holo/files/02-holoscripts/etc/link-through-plain.conf.holoscript = regular
 #!/bin/sh
 sed s/a/u/
->> ./usr/share/holo/repo/02-holoscripts/etc/plain-through-link.conf.holoscript = symlink
+>> ./usr/share/holo/files/02-holoscripts/etc/plain-through-link.conf.holoscript = symlink
 /usr/bin/sort
->> ./usr/share/holo/repo/02-holoscripts/etc/plain-through-plain.conf.holoscript = regular
+>> ./usr/share/holo/files/02-holoscripts/etc/plain-through-plain.conf.holoscript = regular
 #!/bin/sh
 sed 's/bar/qux/'
->> ./usr/share/holo/repo/02-holoscripts/etc/plain-with-nonzero-exitcode.conf.holoscript = regular
+>> ./usr/share/holo/files/02-holoscripts/etc/plain-with-nonzero-exitcode.conf.holoscript = regular
 #!/bin/sh
 sed s/a/x/
 exit 1
->> ./usr/share/holo/repo/02-holoscripts/etc/plain-with-stderr.conf.holoscript = regular
+>> ./usr/share/holo/files/02-holoscripts/etc/plain-with-stderr.conf.holoscript = regular
 #!/bin/sh
 echo 'First line of stderr output.' >&2
 sed s/a/o/

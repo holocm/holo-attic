@@ -6,7 +6,7 @@ plugin run-scripts=../../../src/holo-run-scripts
 d
 e
 f
->> ./usr/share/holo/repo/01-first/etc/targetfile-with-pacnew.conf.holoscript = symlink
+>> ./usr/share/holo/files/01-first/etc/targetfile-with-pacnew.conf.holoscript = symlink
 /usr/bin/sort
 >> ./var/lib/holo/files/base/etc/targetfile-with-pacnew.conf = regular
 d

@@ -31,44 +31,44 @@ hhh
 ggg
 ggg
 iii
->> ./usr/share/holo/repo/01-first/etc/link-and-script.conf = symlink
+>> ./usr/share/holo/files/01-first/etc/link-and-script.conf = symlink
 contents1
->> ./usr/share/holo/repo/01-first/etc/link-through-scripts.conf.holoscript = regular
+>> ./usr/share/holo/files/01-first/etc/link-through-scripts.conf.holoscript = regular
 #!/bin/sh
 echo 'nnn'
 cat
->> ./usr/share/holo/repo/01-first/etc/plain-and-plain.conf = regular
+>> ./usr/share/holo/files/01-first/etc/plain-and-plain.conf = regular
 bbb
 bbb
->> ./usr/share/holo/repo/01-first/etc/plain-and-script.conf = regular
+>> ./usr/share/holo/files/01-first/etc/plain-and-script.conf = regular
 eee
 eee
->> ./usr/share/holo/repo/01-first/etc/script-and-script.conf.holoscript = regular
+>> ./usr/share/holo/files/01-first/etc/script-and-script.conf.holoscript = regular
 #!/bin/sh
 echo 'hhh'
 cat
->> ./usr/share/holo/repo/02-second/etc/link-and-script.conf.holoscript = regular
+>> ./usr/share/holo/files/02-second/etc/link-and-script.conf.holoscript = regular
 #!/bin/sh
 sed 's/^j/l/'
->> ./usr/share/holo/repo/02-second/etc/link-through-scripts.conf.holoscript = regular
+>> ./usr/share/holo/files/02-second/etc/link-through-scripts.conf.holoscript = regular
 #!/bin/sh
 cat
 echo 'ooo'
->> ./usr/share/holo/repo/02-second/etc/plain-and-plain.conf = regular
+>> ./usr/share/holo/files/02-second/etc/plain-and-plain.conf = regular
 ccc
 ccc
->> ./usr/share/holo/repo/02-second/etc/plain-and-script.conf.holoscript = regular
+>> ./usr/share/holo/files/02-second/etc/plain-and-script.conf.holoscript = regular
 #!/bin/sh
 cat
 echo "fff"
->> ./usr/share/holo/repo/02-second/etc/script-and-script.conf.holoscript = regular
+>> ./usr/share/holo/files/02-second/etc/script-and-script.conf.holoscript = regular
 #!/bin/sh
 cat
 echo 'iii'
->> ./usr/share/holo/repo/03-order/etc/check-ordering.conf = regular
+>> ./usr/share/holo/files/03-order/etc/check-ordering.conf = regular
 foo
 bar
->> ./usr/share/holo/repo/03-order/etc/check-ordering.conf.holoscript = regular
+>> ./usr/share/holo/files/03-order/etc/check-ordering.conf.holoscript = regular
 #!/bin/sh
 sed 's/^/foo/'
 >> ./var/lib/holo/files/base/etc/check-ordering.conf = regular

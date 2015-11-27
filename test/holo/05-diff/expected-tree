@@ -26,29 +26,29 @@ plugin run-scripts=../../../src/holo-run-scripts
 /bin/true
 >> ./etc/symlink-unmodified.conf = symlink
 /bin/true
->> ./usr/share/holo/repo/01-first/etc/file-deleted.conf = regular
+>> ./usr/share/holo/files/01-first/etc/file-deleted.conf = regular
 aaa
 bbb
 ccc
->> ./usr/share/holo/repo/01-first/etc/file-modified.conf = regular
+>> ./usr/share/holo/files/01-first/etc/file-modified.conf = regular
 aaa
 bbb
 ccc
->> ./usr/share/holo/repo/01-first/etc/file-to-symlink.conf = regular
+>> ./usr/share/holo/files/01-first/etc/file-to-symlink.conf = regular
 aaa
 bbb
 ccc
->> ./usr/share/holo/repo/01-first/etc/file-unmodified.conf = regular
+>> ./usr/share/holo/files/01-first/etc/file-unmodified.conf = regular
 aaa
 bbb
 ccc
->> ./usr/share/holo/repo/01-first/etc/symlink-deleted.conf = symlink
+>> ./usr/share/holo/files/01-first/etc/symlink-deleted.conf = symlink
 /bin/true
->> ./usr/share/holo/repo/01-first/etc/symlink-modified.conf = symlink
+>> ./usr/share/holo/files/01-first/etc/symlink-modified.conf = symlink
 /bin/true
->> ./usr/share/holo/repo/01-first/etc/symlink-to-file.conf = symlink
+>> ./usr/share/holo/files/01-first/etc/symlink-to-file.conf = symlink
 /bin/true
->> ./usr/share/holo/repo/01-first/etc/symlink-unmodified.conf = symlink
+>> ./usr/share/holo/files/01-first/etc/symlink-unmodified.conf = symlink
 /bin/true
 >> ./var/lib/holo/files/base/etc/file-deleted.conf = regular
 ddd
