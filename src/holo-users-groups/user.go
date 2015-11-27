@@ -33,15 +33,15 @@ import (
 //User represents a UNIX user account (as registered in /etc/passwd). It
 //implements the Entity interface and is handled accordingly.
 type User struct {
-	name            string   //the user name (the first field in /etc/passwd)
-	comment         string   //the full name (sometimes also called "comment"; the fifth field in /etc/passwd)
-	uid             int      //the user ID (the third field in /etc/passwd), or 0 if no specific UID is enforced
-	system          bool     //whether the group is a system group (this influences the GID selection if gid = 0)
-	homeDirectory   string   //path to the user's home directory (or empty to use the default)
-	group           string   //the name of the user's initial login group (or empty to use the default)
-	groups          []string //the names of supplementary groups which the user is also a member of
-	shell           string   //path to the user's login shell (or empty to use the default)
-	definitionFiles []string //paths to the files defining this entity
+	Name            string   //the user name (the first field in /etc/passwd)
+	Comment         string   //the full name (sometimes also called "comment"; the fifth field in /etc/passwd)
+	UID             int      //the user ID (the third field in /etc/passwd), or 0 if no specific UID is enforced
+	System          bool     //whether the group is a system group (this influences the GID selection if gid = 0)
+	HomeDirectory   string   `toml:"home"` //path to the user's home directory (or empty to use the default)
+	Group           string   //the name of the user's initial login group (or empty to use the default)
+	Groups          []string //the names of supplementary groups which the user is also a member of
+	Shell           string   //path to the user's login shell (or empty to use the default)
+	DefinitionFiles []string //paths to the files defining this entity
 
 	broken bool //whether the entity definition is invalid (default: false)
 }
@@ -55,12 +55,12 @@ func (u *User) isValid() bool { return !u.broken }
 func (u *User) setInvalid() { u.broken = true }
 
 //EntityID implements the Entity interface for User.
-func (u User) EntityID() string { return "user:" + u.name }
+func (u User) EntityID() string { return "user:" + u.Name }
 
 //PrintReport implements the Entity interface for User.
 func (u User) PrintReport() {
 	fmt.Printf("ENTITY: %s\n", u.EntityID())
-	for _, defFile := range u.definitionFiles {
+	for _, defFile := range u.DefinitionFiles {
 		fmt.Printf("found in: %s\n", defFile)
 	}
 	if attributes := u.attributes(); attributes != "" {
@@ -70,26 +70,26 @@ func (u User) PrintReport() {
 
 func (u User) attributes() string {
 	attrs := []string{}
-	if u.system {
+	if u.System {
 		attrs = append(attrs, "type: system")
 	}
-	if u.uid > 0 {
-		attrs = append(attrs, fmt.Sprintf("UID: %d", u.uid))
+	if u.UID > 0 {
+		attrs = append(attrs, fmt.Sprintf("UID: %d", u.UID))
 	}
-	if u.homeDirectory != "" {
-		attrs = append(attrs, "home: "+u.homeDirectory)
+	if u.HomeDirectory != "" {
+		attrs = append(attrs, "home: "+u.HomeDirectory)
 	}
-	if u.group != "" {
-		attrs = append(attrs, "login group: "+u.group)
+	if u.Group != "" {
+		attrs = append(attrs, "login group: "+u.Group)
 	}
-	if len(u.groups) > 0 {
-		attrs = append(attrs, "groups: "+strings.Join(u.groups, ","))
+	if len(u.Groups) > 0 {
+		attrs = append(attrs, "groups: "+strings.Join(u.Groups, ","))
 	}
-	if u.shell != "" {
-		attrs = append(attrs, "login shell: "+u.shell)
+	if u.Shell != "" {
+		attrs = append(attrs, "login shell: "+u.Shell)
 	}
-	if u.comment != "" {
-		attrs = append(attrs, "comment: "+u.comment)
+	if u.Comment != "" {
+		attrs = append(attrs, "comment: "+u.Comment)
 	}
 	return strings.Join(attrs, ", ")
 }
@@ -119,26 +119,26 @@ func (u User) doApply(withForce bool) (entityHasChanged bool) {
 	//check if the actual properties diverge from our definition
 	if userExists {
 		differences := []userDiff{}
-		if u.comment != "" && u.comment != actualUser.comment {
-			differences = append(differences, userDiff{"comment", actualUser.comment, u.comment})
+		if u.Comment != "" && u.Comment != actualUser.Comment {
+			differences = append(differences, userDiff{"comment", actualUser.Comment, u.Comment})
 		}
-		if u.uid > 0 && u.uid != actualUser.uid {
-			differences = append(differences, userDiff{"UID", strconv.Itoa(actualUser.uid), strconv.Itoa(u.uid)})
+		if u.UID > 0 && u.UID != actualUser.UID {
+			differences = append(differences, userDiff{"UID", strconv.Itoa(actualUser.UID), strconv.Itoa(u.UID)})
 		}
-		if u.homeDirectory != "" && u.homeDirectory != actualUser.homeDirectory {
-			differences = append(differences, userDiff{"home directory", actualUser.homeDirectory, u.homeDirectory})
+		if u.HomeDirectory != "" && u.HomeDirectory != actualUser.HomeDirectory {
+			differences = append(differences, userDiff{"home directory", actualUser.HomeDirectory, u.HomeDirectory})
 		}
-		if u.shell != "" && u.shell != actualUser.shell {
-			differences = append(differences, userDiff{"login shell", actualUser.shell, u.shell})
+		if u.Shell != "" && u.Shell != actualUser.Shell {
+			differences = append(differences, userDiff{"login shell", actualUser.Shell, u.Shell})
 		}
-		if u.group != "" && u.group != actualUser.group {
-			differences = append(differences, userDiff{"login group", actualUser.group, u.group})
+		if u.Group != "" && u.Group != actualUser.Group {
+			differences = append(differences, userDiff{"login group", actualUser.Group, u.Group})
 		}
-		//to detect changes in u.groups <-> actualUser.groups, we sort and join both slices
-		expectedGroupsSlice := append([]string(nil), u.groups...) //take a copy of the slice
+		//to detect changes in u.Groups <-> actualUser.Groups, we sort and join both slices
+		expectedGroupsSlice := append([]string(nil), u.Groups...) //take a copy of the slice
 		sort.Strings(expectedGroupsSlice)
 		expectedGroups := strings.Join(expectedGroupsSlice, ", ")
-		actualGroupsSlice := append([]string(nil), actualUser.groups...)
+		actualGroupsSlice := append([]string(nil), actualUser.Groups...)
 		sort.Strings(actualGroupsSlice)
 		actualGroups := strings.Join(actualGroupsSlice, ", ")
 		if expectedGroups != actualGroups {
@@ -181,7 +181,7 @@ func (u User) checkExists() (exists bool, currentUser *User, e error) {
 	groupFile := filepath.Join(rootDir, "etc/group")
 
 	//fetch entry from /etc/passwd
-	fields, err := Getent(passwdFile, func(fields []string) bool { return fields[0] == u.name })
+	fields, err := Getent(passwdFile, func(fields []string) bool { return fields[0] == u.Name })
 	if err != nil {
 		return false, nil, err
 	}
@@ -226,7 +226,7 @@ func (u User) checkExists() (exists bool, currentUser *User, e error) {
 		//collect groups that contain this user
 		users := strings.Split(fields[3], ",")
 		for _, user := range users {
-			if user == u.name {
+			if user == u.Name {
 				groupNames = append(groupNames, fields[0])
 			}
 		}
@@ -240,40 +240,40 @@ func (u User) checkExists() (exists bool, currentUser *User, e error) {
 	return true, &User{
 		//NOTE: Some fields (name, system, definitionFile) are not set because
 		//they are not relevant for the algorithm.
-		comment:       fields[4],
-		uid:           actualUID,
-		homeDirectory: fields[5],
-		group:         groupName,
-		groups:        groupNames,
-		shell:         fields[6],
+		Comment:       fields[4],
+		UID:           actualUID,
+		HomeDirectory: fields[5],
+		Group:         groupName,
+		Groups:        groupNames,
+		Shell:         fields[6],
 	}, nil
 }
 
 func (u User) callUseradd() error {
 	//assemble arguments for useradd call
 	args := []string{}
-	if u.system {
+	if u.System {
 		args = append(args, "--system")
 	}
-	if u.uid > 0 {
-		args = append(args, "--uid", strconv.Itoa(u.uid))
+	if u.UID > 0 {
+		args = append(args, "--uid", strconv.Itoa(u.UID))
 	}
-	if u.comment != "" {
-		args = append(args, "--comment", u.comment)
+	if u.Comment != "" {
+		args = append(args, "--comment", u.Comment)
 	}
-	if u.homeDirectory != "" {
-		args = append(args, "--home-dir", u.homeDirectory)
+	if u.HomeDirectory != "" {
+		args = append(args, "--home-dir", u.HomeDirectory)
 	}
-	if u.group != "" {
-		args = append(args, "--gid", u.group)
+	if u.Group != "" {
+		args = append(args, "--gid", u.Group)
 	}
-	if len(u.groups) > 0 {
-		args = append(args, "--groups", strings.Join(u.groups, ","))
+	if len(u.Groups) > 0 {
+		args = append(args, "--groups", strings.Join(u.Groups, ","))
 	}
-	if u.shell != "" {
-		args = append(args, "--shell", u.shell)
+	if u.Shell != "" {
+		args = append(args, "--shell", u.Shell)
 	}
-	args = append(args, u.name)
+	args = append(args, u.Name)
 
 	//call useradd
 	return ExecProgramOrMock("useradd", args...)
@@ -282,25 +282,25 @@ func (u User) callUseradd() error {
 func (u User) callUsermod() error {
 	//assemble arguments for usermod call
 	args := []string{}
-	if u.uid > 0 {
-		args = append(args, "--uid", strconv.Itoa(u.uid))
+	if u.UID > 0 {
+		args = append(args, "--uid", strconv.Itoa(u.UID))
 	}
-	if u.comment != "" {
-		args = append(args, "--comment", u.comment)
+	if u.Comment != "" {
+		args = append(args, "--comment", u.Comment)
 	}
-	if u.homeDirectory != "" {
-		args = append(args, "--home", u.homeDirectory)
+	if u.HomeDirectory != "" {
+		args = append(args, "--home", u.HomeDirectory)
 	}
-	if u.group != "" {
-		args = append(args, "--gid", u.group)
+	if u.Group != "" {
+		args = append(args, "--gid", u.Group)
 	}
-	if len(u.groups) > 0 {
-		args = append(args, "--groups", strings.Join(u.groups, ","))
+	if len(u.Groups) > 0 {
+		args = append(args, "--groups", strings.Join(u.Groups, ","))
 	}
-	if u.shell != "" {
-		args = append(args, "--shell", u.shell)
+	if u.Shell != "" {
+		args = append(args, "--shell", u.Shell)
 	}
-	args = append(args, u.name)
+	args = append(args, u.Name)
 
 	//call usermod
 	return ExecProgramOrMock("usermod", args...)

@@ -32,10 +32,10 @@ import (
 //Group represents a UNIX group (as registered in /etc/group). It implements
 //the Entity interface and is handled accordingly.
 type Group struct {
-	name            string   //the group name (the first field in /etc/group)
-	gid             int      //the GID (the third field in /etc/group), or 0 if no specific GID is enforced
-	system          bool     //whether the group is a system group (this influences the GID selection if gid = 0)
-	definitionFiles []string //paths to the files defining this entity
+	Name            string   //the group name (the first field in /etc/group)
+	GID             int      //the GID (the third field in /etc/group), or 0 if no specific GID is enforced
+	System          bool     //whether the group is a system group (this influences the GID selection if GID = 0)
+	DefinitionFiles []string //paths to the files defining this entity
 
 	broken bool //whether the entity definition is invalid (default: false)
 }
@@ -49,12 +49,12 @@ func (g *Group) isValid() bool { return !g.broken }
 func (g *Group) setInvalid() { g.broken = true }
 
 //EntityID implements the Entity interface for Group.
-func (g Group) EntityID() string { return "group:" + g.name }
+func (g Group) EntityID() string { return "group:" + g.Name }
 
 //PrintReport implements the Entity interface for Group.
 func (g Group) PrintReport() {
 	fmt.Printf("ENTITY: %s\n", g.EntityID())
-	for _, defFile := range g.definitionFiles {
+	for _, defFile := range g.DefinitionFiles {
 		fmt.Printf("found in: %s\n", defFile)
 	}
 	if attributes := g.attributes(); attributes != "" {
@@ -64,11 +64,11 @@ func (g Group) PrintReport() {
 
 func (g Group) attributes() string {
 	attrs := []string{}
-	if g.system {
+	if g.System {
 		attrs = append(attrs, "type: system")
 	}
-	if g.gid > 0 {
-		attrs = append(attrs, fmt.Sprintf("GID: %d", g.gid))
+	if g.GID > 0 {
+		attrs = append(attrs, fmt.Sprintf("GID: %d", g.GID))
 	}
 	return strings.Join(attrs, ", ")
 }
@@ -98,8 +98,8 @@ func (g Group) doApply(withForce bool) (entityHasChanged bool) {
 	//check if the actual properties diverge from our definition
 	if groupExists {
 		differences := []groupDiff{}
-		if g.gid > 0 && g.gid != actualGid {
-			differences = append(differences, groupDiff{"GID", strconv.Itoa(actualGid), strconv.Itoa(g.gid)})
+		if g.GID > 0 && g.GID != actualGid {
+			differences = append(differences, groupDiff{"GID", strconv.Itoa(actualGid), strconv.Itoa(g.GID)})
 		}
 
 		if len(differences) != 0 {
@@ -134,7 +134,7 @@ func (g Group) checkExists() (exists bool, gid int, e error) {
 	groupFile := filepath.Join(os.Getenv("HOLO_ROOT_DIR"), "etc/group")
 
 	//fetch entry from /etc/group
-	fields, err := Getent(groupFile, func(fields []string) bool { return fields[0] == g.name })
+	fields, err := Getent(groupFile, func(fields []string) bool { return fields[0] == g.Name })
 	if err != nil {
 		return false, 0, err
 	}
@@ -155,13 +155,13 @@ func (g Group) checkExists() (exists bool, gid int, e error) {
 func (g Group) callGroupadd() error {
 	//assemble arguments for groupadd call
 	args := []string{}
-	if g.system {
+	if g.System {
 		args = append(args, "--system")
 	}
-	if g.gid > 0 {
-		args = append(args, "--gid", strconv.Itoa(g.gid))
+	if g.GID > 0 {
+		args = append(args, "--gid", strconv.Itoa(g.GID))
 	}
-	args = append(args, g.name)
+	args = append(args, g.Name)
 
 	//call groupadd
 	return ExecProgramOrMock("groupadd", args...)
@@ -170,10 +170,10 @@ func (g Group) callGroupadd() error {
 func (g Group) callGroupmod() error {
 	//assemble arguments for groupmod call
 	args := []string{}
-	if g.gid > 0 {
-		args = append(args, "--gid", strconv.Itoa(g.gid))
+	if g.GID > 0 {
+		args = append(args, "--gid", strconv.Itoa(g.GID))
 	}
-	args = append(args, g.name)
+	args = append(args, g.Name)
 
 	//call groupmod
 	return ExecProgramOrMock("groupmod", args...)

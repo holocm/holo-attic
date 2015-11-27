@@ -20,7 +20,7 @@ build/dump-package: src/dump-package/main.go src/dump-package/*/*.go
 	go build -o $@ $<
 
 test: check # just a synonym
-check: build/holo build/holo-build build/dump-package
+check: default build/dump-package
 	@bash test/run_tests.sh
 
 install: default src/holo/holorc src/holo-run-scripts util/completions/holo.bash util/completions/holo-build.bash util/completions/holo.zsh util/completions/holo-build.zsh

@@ -48,11 +48,11 @@ func (group Group) RenderDiff() ([]byte, error) {
 		lines = []string{"-[[group]]"}
 	}
 
-	lines, err = addDiffForField(lines, groupExists, "name", group.name, group.name, "")
+	lines, err = addDiffForField(lines, groupExists, "name", group.Name, group.Name, "")
 	if err != nil {
 		return nil, err
 	}
-	lines, err = addDiffForField(lines, groupExists, "gid", group.gid, actualGid, 0)
+	lines, err = addDiffForField(lines, groupExists, "gid", group.GID, actualGid, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -90,31 +90,31 @@ func (user User) RenderDiff() ([]byte, error) {
 		lines = []string{"-[[user]]"}
 	}
 
-	lines, err = addDiffForField(lines, userExists, "name", user.name, user.name, "")
+	lines, err = addDiffForField(lines, userExists, "name", user.Name, user.Name, "")
 	if err != nil {
 		return nil, err
 	}
-	lines, err = addDiffForField(lines, userExists, "comment", user.comment, actualUser.comment, "")
+	lines, err = addDiffForField(lines, userExists, "comment", user.Comment, actualUser.Comment, "")
 	if err != nil {
 		return nil, err
 	}
-	lines, err = addDiffForField(lines, userExists, "uid", user.uid, actualUser.uid, 0)
+	lines, err = addDiffForField(lines, userExists, "uid", user.UID, actualUser.UID, 0)
 	if err != nil {
 		return nil, err
 	}
-	lines, err = addDiffForField(lines, userExists, "home", user.homeDirectory, actualUser.homeDirectory, "")
+	lines, err = addDiffForField(lines, userExists, "home", user.HomeDirectory, actualUser.HomeDirectory, "")
 	if err != nil {
 		return nil, err
 	}
-	lines, err = addDiffForField(lines, userExists, "group", user.group, actualUser.group, "")
+	lines, err = addDiffForField(lines, userExists, "group", user.Group, actualUser.Group, "")
 	if err != nil {
 		return nil, err
 	}
-	lines, err = addDiffForField(lines, userExists, "groups", user.groups, actualUser.groups, []string{})
+	lines, err = addDiffForField(lines, userExists, "groups", user.Groups, actualUser.Groups, []string{})
 	if err != nil {
 		return nil, err
 	}
-	lines, err = addDiffForField(lines, userExists, "shell", user.shell, actualUser.shell, "")
+	lines, err = addDiffForField(lines, userExists, "shell", user.Shell, actualUser.Shell, "")
 	if err != nil {
 		return nil, err
 	}

@@ -33,18 +33,18 @@ import (
 
 //Scan returns a slice of all the defined entities. If an error is encountered
 //during the scan, it will be reported on stderr, and nil is returned.
-func Scan() Entities {
+func Scan() ([]Group, []User) {
 	//open resource directory
 	dirPath := os.Getenv("HOLO_RESOURCE_DIR")
 	dir, err := os.Open(dirPath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
-		return nil
+		return nil, nil
 	}
 	fis, err := dir.Readdir(-1)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
-		return nil
+		return nil, nil
 	}
 
 	//find entity definitions
@@ -70,46 +70,42 @@ func Scan() Entities {
 	}
 
 	//flatten result into a list sorted by EntityID and filter invalid entities
-	entities := make(Entities, 0, len(groups)+len(users))
+	groupsList := make([]Group, 0, len(groups))
 	for _, group := range groups {
 		if group.isValid() {
-			entities = append(entities, group)
+			groupsList = append(groupsList, *group)
 		}
 	}
+	sort.Sort(groupsByName(groupsList))
+
+	usersList := make([]User, 0, len(users))
 	for _, user := range users {
 		if user.isValid() {
-			entities = append(entities, user)
+			usersList = append(usersList, *user)
 		}
 	}
-	sort.Sort(entities)
+	sort.Sort(usersByName(usersList))
 
-	return entities
+	return groupsList, usersList
 }
 
-//toml.Decode can only write into *exported* (i.e. upper-case) struct
-//fields, but the fields on the Group/User structs are private to emphasize
-//their readonly-ness, so we need separate struct definitions here
-type groupDefinition struct {
-	Name   string
-	Gid    int
-	System bool
-}
-type userDefinition struct {
-	Name    string
-	Comment string
-	UID     int
-	System  bool
-	Home    string
-	Group   string
-	Groups  []string
-	Shell   string
-}
+type usersByName []User
+
+func (u usersByName) Len() int           { return len(u) }
+func (u usersByName) Less(i, j int) bool { return u[i].Name < u[j].Name }
+func (u usersByName) Swap(i, j int)      { u[i], u[j] = u[j], u[i] }
+
+type groupsByName []Group
+
+func (g groupsByName) Len() int           { return len(g) }
+func (g groupsByName) Less(i, j int) bool { return g[i].Name < g[j].Name }
+func (g groupsByName) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
 
 func readDefinitionFile(definitionPath string, groups *map[string]*Group, users *map[string]*User) []error {
 	//unmarshal contents of definitionPath into this struct
 	var contents struct {
-		Group []groupDefinition
-		User  []userDefinition
+		Group []Group
+		User  []User
 	}
 	blob, err := ioutil.ReadFile(definitionPath)
 	if err != nil {
@@ -127,164 +123,153 @@ func readDefinitionFile(definitionPath string, groups *map[string]*Group, users 
 	//the definition is stacked on an earlier one (BUT: we only allow changes
 	//that are compatible with the original definition; for example, users may
 	//be extended with additional groups, but its UID may not be changed)
-	for idx, groupDef := range contents.Group {
-		if groupDef.Name == "" {
+	for idx, group := range contents.Group {
+		if group.Name == "" {
 			errors = append(errors, fmt.Errorf("groups[%d] is missing required 'name' attribute", idx))
 			continue
 		}
-		group, exists := (*groups)[groupDef.Name]
+		existingGroup, exists := (*groups)[group.Name]
 		if exists {
 			//stacked definition for this group - extend existing Group entity
-			groupErrors := mergeGroupDefinition(groupDef, group)
+			groupErrors := mergeGroupDefinition(&group, existingGroup)
 			if len(groupErrors) > 0 {
 				errors = append(errors, groupErrors...)
-				group.setInvalid()
+				existingGroup.setInvalid()
 			}
-			group.definitionFiles = append(group.definitionFiles, definitionPath)
 		} else {
 			//first definition for this group - create new Group entity
-			(*groups)[groupDef.Name] = &Group{
-				name:            groupDef.Name,
-				gid:             groupDef.Gid,
-				system:          groupDef.System,
-				definitionFiles: []string{definitionPath},
-			}
+			copyOfGroup := group
+			(*groups)[group.Name] = &copyOfGroup
+			existingGroup = &copyOfGroup
 		}
+		existingGroup.DefinitionFiles = append(existingGroup.DefinitionFiles, definitionPath)
 	}
 
-	for idx, userDef := range contents.User {
-		if userDef.Name == "" {
+	for idx, user := range contents.User {
+		if user.Name == "" {
 			errors = append(errors, fmt.Errorf("users[%d] is missing required 'name' attribute", idx))
 			continue
 		}
-		user, exists := (*users)[userDef.Name]
+		existingUser, exists := (*users)[user.Name]
 		if exists {
 			//stacked definition for this user - extend existing User entity
-			userErrors := mergeUserDefinition(userDef, user)
+			userErrors := mergeUserDefinition(&user, existingUser)
 			if len(userErrors) > 0 {
 				errors = append(errors, userErrors...)
-				user.setInvalid()
+				existingUser.setInvalid()
 			}
-			user.definitionFiles = append(user.definitionFiles, definitionPath)
 		} else {
 			//first definition for this user - create new User entity
-			(*users)[userDef.Name] = &User{
-				name:            userDef.Name,
-				comment:         userDef.Comment,
-				uid:             userDef.UID,
-				system:          userDef.System,
-				homeDirectory:   userDef.Home,
-				group:           userDef.Group,
-				groups:          userDef.Groups,
-				shell:           userDef.Shell,
-				definitionFiles: []string{definitionPath},
-			}
+			copyOfUser := user
+			(*users)[user.Name] = &copyOfUser
+			existingUser = &copyOfUser
 		}
+		existingUser.DefinitionFiles = append(existingUser.DefinitionFiles, definitionPath)
 	}
 
 	return errors
 }
 
 //Merges `def` into `group` if possible, returns errors if merge conflicts arise.
-func mergeGroupDefinition(def groupDefinition, group *Group) []error {
+func mergeGroupDefinition(group *Group, existingGroup *Group) []error {
 	var errors []error
 
-	//GID can be set by `def` if `group` does not have a different value set
-	if def.Gid != 0 {
+	//GID can be set by `group` if `existingGroup` does not have a different value set
+	if group.GID != 0 {
 		switch {
-		case group.gid == 0:
-			group.gid = def.Gid
-		case def.Gid != 0 && group.gid != def.Gid:
+		case existingGroup.GID == 0:
+			existingGroup.GID = group.GID
+		case group.GID != 0 && existingGroup.GID != group.GID:
 			errors = append(errors, fmt.Errorf(
 				"conflicting GID for group '%s' (existing: %d, new: %d)",
-				group.name, group.gid, def.Gid,
+				existingGroup.Name, existingGroup.GID, group.GID,
 			))
 		}
 	}
 
-	//the system flag can be set by `def` if `group` did not set it yet
-	group.system = group.system || def.System
+	//the system flag can be set by `group` if `existingGroup` did not set it yet
+	existingGroup.System = existingGroup.System || group.System
 
 	return errors
 }
 
 //Merges `def` into `user` if possible, returns errors if merge conflicts arise.
-func mergeUserDefinition(def userDefinition, user *User) []error {
+func mergeUserDefinition(user *User, existingUser *User) []error {
 	var errors []error
 
 	//comment is assumed to be informational only, the last definition always
 	//takes precedence
-	if def.Comment != "" {
-		user.comment = def.Comment
+	if user.Comment != "" {
+		existingUser.Comment = user.Comment
 	}
 
-	//UID can be set by `def` if `user` does not have a different value set
-	if def.UID != 0 {
+	//UID can be set by `user` if `existingUser` does not have a different value set
+	if user.UID != 0 {
 		switch {
-		case user.uid == 0:
-			user.uid = def.UID
-		case def.UID != 0 && user.uid != def.UID:
+		case existingUser.UID == 0:
+			existingUser.UID = user.UID
+		case user.UID != 0 && existingUser.UID != user.UID:
 			errors = append(errors, fmt.Errorf(
 				"conflicting UID for user '%s' (existing: %d, new: %d)",
-				user.name, user.uid, def.UID,
+				existingUser.Name, existingUser.UID, user.UID,
 			))
 		}
 	}
 
-	//the system flag can be set by `def` if `user` did not set it yet
-	user.system = user.system || def.System
+	//the system flag can be set by `user` if `existingUser` did not set it yet
+	existingUser.System = existingUser.System || user.System
 
 	//homeDirectory may be set only once
-	if def.Home != "" {
+	if user.HomeDirectory != "" {
 		switch {
-		case user.homeDirectory == "":
-			user.homeDirectory = def.Home
-		case def.Home != "" && user.homeDirectory != def.Home:
+		case existingUser.HomeDirectory == "":
+			existingUser.HomeDirectory = user.HomeDirectory
+		case user.HomeDirectory != "" && existingUser.HomeDirectory != user.HomeDirectory:
 			errors = append(errors, fmt.Errorf(
 				"conflicting home directory for user '%s' (existing: %s, new: %s)",
-				user.name, user.homeDirectory, def.Home,
+				existingUser.Name, existingUser.HomeDirectory, user.HomeDirectory,
 			))
 		}
 	}
 
 	//group may be set only once
-	if def.Group != "" {
+	if user.Group != "" {
 		switch {
-		case user.group == "":
-			user.group = def.Group
-		case def.Group != "" && user.group != def.Group:
+		case existingUser.Group == "":
+			existingUser.Group = user.Group
+		case user.Group != "" && existingUser.Group != user.Group:
 			errors = append(errors, fmt.Errorf(
 				"conflicting login group for user '%s' (existing: %s, new: %s)",
-				user.name, user.group, def.Group,
+				existingUser.Name, existingUser.Group, user.Group,
 			))
 		}
 	}
 
 	//shell may be set only once
-	if def.Shell != "" {
+	if user.Shell != "" {
 		switch {
-		case user.shell == "":
-			user.shell = def.Shell
-		case def.Shell != "" && user.shell != def.Shell:
+		case existingUser.Shell == "":
+			existingUser.Shell = user.Shell
+		case user.Shell != "" && existingUser.Shell != user.Shell:
 			errors = append(errors, fmt.Errorf(
 				"conflicting login shell for user '%s' (existing: %s, new: %s)",
-				user.name, user.shell, def.Shell,
+				existingUser.Name, existingUser.Shell, user.Shell,
 			))
 		}
 	}
 
 	//auxiliary groups can always be added
-	for _, group := range def.Groups {
-		//append group to user.groups, but avoid duplicates
+	for _, group := range user.Groups {
+		//append group to existingUser.Groups, but avoid duplicates
 		missing := true
-		for _, other := range user.groups {
+		for _, other := range existingUser.Groups {
 			if other == group {
 				missing = false
 				break
 			}
 		}
 		if missing {
-			user.groups = append(user.groups, group)
+			existingUser.Groups = append(existingUser.Groups, group)
 		}
 	}
 

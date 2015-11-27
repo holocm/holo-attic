@@ -31,14 +31,17 @@ func main() {
 	}
 
 	//scan for entities (TODO: cache results in HOLO_CACHE_DIR)
-	entities := Scan()
-	if entities == nil {
+	groups, users := Scan()
+	if groups == nil && users == nil {
 		//some fatal error occurred - it was already reported, so just exit
 		os.Exit(1)
 	}
 	if os.Args[1] == "scan" {
-		for _, entity := range entities {
-			entity.PrintReport()
+		for _, group := range groups {
+			group.PrintReport()
+		}
+		for _, user := range users {
+			user.PrintReport()
 		}
 		return
 	}
@@ -46,9 +49,15 @@ func main() {
 	//all other actions require an entity selection
 	entityID := os.Args[2]
 	var selectedEntity Entity
-	for _, entity := range entities {
-		if entity.EntityID() == entityID {
-			selectedEntity = entity
+	for _, group := range groups {
+		if group.EntityID() == entityID {
+			selectedEntity = group
+			break
+		}
+	}
+	for _, user := range users {
+		if user.EntityID() == entityID {
+			selectedEntity = user
 			break
 		}
 	}
