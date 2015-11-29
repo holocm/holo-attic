@@ -34,7 +34,7 @@ var targetBaseDirectory = "/var/lib/holo/files/base"
 var provisionedDirectory = "/var/lib/holo/files/provisioned"
 
 func init() {
-	if value := os.Getenv("HOLO_CHROOT_DIR"); value != "" {
+	if value := os.Getenv("HOLO_ROOT_DIR"); value != "" {
 		targetDirectory = value
 		entityDirectory = filepath.Join(value, entityDirectory[1:])
 		repoDirectory = filepath.Join(value, repoDirectory[1:])
@@ -66,7 +66,7 @@ func init() {
 }
 
 //TargetDirectory is usually the root directory "/" and can be set with the
-//environment variable HOLO_CHROOT_DIR (usually only within unit tests).
+//environment variable HOLO_ROOT_DIR (usually only within unit tests).
 func TargetDirectory() string {
 	return targetDirectory
 }

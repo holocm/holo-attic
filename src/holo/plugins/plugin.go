@@ -93,11 +93,9 @@ func (p *Plugin) Command(arguments []string, stdout io.Writer, stderr io.Writer,
 		cmd.ExtraFiles = []*os.File{msg}
 	}
 
-	//setup environment, mapping old-style variable names to those mandated by
-	//holo-plugin-interface(7)
+	//setup environment
 	env := os.Environ()
 	env = append(env, "HOLO_API_VERSION=1")
-	env = append(env, "HOLO_ROOT_DIR="+normalizePath(common.TargetDirectory()))
 	env = append(env, "HOLO_CACHE_DIR="+normalizePath(p.CacheDirectory()))
 	env = append(env, "HOLO_RESOURCE_DIR="+normalizePath(p.ResourceDirectory()))
 	env = append(env, "HOLO_STATE_DIR="+normalizePath(p.StateDirectory()))

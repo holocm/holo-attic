@@ -40,8 +40,7 @@ run_testcase() {
     find target/ -type d                     -exec chmod 0755 {} +
 
     # setup environment for holo run
-    export HOLO_CHROOT_DIR="./target/"
-    export HOLO_MOCK=1
+    export HOLO_ROOT_DIR="./target/"
     export HOLO_CURRENT_DISTRIBUTION=unittest
     # the test may define a custom environment, mostly for $HOLO_CURRENT_DISTRIBUTION
     [ -f env.sh ] && source ./env.sh
