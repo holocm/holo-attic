@@ -116,14 +116,24 @@ func executeNonScanCommand() {
 
 	switch os.Args[1] {
 	case "apply":
-		selectedEntity.Apply(false)
+		applyEntity(selectedEntity, false)
 	case "force-apply":
-		selectedEntity.Apply(true)
+		applyEntity(selectedEntity, true)
 	case "diff":
 		output, err := selectedEntity.RenderDiff()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "!! %s\n", err.Error())
 		}
 		os.Stdout.Write(output)
+	}
+}
+
+func applyEntity(entity Entity, withForce bool) {
+	entityHasChanged := entity.Apply(withForce)
+	if !entityHasChanged {
+		_, err := os.NewFile(3, "file descriptor 3").Write([]byte("not changed\n"))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "!! %s\n", err.Error())
+		}
 	}
 }

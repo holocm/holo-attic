@@ -73,21 +73,16 @@ func (g Group) attributes() string {
 	return strings.Join(attrs, ", ")
 }
 
-//Apply performs the complete application algorithm for the given Entity.
-//If the group does not exist yet, it is created. If it does exist, but some
-//attributes do not match, it will be updated, but only if withForce is given.
-func (g Group) Apply(withForce bool) {
-	entityHasChanged := g.doApply(withForce)
-	_ = entityHasChanged
-}
-
 type groupDiff struct {
 	field    string
 	actual   string
 	expected string
 }
 
-func (g Group) doApply(withForce bool) (entityHasChanged bool) {
+//Apply performs the complete application algorithm for the given Entity.
+//If the group does not exist yet, it is created. If it does exist, but some
+//attributes do not match, it will be updated, but only if withForce is given.
+func (g Group) Apply(withForce bool) (entityHasChanged bool) {
 	//check if we have that group already
 	groupExists, actualGid, err := g.checkExists()
 	if err != nil {

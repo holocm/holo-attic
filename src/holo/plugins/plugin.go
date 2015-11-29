@@ -76,13 +76,22 @@ func (p *Plugin) StateDirectory() string {
 	return filepath.Join(common.TargetDirectory(), "var/lib/holo/"+p.id)
 }
 
-//Run runs the plugin with the given arguments, producing output on the given
-//output and error channels. Non-zero exit code is reported as a non-nil error.
-func (p *Plugin) Run(arguments []string, stdout io.Writer, stderr io.Writer) error {
+//Command returns an os.exec.Command structure that is set up to run the plugin
+//with the given arguments, producing output on the given output and error
+//channels. For commands that use file descriptor 3 as an extra output channel,
+//the `msg` file can be given (nil is acceptable too).
+//
+//Note that if a write end of an os.Pipe() is passed for `msg`, it must be
+//Close()d after the child is Start()ed. Otherwise, reads from the read end
+//will block forever.
+func (p *Plugin) Command(arguments []string, stdout io.Writer, stderr io.Writer, msg *os.File) *exec.Cmd {
 	cmd := exec.Command(p.executablePath, arguments...)
 	cmd.Stdin = nil
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
+	if msg != nil {
+		cmd.ExtraFiles = []*os.File{msg}
+	}
 
 	//setup environment, mapping old-style variable names to those mandated by
 	//holo-plugin-interface(7)
@@ -94,7 +103,7 @@ func (p *Plugin) Run(arguments []string, stdout io.Writer, stderr io.Writer) err
 	env = append(env, "HOLO_STATE_DIR="+normalizePath(p.StateDirectory()))
 	cmd.Env = env
 
-	return cmd.Run()
+	return cmd
 }
 
 //For reproducibility in tests.

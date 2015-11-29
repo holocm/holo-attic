@@ -23,7 +23,7 @@ package plugins
 import (
 	"bytes"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"os"
 
 	"../../shared"
@@ -58,38 +58,86 @@ func (e *Entity) Report() *shared.Report {
 
 //Apply implements the common.Entity interface.
 func (e *Entity) Apply(withForce bool) {
+	err := e.doApply(withForce)
+	if err != nil {
+		fmt.Printf("\x1b[31m\x1b[1m!!\x1b[0m %s\n\n", err.Error())
+	}
+}
+
+func (e *Entity) printApplyReport() {
 	r := e.Report()
 	r.Action = e.actionVerb
 	r.Print()
+}
 
+func (e *Entity) doApply(withForce bool) error {
 	command := "apply"
 	if withForce {
 		command = "force-apply"
 	}
 
-	var output bytes.Buffer
-	err := e.plugin.Run([]string{command, e.id},
-		io.MultiWriter(os.Stdout, &output),
-		io.MultiWriter(os.Stderr, &output),
-	)
+	//the command channel (file descriptor 3 on the side of the plugin) can
+	//only be set up with an *os.File instance, so use a pipe that the plugin
+	//writes into and that we read from
+	cmdReader, cmdWriterForPlugin, err := os.Pipe()
+	if err != nil {
+		e.printApplyReport()
+		return err
+	}
 
-	//if output was written, insert a newline to preserve our own paragraph layout
+	var output bytes.Buffer
+	cmd := e.plugin.Command([]string{command, e.id}, &output, &output, cmdWriterForPlugin)
+	err = cmd.Start() //cannot use Run() since we need to read from the pipe before the plugin exits
+	if err != nil {
+		e.printApplyReport()
+		return err
+	}
+
+	cmdWriterForPlugin.Close() //or next line will block (see Plugin.Command docs)
+	cmdBytes, err := ioutil.ReadAll(cmdReader)
+	if err != nil {
+		e.printApplyReport()
+		return err
+	}
+	err = cmdReader.Close()
+	if err != nil {
+		e.printApplyReport()
+		return err
+	}
+	err = cmd.Wait()
+
+	//only print report if there was output, or if the plugin provisioned the
+	//entity (as signaled by the absence of the "not changed\n" command")
+	showReport := true
+	if output.Len() == 0 && err == nil {
+		cmdLines := bytes.Split(cmdBytes, []byte("\n"))
+		for _, line := range cmdLines {
+			if string(line) == "not changed" {
+				showReport = false
+			}
+		}
+	}
+	if showReport {
+		e.printApplyReport()
+	}
+
+	//if output was written, insert an empty line to preserve our own paragraph layout
 	if output.Len() > 0 {
-		if bytes.HasSuffix(output.Bytes(), []byte("\n")) {
+		outputBytes := output.Bytes()
+		os.Stdout.Write(outputBytes)
+		if bytes.HasSuffix(outputBytes, []byte("\n")) {
 			os.Stdout.Write([]byte("\n"))
 		} else {
 			os.Stdout.Write([]byte("\n\n"))
 		}
 	}
 
-	if err != nil {
-		fmt.Printf("\x1b[31m\x1b[1m!!\x1b[0m %s\n\n", err.Error())
-	}
+	return err
 }
 
 //RenderDiff implements the common.Entity interface.
 func (e *Entity) RenderDiff() ([]byte, error) {
 	var buffer bytes.Buffer
-	err := e.plugin.Run([]string{"diff", e.id}, &buffer, os.Stderr)
+	err := e.plugin.Command([]string{"diff", e.id}, &buffer, os.Stderr, nil).Run()
 	return buffer.Bytes(), err
 }

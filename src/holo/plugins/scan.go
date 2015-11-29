@@ -126,7 +126,7 @@ func (p *Plugin) Scan() common.Entities {
 
 func (p *Plugin) runScanOperation() (stdout string, hadError bool) {
 	var stdoutBuffer, stderrBuffer bytes.Buffer
-	err := p.Run([]string{"scan"}, &stdoutBuffer, &stderrBuffer)
+	err := p.Command([]string{"scan"}, &stdoutBuffer, &stderrBuffer, nil).Run()
 
 	//report any errors or error output
 	if err != nil || stderrBuffer.Len() > 0 {

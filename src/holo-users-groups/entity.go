@@ -33,7 +33,7 @@ type Entity interface {
 	//PrintReport prints the scan report for this entity on stdout.
 	PrintReport()
 	//Apply performs the complete application algorithm for the given Entity.
-	Apply(withForce bool)
+	Apply(withForce bool) (entityWasChanged bool)
 	//RenderDiff creates a unified diff between the current and last
 	//provisioned version of this entity. For files, the output is always a
 	//patch that can be applied on the last provisioned version to obtain the
