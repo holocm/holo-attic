@@ -26,7 +26,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"./toml"
+	"../internal/toml"
+	"./impl"
 )
 
 func main() {
@@ -42,8 +43,8 @@ func main() {
 }
 
 type cache struct {
-	Groups []Group
-	Users  []User
+	Groups []impl.Group
+	Users  []impl.User
 }
 
 func pathToCacheFile() string {
@@ -51,8 +52,8 @@ func pathToCacheFile() string {
 }
 
 func executeScanCommand() {
-	//scan for entities (TODO: cache results in HOLO_CACHE_DIR)
-	groups, users := Scan()
+	//scan for entities
+	groups, users := impl.Scan()
 	if groups == nil && users == nil {
 		//some fatal error occurred - it was already reported, so just exit
 		os.Exit(1)
@@ -96,7 +97,7 @@ func executeNonScanCommand() {
 
 	//all other actions require an entity selection
 	entityID := os.Args[2]
-	var selectedEntity Entity
+	var selectedEntity impl.Entity
 	for _, group := range cacheData.Groups {
 		if group.EntityID() == entityID {
 			selectedEntity = group
@@ -128,7 +129,7 @@ func executeNonScanCommand() {
 	}
 }
 
-func applyEntity(entity Entity, withForce bool) {
+func applyEntity(entity impl.Entity, withForce bool) {
 	entityHasChanged := entity.Apply(withForce)
 	if !entityHasChanged {
 		_, err := os.NewFile(3, "file descriptor 3").Write([]byte("not changed\n"))

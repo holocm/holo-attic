@@ -5,8 +5,8 @@ build/holo: src/holo/main.go src/holo/*/*.go src/shared/*.go
 	go build -o $@ $<
 build/holo-build: src/holo-build/main.go src/holo-build/*/*.go src/shared/*.go
 	go build -o $@ $<
-build/holo-users-groups: src/holo-users-groups/*.go
-	go build -o $@ ./src/holo-users-groups
+build/holo-users-groups: src/holo-users-groups/main.go src/holo-users-groups/*/*.go
+	go build -o $@ $<
 
 # manpages are generated using pod2man (which comes with Perl and therefore
 # should be readily available on almost every Unix system)

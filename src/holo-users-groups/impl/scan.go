@@ -18,7 +18,7 @@
 *
 *******************************************************************************/
 
-package main
+package impl
 
 import (
 	"fmt"
@@ -28,7 +28,7 @@ import (
 	"sort"
 	"strings"
 
-	"./toml"
+	"../../internal/toml"
 )
 
 //Scan returns a slice of all the defined entities. If an error is encountered
