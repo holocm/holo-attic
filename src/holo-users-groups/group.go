@@ -24,7 +24,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -126,7 +125,7 @@ func (g Group) Apply(withForce bool) (entityHasChanged bool) {
 }
 
 func (g Group) checkExists() (exists bool, gid int, e error) {
-	groupFile := filepath.Join(os.Getenv("HOLO_ROOT_DIR"), "etc/group")
+	groupFile := GetPath("etc/group")
 
 	//fetch entry from /etc/group
 	fields, err := Getent(groupFile, func(fields []string) bool { return fields[0] == g.Name })

@@ -24,7 +24,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -171,9 +170,8 @@ func (u User) Apply(withForce bool) (entityHasChanged bool) {
 //checkExists checks if the user exists in /etc/passwd. If it does, its actual
 //properties will be returned in the second return argument.
 func (u User) checkExists() (exists bool, currentUser *User, e error) {
-	rootDir := os.Getenv("HOLO_ROOT_DIR")
-	passwdFile := filepath.Join(rootDir, "etc/passwd")
-	groupFile := filepath.Join(rootDir, "etc/group")
+	passwdFile := GetPath("etc/passwd")
+	groupFile := GetPath("etc/group")
 
 	//fetch entry from /etc/passwd
 	fields, err := Getent(passwdFile, func(fields []string) bool { return fields[0] == u.Name })

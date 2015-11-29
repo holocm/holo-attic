@@ -25,6 +25,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -56,12 +57,21 @@ func Getent(databaseFile string, predicate func([]string) bool) ([]string, error
 	return nil, nil
 }
 
-var mock = false
+var rootDir string
+var mock bool
 
 func init() {
-	if value := os.Getenv("HOLO_ROOT_DIR"); value != "/" {
-		mock = true
-	}
+	rootDir = os.Getenv("HOLO_ROOT_DIR")
+	mock = rootDir != ""
+}
+
+//GetPath converts a given path that is relative to the root directory, into
+//the corresponding absolute path.
+//
+//    GetPath("etc/group") = "/etc/group"                   # normally
+//    GetPath("etc/group") = "/path/to/testcase/etc/group") # in testing mode
+func GetPath(path string) string {
+	return filepath.Join(rootDir, path)
 }
 
 //ExecProgramOrMock is a wrapper around exec.Command().Run() that, if run in a
