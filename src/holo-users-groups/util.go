@@ -64,6 +64,9 @@ func init() {
 	}
 }
 
+//ExecProgramOrMock is a wrapper around exec.Command().Run() that, if run in a
+//test environment, only prints the command line instead of executing the
+//command.
 func ExecProgramOrMock(command string, arguments ...string) (err error) {
 	if mock {
 		fmt.Printf("MOCK: %s %s\n", command, shellEscapeArgs(arguments))

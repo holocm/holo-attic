@@ -85,6 +85,10 @@ func (e *Entity) doApply(withForce bool) error {
 		return err
 	}
 
+	//TODO: This implementation is stupid and buffers all the output before
+	//deciding what to print and how. Technically we could just patch stdout
+	//and stderr through directly, but there is a caveat: We always want the
+	//scan report in front of all output.
 	var output bytes.Buffer
 	cmd := e.plugin.Command([]string{command, e.id}, &output, &output, cmdWriterForPlugin)
 	err = cmd.Start() //cannot use Run() since we need to read from the pipe before the plugin exits
