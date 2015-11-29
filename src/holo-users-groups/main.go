@@ -26,7 +26,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"../internal/toml"
+	"./toml"
 )
 
 func main() {

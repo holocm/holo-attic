@@ -28,7 +28,7 @@ import (
 	"sort"
 	"strings"
 
-	"../internal/toml"
+	"./toml"
 )
 
 //Scan returns a slice of all the defined entities. If an error is encountered
