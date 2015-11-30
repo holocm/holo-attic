@@ -57,10 +57,6 @@ func (p *Plugin) ID() string {
 //ResourceDirectory returns the path to the directory where this plugin may
 //find its resources (entity definitions etc.).
 func (p *Plugin) ResourceDirectory() string {
-	//hard-coded resource directories for builtin plugins
-	if p.id == "files" {
-		return common.RepoDirectory()
-	}
 	return filepath.Join(common.TargetDirectory(), "usr/share/holo/"+p.id)
 }
 

@@ -29,7 +29,6 @@ import (
 
 	"../../shared"
 	"../common"
-	"../files"
 )
 
 //Scan discovers entities available for the given entity. Errors are reported
@@ -37,13 +36,6 @@ import (
 //be reported as a non-nil empty slice.
 //there are no entities.
 func (p *Plugin) Scan() common.Entities {
-	//plugins with the "built-in" flag do their processing in other scan functions
-	switch p.ID() {
-	case "files":
-		return files.ScanRepo()
-	default: //follows below
-	}
-
 	//invoke scan operation
 	stdout, hadError := p.runScanOperation()
 	if hadError {

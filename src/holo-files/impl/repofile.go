@@ -18,7 +18,7 @@
 *
 *******************************************************************************/
 
-package files
+package impl
 
 import (
 	"fmt"
@@ -52,7 +52,7 @@ func (file RepoFile) TargetPath() string {
 	}
 
 	//make path relative
-	relPath, _ := filepath.Rel(common.RepoDirectory(), repoFile)
+	relPath, _ := filepath.Rel(common.ResourceDirectory(), repoFile)
 	//remove the disambiguation path element to get to the relPath for the ConfigFile
 	//e.g. repoFile = '/usr/share/holo/files/23-foo/etc/foo.conf'
 	//  -> relPath  = '23-foo/etc/foo.conf'

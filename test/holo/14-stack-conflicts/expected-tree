@@ -42,7 +42,7 @@ systemd-network:x:193:
 systemd-bus-proxy:x:194:
 systemd-resolve:x:195:
 >> ./etc/holorc = regular
-plugin files
+plugin files=../../../build/holo-files
 plugin users-groups=../../../build/holo-users-groups
 plugin run-scripts=../../../src/holo-run-scripts
 >> ./etc/passwd = regular

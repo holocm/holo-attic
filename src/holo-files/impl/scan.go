@@ -18,7 +18,7 @@
 *
 *******************************************************************************/
 
-package files
+package impl
 
 import (
 	"os"
@@ -30,10 +30,10 @@ import (
 )
 
 //ScanRepo returns a slice of all the TargetFile entities.
-func ScanRepo() common.Entities {
+func ScanRepo() []*TargetFile {
 	//walk over the repo to find repo files (and thus the corresponding target files)
 	targets := make(map[string]*TargetFile)
-	repoDir := common.RepoDirectory()
+	repoDir := common.ResourceDirectory()
 	filepath.Walk(repoDir, func(repoPath string, repoFileInfo os.FileInfo, err error) error {
 		//skip over unaccessible stuff
 		if err != nil {
@@ -93,11 +93,17 @@ func ScanRepo() common.Entities {
 	})
 
 	//flatten result into list
-	result := make(common.Entities, 0, len(targets))
+	result := make([]*TargetFile, 0, len(targets))
 	for _, target := range targets {
 		result = append(result, target)
 	}
 
-	sort.Sort(result)
+	sort.Sort(filesByPath(result))
 	return result
 }
+
+type filesByPath []*TargetFile
+
+func (f filesByPath) Len() int           { return len(f) }
+func (f filesByPath) Less(i, j int) bool { return f[i].relTargetPath < f[j].relTargetPath }
+func (f filesByPath) Swap(i, j int)      { f[i], f[j] = f[j], f[i] }

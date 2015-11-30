@@ -18,12 +18,12 @@
 *
 *******************************************************************************/
 
-package files
+package impl
 
 import (
+	"fmt"
 	"os"
 
-	"../../shared"
 	"../common"
 	"../platform"
 )
@@ -40,7 +40,7 @@ func (target *TargetFile) scanOrphanedTargetBase() (theTargetPath, strategy, ass
 }
 
 //handleOrphanedTargetBase cleans up an orphaned target base.
-func (target *TargetFile) handleOrphanedTargetBase(report *shared.Report) {
+func (target *TargetFile) handleOrphanedTargetBase() error {
 	targetPath, strategy, _ := target.scanOrphanedTargetBase()
 	targetBasePath := target.PathIn(common.TargetBaseDirectory())
 
@@ -51,19 +51,17 @@ func (target *TargetFile) handleOrphanedTargetBase(report *shared.Report) {
 		//these too
 		cleanupTargets := platform.Implementation().AdditionalCleanupTargets(targetPath)
 		for _, otherFile := range cleanupTargets {
-			report.AddLine("delete", otherFile)
+			fmt.Printf(">> also deleting %s\n", otherFile)
 			err := os.Remove(otherFile)
 			if err != nil {
-				report.AddError(err.Error())
-				return
+				return err
 			}
 		}
 	case "restore":
 		//target is still there - restore the target base
 		err := common.CopyFile(targetBasePath, targetPath)
 		if err != nil {
-			report.AddError(err.Error())
-			return
+			return err
 		}
 	}
 
@@ -71,14 +69,13 @@ func (target *TargetFile) handleOrphanedTargetBase(report *shared.Report) {
 	lastProvisionedPath := target.PathIn(common.ProvisionedDirectory())
 	err := os.Remove(lastProvisionedPath)
 	if err != nil && !os.IsNotExist(err) {
-		report.AddError(err.Error())
-		return
+		return err
 	}
 	err = os.Remove(targetBasePath)
 	if err != nil {
-		report.AddError(err.Error())
-		return
+		return err
 	}
 
 	//TODO: cleanup empty directories below TargetBaseDirectory() and ProvisionedDirectory()
+	return nil
 }

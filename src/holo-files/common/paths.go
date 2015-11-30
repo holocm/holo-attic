@@ -18,29 +18,44 @@
 *
 *******************************************************************************/
 
-package shared
+package common
 
 import (
-	"bytes"
-	"os/exec"
+	"os"
 	"strings"
 )
 
-//ExecProgram is a wrapper around exec.Command that reports any stderr output
-//of the child process to the given Report automatically.
-func ExecProgram(report *Report, stdin []byte, command string, arguments ...string) (output []byte, err error) {
-	var stdout, stderr bytes.Buffer
-	cmd := exec.Command(command, arguments...)
-	cmd.Stdin = bytes.NewBuffer(stdin)
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	err = cmd.Run()
-	if stderr.Len() > 0 {
-		report.AddWarning("execution of %s produced error output:", command)
-		stderrLines := strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
-		for _, stderrLine := range stderrLines {
-			report.AddWarning("    " + stderrLine)
-		}
+var (
+	targetDirectory   string
+	stateDirectory    string
+	resourceDirectory string
+)
+
+func init() {
+	targetDirectory = strings.TrimSuffix(os.Getenv("HOLO_ROOT_DIR"), "/")
+	if targetDirectory == "" {
+		targetDirectory = "/"
 	}
-	return stdout.Bytes(), err
+	stateDirectory = strings.TrimSuffix(os.Getenv("HOLO_STATE_DIR"), "/")
+	resourceDirectory = strings.TrimSuffix(os.Getenv("HOLO_RESOURCE_DIR"), "/")
+}
+
+//TargetDirectory is $HOLO_ROOT_DIR (or "/" if not set).
+func TargetDirectory() string {
+	return targetDirectory
+}
+
+//ResourceDirectory is $HOLO_RESOURCE_DIR.
+func ResourceDirectory() string {
+	return resourceDirectory
+}
+
+//TargetBaseDirectory is $HOLO_STATE_DIR/base.
+func TargetBaseDirectory() string {
+	return stateDirectory + "/base"
+}
+
+//ProvisionedDirectory is $HOLO_STATE_DIR/provisioned.
+func ProvisionedDirectory() string {
+	return stateDirectory + "/provisioned"
 }

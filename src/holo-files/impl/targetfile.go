@@ -18,13 +18,14 @@
 *
 *******************************************************************************/
 
-package files
+package impl
 
 import (
+	"fmt"
+	"os"
 	"path/filepath"
 	"sort"
 
-	"../../shared"
 	"../common"
 )
 
@@ -68,45 +69,40 @@ func (target *TargetFile) RepoEntries() RepoFiles {
 	return target.repoEntries
 }
 
-//EntityID implements the common.Entity interface.
+//EntityID returns the entity ID for this target file.
 func (target *TargetFile) EntityID() string {
 	return target.PathIn(common.TargetDirectory())
 }
 
-//Report implements the common.Entity interface.
-func (target *TargetFile) Report() *shared.Report {
-	r := shared.Report{Target: target.EntityID()}
+//PrintReport prints the report required by the "scan" operation for this
+//target file.
+func (target *TargetFile) PrintReport() {
+	fmt.Printf("ENTITY: %s\n", target.EntityID())
 
 	if target.orphaned {
 		_, strategy, assessment := target.scanOrphanedTargetBase()
-		r.State = assessment
-		r.AddLine(strategy, target.PathIn(common.TargetBaseDirectory()))
+		fmt.Printf("ACTION: Scrubbing (%s)\n", assessment)
+		fmt.Printf("%s: %s\n", strategy, target.PathIn(common.TargetBaseDirectory()))
 	} else {
-		r.AddLine("store at", target.PathIn(common.TargetBaseDirectory()))
+		fmt.Printf("store at: %s\n", target.PathIn(common.TargetBaseDirectory()))
 		for _, entry := range target.repoEntries {
-			r.AddLine(entry.ApplicationStrategy(), entry.Path())
+			fmt.Printf("%s: %s\n", entry.ApplicationStrategy(), entry.Path())
 		}
 	}
-
-	return &r
 }
 
 //Apply implements the common.Entity interface.
-func (target *TargetFile) Apply(withForce bool) {
-	report := target.Report()
-	skipReport := false
-
+func (target *TargetFile) Apply(withForce bool) (skipReport bool) {
+	var err error
 	if target.orphaned {
-		report.Action = "Scrubbing"
-		target.handleOrphanedTargetBase(report)
+		err = target.handleOrphanedTargetBase()
+		skipReport = false
 	} else {
-		report.Action = "Working on"
-		skipReport = apply(target, report, withForce)
+		skipReport, err = apply(target, withForce)
 	}
 
-	if skipReport {
-		report.PrintUnlessEmpty()
-	} else {
-		report.Print()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "!! %s\n", err.Error())
 	}
+	return
 }

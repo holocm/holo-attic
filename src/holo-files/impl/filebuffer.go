@@ -18,7 +18,7 @@
 *
 *******************************************************************************/
 
-package files
+package impl
 
 import (
 	"bytes"
@@ -96,7 +96,7 @@ func NewFileBufferFromContents(fileContents []byte, basePath string) *FileBuffer
 }
 
 func (fb *FileBuffer) Write(path string) error {
-	//(check that we're not attempting to overwrite unmanagea, createIfMissing boolble files
+	//(check that we're not attempting to overwrite unmanageable files
 	info, err := os.Lstat(path)
 	if err != nil && !os.IsNotExist(err) {
 		//abort because the target location could not be statted
