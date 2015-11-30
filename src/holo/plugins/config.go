@@ -27,8 +27,22 @@ import (
 	"strings"
 
 	"../../shared"
-	"../common"
 )
+
+var rootDirectory string
+
+func init() {
+	rootDirectory = os.Getenv("HOLO_ROOT_DIR")
+	if rootDirectory == "" {
+		rootDirectory = "/"
+	}
+}
+
+//RootDirectory returns the environment variable $HOLO_ROOT_DIR, or else the
+//default value "/".
+func RootDirectory() string {
+	return rootDirectory
+}
 
 //Configuration contains the parsed contents of /etc/holorc.
 type Configuration struct {
@@ -37,7 +51,7 @@ type Configuration struct {
 
 //ReadConfiguration reads the configuration file /etc/holorc.
 func ReadConfiguration() *Configuration {
-	path := filepath.Join(common.TargetDirectory(), "etc/holorc")
+	path := filepath.Join(RootDirectory(), "etc/holorc")
 
 	contents, err := ioutil.ReadFile(path)
 	if err != nil {

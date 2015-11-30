@@ -44,10 +44,10 @@ type Entity struct {
 	infoLines    []InfoLine
 }
 
-//EntityID implements the common.Entity interface.
+//EntityID returns a string that uniquely identifies the entity.
 func (e *Entity) EntityID() string { return e.id }
 
-//Report implements the common.Entity interface.
+//Report generates a Report describing this Entity.
 func (e *Entity) Report() *shared.Report {
 	r := shared.Report{Target: e.id, State: e.actionReason}
 	for _, infoLine := range e.infoLines {
@@ -56,7 +56,7 @@ func (e *Entity) Report() *shared.Report {
 	return &r
 }
 
-//Apply implements the common.Entity interface.
+//Apply performs the complete application algorithm for the given Entity.
 func (e *Entity) Apply(withForce bool) {
 	err := e.doApply(withForce)
 	if err != nil {
@@ -139,7 +139,8 @@ func (e *Entity) doApply(withForce bool) error {
 	return err
 }
 
-//RenderDiff implements the common.Entity interface.
+//RenderDiff creates a unified diff between the current and last
+//provisioned version of this entity.
 func (e *Entity) RenderDiff() ([]byte, error) {
 	var buffer bytes.Buffer
 	err := e.plugin.Command([]string{"diff", e.id}, &buffer, os.Stderr, nil).Run()

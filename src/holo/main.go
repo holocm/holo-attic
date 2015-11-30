@@ -25,7 +25,6 @@ import (
 	"os"
 
 	"../shared"
-	"./common"
 	"./plugins"
 )
 
@@ -42,7 +41,7 @@ func main() {
 	}
 
 	//check that it is a known command word
-	var command func(common.Entities, map[int]bool)
+	var command func([]*plugins.Entity, map[int]bool)
 	knownOpts := make(map[string]int)
 	switch os.Args[1] {
 	case "apply":
@@ -69,7 +68,7 @@ func main() {
 	}
 
 	//ask all plugins to scan for entities
-	var entities common.Entities
+	var entities []*plugins.Entity
 	for _, plugin := range config.Plugins {
 		pluginEntities := plugin.Scan()
 		if pluginEntities == nil {
@@ -111,7 +110,7 @@ func main() {
 
 	//if entities have been selected, limit the entities slice to these
 	if len(isEntityIDSelected) > 0 {
-		selectedEntities := make(common.Entities, 0, len(entities))
+		selectedEntities := make([]*plugins.Entity, 0, len(entities))
 		for _, entity := range entities {
 			if isEntityIDSelected[entity.EntityID()] {
 				selectedEntities = append(selectedEntities, entity)
@@ -136,14 +135,14 @@ func commandHelp() {
 	fmt.Printf("\nSee `man 8 holo` for details.\n")
 }
 
-func commandApply(entities common.Entities, options map[int]bool) {
+func commandApply(entities []*plugins.Entity, options map[int]bool) {
 	withForce := options[optionApplyForce]
 	for _, entity := range entities {
 		entity.Apply(withForce)
 	}
 }
 
-func commandScan(entities common.Entities, options map[int]bool) {
+func commandScan(entities []*plugins.Entity, options map[int]bool) {
 	isShort := options[optionScanShort]
 	for _, entity := range entities {
 		if isShort {
@@ -154,7 +153,7 @@ func commandScan(entities common.Entities, options map[int]bool) {
 	}
 }
 
-func commandDiff(entities common.Entities, options map[int]bool) {
+func commandDiff(entities []*plugins.Entity, options map[int]bool) {
 	for _, entity := range entities {
 		output, err := entity.RenderDiff()
 		if err != nil {

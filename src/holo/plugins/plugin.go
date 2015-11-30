@@ -26,8 +26,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-
-	"../common"
 )
 
 //Plugin describes a plugin executable adhering to the holo-plugin-interface(7).
@@ -38,7 +36,7 @@ type Plugin struct {
 
 //NewPlugin creates a new Plugin.
 func NewPlugin(id string) *Plugin {
-	executablePath := filepath.Join(common.TargetDirectory(), "usr/lib/holo/holo-"+id)
+	executablePath := filepath.Join(RootDirectory(), "usr/lib/holo/holo-"+id)
 	return &Plugin{id, executablePath}
 }
 
@@ -57,7 +55,7 @@ func (p *Plugin) ID() string {
 //ResourceDirectory returns the path to the directory where this plugin may
 //find its resources (entity definitions etc.).
 func (p *Plugin) ResourceDirectory() string {
-	return filepath.Join(common.TargetDirectory(), "usr/share/holo/"+p.id)
+	return filepath.Join(RootDirectory(), "usr/share/holo/"+p.id)
 }
 
 //CacheDirectory returns the path to the directory where this plugin may
@@ -69,7 +67,7 @@ func (p *Plugin) CacheDirectory() string {
 //StateDirectory returns the path to the directory where this plugin may
 //store persistent data.
 func (p *Plugin) StateDirectory() string {
-	return filepath.Join(common.TargetDirectory(), "var/lib/holo/"+p.id)
+	return filepath.Join(RootDirectory(), "var/lib/holo/"+p.id)
 }
 
 //Command returns an os.exec.Command structure that is set up to run the plugin

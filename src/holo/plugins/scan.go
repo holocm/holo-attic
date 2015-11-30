@@ -25,17 +25,17 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 
 	"../../shared"
-	"../common"
 )
 
 //Scan discovers entities available for the given entity. Errors are reported
 //immediately and will result in nil being returned. "No entities found" will
 //be reported as a non-nil empty slice.
 //there are no entities.
-func (p *Plugin) Scan() common.Entities {
+func (p *Plugin) Scan() []*Entity {
 	//invoke scan operation
 	stdout, hadError := p.runScanOperation()
 	if hadError {
@@ -49,7 +49,7 @@ func (p *Plugin) Scan() common.Entities {
 	report := shared.Report{Action: "scan with plugin", Target: p.ID()}
 	hadError = false
 	var currentEntity *Entity
-	var result common.Entities
+	var result []*Entity
 	for idx, line := range lines {
 		//skip empty lines
 		if line == "" {
@@ -111,8 +111,10 @@ func (p *Plugin) Scan() common.Entities {
 
 	//on success, ensure non-nil return value
 	if result == nil {
-		result = common.Entities{}
+		result = []*Entity{}
 	}
+
+	sort.Sort(entitiesByID(result))
 	return result
 }
 
@@ -132,3 +134,9 @@ func (p *Plugin) runScanOperation() (stdout string, hadError bool) {
 
 	return string(stdoutBuffer.Bytes()), err != nil
 }
+
+type entitiesByID []*Entity
+
+func (e entitiesByID) Len() int           { return len(e) }
+func (e entitiesByID) Less(i, j int) bool { return e[i].EntityID() < e[j].EntityID() }
+func (e entitiesByID) Swap(i, j int)      { e[i], e[j] = e[j], e[i] }

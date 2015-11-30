@@ -25,13 +25,12 @@ import (
 	"path/filepath"
 
 	"../../shared"
-	"../common"
 )
 
 var cachePath string
 
 func init() {
-	cachePath = filepath.Join(common.TargetDirectory(), "tmp/holo-cache")
+	cachePath = filepath.Join(RootDirectory(), "tmp/holo-cache")
 	err := doInit()
 	if err != nil {
 		r := shared.Report{Action: "Errors occurred during", Target: "startup"}
