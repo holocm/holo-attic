@@ -116,7 +116,7 @@ func parseArgs() (result options, exit bool) {
 			printHelp()
 			return opts, true
 		case "--version":
-			fmt.Println(shared.VersionString())
+			fmt.Println(common.VersionString())
 			return opts, true
 		case "--stdout":
 			opts.printToStdout = true
