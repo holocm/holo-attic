@@ -27,8 +27,6 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-
-	"../../shared"
 )
 
 //Scan discovers entities available for the given entity. Errors are reported
@@ -46,7 +44,7 @@ func (p *Plugin) Scan() []*Entity {
 	lines := strings.Split(strings.TrimSpace(stdout), "\n")
 	lineRx := regexp.MustCompile(`^\s*([^:]+): (.+)\s*$`)
 	actionRx := regexp.MustCompile(`^([^()]+) \((.+)\)$`)
-	report := shared.Report{Action: "scan with plugin", Target: p.ID()}
+	report := Report{Action: "scan with plugin", Target: p.ID()}
 	hadError = false
 	var currentEntity *Entity
 	var result []*Entity
@@ -124,7 +122,7 @@ func (p *Plugin) runScanOperation() (stdout string, hadError bool) {
 
 	//report any errors or error output
 	if err != nil || stderrBuffer.Len() > 0 {
-		report := shared.Report{Action: "scan with plugin", Target: p.ID()}
+		report := Report{Action: "scan with plugin", Target: p.ID()}
 		if err != nil {
 			report.AddError(err.Error())
 		}

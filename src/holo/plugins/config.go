@@ -25,8 +25,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"../../shared"
 )
 
 var rootDirectory string
@@ -55,7 +53,7 @@ func ReadConfiguration() *Configuration {
 
 	contents, err := ioutil.ReadFile(path)
 	if err != nil {
-		r := shared.Report{Action: "read", Target: path}
+		r := Report{Action: "read", Target: path}
 		r.AddError(err.Error())
 		r.Print()
 		return nil
@@ -84,7 +82,7 @@ func ReadConfiguration() *Configuration {
 			continue
 		} else {
 			//unknown line
-			r := shared.Report{Action: "read", Target: path}
+			r := Report{Action: "read", Target: path}
 			r.AddError("unknown command: %s", line)
 			r.Print()
 			return nil
@@ -92,7 +90,7 @@ func ReadConfiguration() *Configuration {
 	}
 
 	//check existence of resource directories
-	errorReport := shared.Report{Action: "Errors occurred during", Target: "plugin discovery"}
+	errorReport := Report{Action: "Errors occurred during", Target: "plugin discovery"}
 	hasError := false
 	for _, plugin := range result.Plugins {
 		dir := plugin.ResourceDirectory()

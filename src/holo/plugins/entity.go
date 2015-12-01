@@ -25,8 +25,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-
-	"../../shared"
 )
 
 //InfoLine represents a line in the information section of an Entity.
@@ -48,8 +46,8 @@ type Entity struct {
 func (e *Entity) EntityID() string { return e.id }
 
 //Report generates a Report describing this Entity.
-func (e *Entity) Report() *shared.Report {
-	r := shared.Report{Target: e.id, State: e.actionReason}
+func (e *Entity) Report() *Report {
+	r := Report{Target: e.id, State: e.actionReason}
 	for _, infoLine := range e.infoLines {
 		r.AddLine(infoLine.attribute, infoLine.value)
 	}
