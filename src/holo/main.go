@@ -28,6 +28,15 @@ import (
 	"./plugins"
 )
 
+// #include <locale.h>
+import "C"
+
+func init() {
+	//Holo requires a neutral locale, esp. for deterministic sorting of file paths
+	lcAll := C.int(0)
+	C.setlocale(lcAll, C.CString("C"))
+}
+
 //Note: This line is parsed by the Makefile to get the version string. If you
 //change the format, adjust the Makefile too.
 var version = "v0.10.0-pre"

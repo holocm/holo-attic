@@ -27,6 +27,15 @@ import (
 	"./impl"
 )
 
+// #include <locale.h>
+import "C"
+
+func init() {
+	//Holo requires a neutral locale, esp. for deterministic sorting of file paths
+	lcAll := C.int(0)
+	C.setlocale(lcAll, C.CString("C"))
+}
+
 func main() {
 	if version := os.Getenv("HOLO_API_VERSION"); version != "1" {
 		fmt.Fprintf(os.Stderr, "!! holo-users-groups plugin called with unknown HOLO_API_VERSION %s\n", version)
