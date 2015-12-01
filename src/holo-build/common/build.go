@@ -90,28 +90,35 @@ func (pkg *Package) Build(generator Generator, printToStdout bool, buildReproduc
 }
 
 func (pkg *Package) doMagicalHoloIntegration() {
-	//does this package need to provision stuff with Holo?
-	doesProvision := false
+	//does this package need to provision stuff with Holo plugins?
+	plugins := make(map[string]bool)
 	for _, entry := range pkg.FSEntries {
 		if strings.HasPrefix(entry.Path, "/usr/share/holo/") {
-			doesProvision = true
+			//extract the plugin ID from the path
+			pathParts := strings.Split(entry.Path, "/")
+			if len(pathParts) > 4 {
+				plugins[pathParts[4]] = true
+			}
 			break
 		}
 	}
-	if !doesProvision {
+	if len(plugins) == 0 {
 		return
 	}
 
-	//it does -> add Holo to the list of requirements...
-	hasHoloDep := false
-	for _, rel := range pkg.Requires {
-		if rel.RelatedPackage == "holo" {
-			hasHoloDep = true
-			break
+	//it does -> add all these Holo plugins to the list of requirements...
+	for pluginID := range plugins {
+		depName := "holo-" + pluginID
+		hasDep := false
+		for _, rel := range pkg.Requires {
+			if rel.RelatedPackage == depName {
+				hasDep = true
+				break
+			}
 		}
-	}
-	if !hasHoloDep {
-		pkg.Requires = append(pkg.Requires, PackageRelation{RelatedPackage: "holo"})
+		if !hasDep {
+			pkg.Requires = append(pkg.Requires, PackageRelation{RelatedPackage: depName})
+		}
 	}
 
 	//...and run `holo apply` during setup/cleanup

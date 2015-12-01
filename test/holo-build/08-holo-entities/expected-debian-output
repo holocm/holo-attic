@@ -6,14 +6,14 @@ ar archive
             Version: 1.0-1
             Architecture: all
             Maintainer: Holo Build <holo.build@example.org>
-            Installed-Size: 16
+            Installed-Size: 20
             Section: misc
             Priority: optional
-            Depends: holo
+            Depends: holo-users-groups
             Description: holo-entities
              holo-entities
         >> ./md5sums is regular file (mode: 644, owner: 0, group: 0), content is data as shown below
-            89164e38542babd6b83461b130f1c432  usr/share/holo/08-holo-entities.toml
+            89164e38542babd6b83461b130f1c432  usr/share/holo/users-groups/08-holo-entities.toml
         >> ./postinst is regular file (mode: 755, owner: 0, group: 0), content is data as shown below
             #!/bin/bash
             holo apply
@@ -25,7 +25,8 @@ ar archive
         >> ./usr/ is directory (mode: 755, owner: 0, group: 0)
         >> ./usr/share/ is directory (mode: 755, owner: 0, group: 0)
         >> ./usr/share/holo/ is directory (mode: 755, owner: 0, group: 0)
-        >> ./usr/share/holo/08-holo-entities.toml is regular file (mode: 644, owner: 0, group: 0), content is data as shown below
+        >> ./usr/share/holo/users-groups/ is directory (mode: 755, owner: 0, group: 0)
+        >> ./usr/share/holo/users-groups/08-holo-entities.toml is regular file (mode: 644, owner: 0, group: 0), content is data as shown below
             [[group]]
               name = "foogroup"
               gid = 101

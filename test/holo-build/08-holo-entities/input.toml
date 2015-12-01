@@ -5,7 +5,7 @@
 name    = "holo-entities"
 version = "1.0"
 author  = "Holo Build <holo.build@example.org>"
-definitionFile = "/usr/share/holo/08-holo-entities.toml"
+definitionFile = "/usr/share/holo/users-groups/08-holo-entities.toml"
 
 [[group]]
 name = "foogroup"

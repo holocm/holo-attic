@@ -5,10 +5,10 @@
 name = "holo-integration"
 version = "1.0"
 author = "Holo Build <holo.build@example.org>"
-# requires = ["holo"] will be added implicitly
+# requires = ["holo-files"] will be added implicitly
 # setupScript = "holo apply" will be added implicitly
 # cleanupScript = "holo apply" will be added implicitly
 
 [[file]]
-path = "/usr/share/holo/repo/01-first/etc/foo.conf"
+path = "/usr/share/holo/files/01-first/etc/foo.conf"
 content = "test"

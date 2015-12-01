@@ -15,7 +15,7 @@ XZ-compressed POSIX tar archive
         }
     >> .MTREE is regular file (mode: 644, owner: 0, group: 0), content is GZip-compressed mtree metadata archive
         >> ./.INSTALL gid=0 md5digest=dede37e36f956199c27abdba15861fd2 mode=644 sha256digest=3474c87b37f73e91a2afab69177e62f798e623671c396c8e56b9037602bb8f20 size=186 time=0.0 type=file uid=0
-        >> ./.PKGINFO gid=0 md5digest=5f5ce114af7768e786b53857dcba3c6f mode=644 sha256digest=a6226109f56a06731e686467c31400c5333ff7db204755118d959d58506385d7 size=618 time=0.0 type=file uid=0
+        >> ./.PKGINFO gid=0 md5digest=e100f0d98a2fe3e9a3a455153ae68080 mode=644 sha256digest=4b7d1c36645a276be54191b9eaebd02e167f6fb43b624454e3b7d93e78fb2d2b size=624 time=0.0 type=file uid=0
         >> ./etc gid=0 mode=755 time=0.0 type=dir uid=0
         >> ./etc/files gid=0 mode=755 time=0.0 type=dir uid=0
         >> ./etc/files/foo.conf gid=0 md5digest=5fb7ba7e8447a836e774b66155f5776a mode=644 sha256digest=f13a55b71d31ec3df35f99d6b6332b23a4967312314456941aff922a7d354818 size=8 time=0.0 type=file uid=0
@@ -48,7 +48,7 @@ XZ-compressed POSIX tar archive
         depend = bar>=2.1
         depend = bar<3.0
         depend = baz
-        makedepend = holo
+        makedepend = holo-build
         makepkgopt = !strip
         makepkgopt = docs
         makepkgopt = libtool

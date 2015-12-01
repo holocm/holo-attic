@@ -120,9 +120,8 @@ func writePKGINFO(pkg *common.Package, rootPath string, buildReproducibly bool) 
 	}
 	contents += requires
 
-	//we used holo-build to build this, so the build depends on the package
-	//"holo" which contains holo-build
-	contents += "makedepend = holo\n"
+	//we used holo-build to build this, so the build depends on this package
+	contents += "makedepend = holo-build\n"
 	//these makepkgopt are fabricated (well, duh) and describe the behavior of
 	//holo-build in terms of these options
 	contents += "makepkgopt = !strip\n"

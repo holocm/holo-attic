@@ -86,7 +86,7 @@ func parseUserOrGroupRef(value interface{}, ec *ErrorCollector, entryDesc string
 	}
 }
 
-var definitionFileRx = regexp.MustCompile(`^/usr/share/holo/[^/]+.toml$`)
+var definitionFileRx = regexp.MustCompile(`^/usr/share/holo/users-groups/[^/]+.toml$`)
 
 func compileEntityDefinitions(pkg PackageSection, groups []GroupSection, users []UserSection, ec *ErrorCollector) *FSEntry {
 	//only add an entity definition file if it is required
@@ -99,7 +99,7 @@ func compileEntityDefinitions(pkg PackageSection, groups []GroupSection, users [
 	case pkg.DefinitionFile == "":
 		ec.Addf("Cannot declare users/groups when package.definitionFile field is missing")
 	case !definitionFileRx.MatchString(pkg.DefinitionFile):
-		ec.Addf("\"%s\" is not an acceptable definition file (should look like \"/usr/share/holo/01-foo.toml\")", pkg.DefinitionFile)
+		ec.Addf("\"%s\" is not an acceptable definition file (should look like \"/usr/share/holo/users-groups/01-foo.toml\")", pkg.DefinitionFile)
 	}
 
 	//validate users/groups

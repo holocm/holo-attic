@@ -9,11 +9,11 @@ ar archive
             Installed-Size: 28
             Section: misc
             Priority: optional
-            Depends: holo
+            Depends: holo-files
             Description: holo-integration
              holo-integration
         >> ./md5sums is regular file (mode: 644, owner: 0, group: 0), content is data as shown below
-            098f6bcd4621d373cade4e832627b4f6  usr/share/holo/repo/01-first/etc/foo.conf
+            098f6bcd4621d373cade4e832627b4f6  usr/share/holo/files/01-first/etc/foo.conf
         >> ./postinst is regular file (mode: 755, owner: 0, group: 0), content is data as shown below
             #!/bin/bash
             holo apply
@@ -25,10 +25,10 @@ ar archive
         >> ./usr/ is directory (mode: 755, owner: 0, group: 0)
         >> ./usr/share/ is directory (mode: 755, owner: 0, group: 0)
         >> ./usr/share/holo/ is directory (mode: 755, owner: 0, group: 0)
-        >> ./usr/share/holo/repo/ is directory (mode: 755, owner: 0, group: 0)
-        >> ./usr/share/holo/repo/01-first/ is directory (mode: 755, owner: 0, group: 0)
-        >> ./usr/share/holo/repo/01-first/etc/ is directory (mode: 755, owner: 0, group: 0)
-        >> ./usr/share/holo/repo/01-first/etc/foo.conf is regular file (mode: 644, owner: 0, group: 0), content is data as shown below
+        >> ./usr/share/holo/files/ is directory (mode: 755, owner: 0, group: 0)
+        >> ./usr/share/holo/files/01-first/ is directory (mode: 755, owner: 0, group: 0)
+        >> ./usr/share/holo/files/01-first/etc/ is directory (mode: 755, owner: 0, group: 0)
+        >> ./usr/share/holo/files/01-first/etc/foo.conf is regular file (mode: 644, owner: 0, group: 0), content is data as shown below
             test
     >> debian-binary is regular file (mode: 644, owner: 0, group: 0) at archive position 0, content is data as shown below
         2.0
