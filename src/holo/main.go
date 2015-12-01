@@ -24,7 +24,6 @@ import (
 	"fmt"
 	"os"
 
-	"../shared"
 	"./plugins"
 )
 
@@ -170,7 +169,7 @@ func commandDiff(entities []*plugins.Entity, options map[int]bool) {
 	for _, entity := range entities {
 		output, err := entity.RenderDiff()
 		if err != nil {
-			report := shared.Report{Action: "diff", Target: entity.EntityID()}
+			report := plugins.Report{Action: "diff", Target: entity.EntityID()}
 			report.AddError(err.Error())
 			report.Print()
 		}

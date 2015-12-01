@@ -18,7 +18,9 @@
 *
 *******************************************************************************/
 
-package shared
+package plugins
+
+//TODO: A lot of this file is redundant and can probably be inlined or deleted.
 
 import (
 	"fmt"

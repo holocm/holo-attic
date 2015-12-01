@@ -2,9 +2,9 @@ default: build/holo build/holo-build build/holo-files build/holo-users-groups
 default: build/man/holorc.5 build/man/holo-plugin-interface.7 build/man/holo.8 build/man/holo-build.8
 .PHONY: install check test
 
-build/holo: src/holo/main.go src/holo/*/*.go src/shared/*.go
+build/holo: src/holo/main.go src/holo/*/*.go
 	go build -o $@ $<
-build/holo-build: src/holo-build/main.go src/holo-build/*/*.go src/shared/*.go
+build/holo-build: src/holo-build/main.go src/holo-build/*/*.go
 	go build -o $@ $<
 build/holo-files: src/holo-files/main.go src/holo-files/*/*.go
 	go build -o $@ $<
