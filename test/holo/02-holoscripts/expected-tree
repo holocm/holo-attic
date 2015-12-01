@@ -5,10 +5,8 @@ foo
 baz
 bar
 bar
->> ./etc/holorc = regular
-plugin files=../../../build/holo-files
-plugin users-groups=../../../build/holo-users-groups
-plugin run-scripts=../../../src/holo-run-scripts
+>> ./etc/holorc = symlink
+../../../holorc
 >> ./etc/link-through-link.conf = regular
 foo
 baz

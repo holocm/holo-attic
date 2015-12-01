@@ -1,5 +1,6 @@
 #!/bin/sh
 
 set -e
-bash "$(dirname $0)/holo/run_tests.sh"
-bash "$(dirname $0)/holo-build/run_tests.sh"
+cd "$(dirname $0)"
+bash ../src/holo-test holo holo/??-*
+bash ./holo-build/run_tests.sh

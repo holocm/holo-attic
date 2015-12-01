@@ -2,10 +2,8 @@
 original bar
 >> ./etc/foo.conf = regular
 modified file
->> ./etc/holorc = regular
-plugin files=../../../build/holo-files
-plugin users-groups=../../../build/holo-users-groups
-plugin run-scripts=../../../src/holo-run-scripts
+>> ./etc/holorc = symlink
+../../../holorc
 >> ./usr/share/holo/files/01-first/etc/bar.conf.holoscript = regular
 #!/bin/sh
 echo ERROR >&2

@@ -72,8 +72,8 @@ else
 fi
 
 if [ $TEST_EXIT_CODE = 0 ]; then
-    echo ">> All tests for \"holo-build\" completed successfully."
+    echo ">> All tests for holo-build completed successfully."
 else
-    echo "!! Some or all tests for \"holo-build\" failed. Please check the output above for more information."
+    echo "!! Some or all tests for holo-build failed. Please check the output above for more information."
 fi
 exit $TEST_EXIT_CODE

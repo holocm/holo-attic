@@ -1,5 +1,5 @@
 default: build/holo build/holo-build build/holo-files build/holo-users-groups
-default: build/man/holorc.5 build/man/holo-plugin-interface.7 build/man/holo.8 build/man/holo-build.8
+default: build/man/holorc.5 build/man/holo-plugin-interface.7 build/man/holo-test.7 build/man/holo.8 build/man/holo-build.8
 .PHONY: install check test
 
 build/holo: src/holo/main.go src/holo/*/*.go
@@ -28,19 +28,21 @@ test: check # just a synonym
 check: default build/dump-package
 	@bash test/run_tests.sh
 
-install: default src/holo/holorc src/holo-build/holo-build.sh src/holo-run-scripts util/completions/holo.bash util/completions/holo-build.bash util/completions/holo.zsh util/completions/holo-build.zsh
+install: default src/holo/holorc src/holo-build/holo-build.sh src/holo-run-scripts src/holo-test util/completions/holo.bash util/completions/holo-build.bash util/completions/holo.zsh util/completions/holo-build.zsh
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo"
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo/files"
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo/files/base"
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo/files/provisioned"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo"
+	install -d -m 0755 "$(DESTDIR)/usr/share/holo/files"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo/run-scripts"
-	install -d -m 0755 "$(DESTDIR)/usr/share/holo/repo"
+	install -d -m 0755 "$(DESTDIR)/usr/share/holo/users-groups"
 	install -D -m 0644 src/holo/holorc              "$(DESTDIR)/etc/holo/holorc"
 	install -D -m 0755 build/holo                   "$(DESTDIR)/usr/bin/holo"
 	install -D -m 0755 src/holo-build/holo-build.sh "$(DESTDIR)/usr/bin/holo-build"
 	install -D -m 0755 build/holo-build             "$(DESTDIR)/usr/lib/holo/holo-build"
 	install -D -m 0755 src/holo-run-scripts         "$(DESTDIR)/usr/lib/holo/holo-run-scripts"
+	install -D -m 0755 src/holo-test                "$(DESTDIR)/usr/lib/holo/holo-test"
 	install -D -m 0755 build/holo-users-groups      "$(DESTDIR)/usr/lib/holo/holo-users-groups"
 	install -D -m 0644 build/man/holo.8             "$(DESTDIR)/usr/share/man/man8/holo.8"
 	install -D -m 0644 build/man/holo-build.8       "$(DESTDIR)/usr/share/man/man8/holo-build.8"

@@ -14,10 +14,8 @@ ccc
 aaa
 bbb
 ccc
->> ./etc/holorc = regular
-plugin files=../../../build/holo-files
-plugin users-groups=../../../build/holo-users-groups
-plugin run-scripts=../../../src/holo-run-scripts
+>> ./etc/holorc = symlink
+../../../holorc
 >> ./etc/symlink-deleted.conf = symlink
 /bin/true
 >> ./etc/symlink-modified.conf = symlink

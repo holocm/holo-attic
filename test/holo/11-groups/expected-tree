@@ -12,10 +12,8 @@ kmem:x:9:
 wheel:x:10:root
 existing:x:101:
 wronggid:x:102:
->> ./etc/holorc = regular
-plugin files=../../../build/holo-files
-plugin users-groups=../../../build/holo-users-groups
-plugin run-scripts=../../../src/holo-run-scripts
+>> ./etc/holorc = symlink
+../../../holorc
 >> ./usr/share/holo/users-groups/01-groups.json = regular
 {
     "groups": [
