@@ -1,5 +1,3 @@
-
-read package definition
 !! Missing package name
 !! Missing package version
 !! group 0 is invalid: missing "name" attribute
@@ -9,4 +7,3 @@ read package definition
 !! file "/etc/this-not-either.conf" is invalid: missing content
 !! symlink 0 is invalid: missing "path" attribute
 !! The "package.author" field is required for Debian packages
-

@@ -1,5 +1,3 @@
-
-read package definition
 !! Invalid package name "invalid/package" (may not contain slashes or newlines)
 !! Invalid package version "1.0-alpha.1" (must be a chain of numbers like "1.2.0" or "20151104")
 !! Invalid package author "John Doe" (should look like "Jane Doe <jane.doe@example.org>")
@@ -26,4 +24,3 @@ read package definition
 !! multiple entries for path "/etc/foo"
 !! file "/etc/foo" is invalid: "john+doe" is not an acceptable user or group name
 !! file "/etc/foo" is invalid: "$users" is not an acceptable user or group name
-

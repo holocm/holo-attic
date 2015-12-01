@@ -21,6 +21,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"syscall"
@@ -65,7 +66,6 @@ func actualMain() {
 	generator := findGenerator(opts.format)
 
 	//read package definition from stdin
-	r := shared.Report{Action: "read", Target: "package definition"}
 	pkg, errs := common.ParsePackageDefinition(os.Stdin)
 
 	//try to validate package
@@ -78,9 +78,8 @@ func actualMain() {
 	//did that go wrong?
 	if len(errs) > 0 {
 		for _, err := range errs {
-			r.AddError(err.Error())
+			showError(err)
 		}
-		r.Print()
 		os.Exit(1)
 	}
 
@@ -93,9 +92,9 @@ func actualMain() {
 	//build package
 	err := pkg.Build(generator, opts.printToStdout, opts.reproducible)
 	if err != nil {
-		r = shared.Report{Action: "build", Target: fmt.Sprintf("%s-%s", pkg.Name, pkg.Version)}
-		r.AddError(err.Error())
-		r.Print()
+		showError(fmt.Errorf("cannot build %s: %s\n",
+			generator.RecommendedFileName(pkg), err.Error(),
+		))
 		os.Exit(2)
 	}
 }
@@ -110,7 +109,6 @@ func parseArgs() (result options, exit bool) {
 
 	//parse arguments
 	args := os.Args[1:]
-	r := shared.Report{Action: "parse", Target: "arguments"}
 	hasArgsError := false
 	for _, arg := range args {
 		switch arg {
@@ -132,23 +130,22 @@ func parseArgs() (result options, exit bool) {
 			opts.reproducible = false
 		case "--pacman":
 			if opts.format != formatAuto {
-				r.AddError("Multiple package formats specified.")
+				showError(errors.New("Multiple package formats specified."))
 				hasArgsError = true
 			}
 			opts.format = formatPacman
 		case "--debian":
 			if opts.format != formatAuto {
-				r.AddError("Multiple package formats specified.")
+				showError(errors.New("Multiple package formats specified."))
 				hasArgsError = true
 			}
 			opts.format = formatDebian
 		default:
-			r.AddError("Unrecognized argument: '%s'", arg)
+			showError(fmt.Errorf("Unrecognized argument: '%s'", arg))
 			hasArgsError = true
 		}
 	}
 	if hasArgsError {
-		r.Print()
 		printHelp()
 		os.Exit(1)
 	}
@@ -189,4 +186,8 @@ func findGenerator(format int) common.Generator {
 	default:
 		panic("Impossible format")
 	}
+}
+
+func showError(err error) {
+	fmt.Fprintf(os.Stderr, "\x1b[31m\x1b[1m!!\x1b[0m %s\n", err.Error())
 }
