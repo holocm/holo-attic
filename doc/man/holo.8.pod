@@ -32,29 +32,29 @@ management perspective) of the package management.
 
 =head2 Provisioning of files via the configuration repository
 
-The configuration repository at F</usr/share/holo/repo> can be used to resolve
+The configuration repository at F</usr/share/holo/files> can be used to resolve
 file conflicts when multiple packages (holograms or system packages) work on
 the same configuration file. Each file in the repository works on a certain
 B<target>, as determined by its file name:
 
-    /usr/share/holo/repo/20-webserver/etc/nginx/nginx.conf
-                          ^          --+------------------
-                          |            |
-                          |            +-- path to target
-                          |
-                          +-- disambiguator
+    /usr/share/holo/files/20-webserver/etc/nginx/nginx.conf
+                           ^          --+------------------
+                           |            |
+                           |            +-- path to target
+                           |
+                           +-- disambiguator
 
 The disambiguator is always required, and allows multiple repository entries to
 operate on the same target (sorted alphabetically by their disambiguator). The
 pattern of putting a number at the start of the disambiguator is not required,
 but useful to control the ordering of repo files.
 
-Repository entries are applied on the B<target base>, the initial version of the
-target that was found at the target path during the first C<holo apply> run.
-This target base is saved at F</var/lib/holo/base/$target> and will be updated
-automatically when the package management installed an updated version of the
-target base as F<$target.rpmnew>, F<$target.dpkg-dist>, etc. (The exact paths
-depend on the package manager.)
+Repository entries are applied on the B<target base>, the initial version of
+the target that was found at the target path during the first C<holo apply>
+run.  This target base is saved at F</var/lib/holo/files/base/$target> and will
+be updated automatically when the package management installed an updated
+version of the target base as F<$target.rpmnew>, F<$target.dpkg-dist>, etc.
+(The exact paths depend on the package manager.)
 
 Repository entries that are plain files or symlinks will just overwrite the
 target base (or all previous entries), whereas executable repository entries
@@ -65,29 +65,33 @@ application shall be used, but with some minor modifications. The following
 example uses the default configuration for L<pacman(8)>, but enables the "Color"
 option:
 
-    $ cat /usr/share/holo/repo/20-enable-color/etc/pacman.conf.holoscript
+    $ cat /usr/share/holo/files/20-enable-color/etc/pacman.conf.holoscript
     #!/bin/sh
     sed 's/^#\s*Color$/Color/'
 
     $ sudo holo apply /etc/pacman.conf
 
     Working on /etc/pacman.conf
-      store at /var/lib/holo/base/etc/pacman.conf
-      passthru /usr/share/holo/repo/20-enable-color/etc/pacman.conf.holoscript
+      store at /var/lib/holo/files/base/etc/pacman.conf
+      passthru /usr/share/holo/files/20-enable-color/etc/pacman.conf.holoscript
 
 When writing the new target file, ownership and permissions will be copied from
 the target base, and thus from the original target file. Furthermore, a copy of
-the provisioned target file is written to F</var/lib/holo/provisioned/$target>
-for use by C<holo diff $target>.
+the provisioned target file is written to
+F</var/lib/holo/files/provisioned/$target> for use by C<holo diff $target>.
 
 =head2 Provisioning of user accounts and groups
+
+B<WARNING:> The functionality described in this section is provided by the
+B<holo-users-groups> plugin which now is shipped separately. A documentation
+update is underway.
 
 Entity definitions can be added to automatically provision user accounts and
 groups to L<passwd(5)> and L<group(5)>. Provisioning uses the standard commands
 L<useradd(8)>, L<usermod(8)>, L<groupadd(8)> and L<groupmod(8)>.
 
-Entity definitions are placed at F</usr/share/holo/*.toml> and are written in
-TOML. The following fields are accepted for users and groups:
+Entity definitions are placed at F</usr/share/holo/users-groups/*.toml> and are
+written in TOML. The following fields are accepted for users and groups:
 
     [[group]]
     name    = "mygroup"            # string,  the group name
@@ -114,7 +118,11 @@ merged.)
 
 =head2 Running custom scripts during provisioning
 
-Executable files placed at F</usr/share/holo/provision/> will be run (in
+B<WARNING:> The functionality described in this section is provided by the
+B<holo-run-scripts> plugin which now is shipped separately. A documentation
+update is underway.
+
+Executable files placed at F</usr/share/holo/run-scripts/> will be run (in
 alphabetical order) by C<holo apply> after all other entities (files, users and
 groups) have been provisioned.
 
@@ -128,13 +136,13 @@ and refuse to overwrite the manual changes.
     $ sudo usermod --uid 2003 user:test
     $ sudo holo apply /etc/pacman.conf
 
-    Working on target/etc/pacman.conf
-         apply target/usr/share/holo/repo/01-base/etc/pacman.conf
+    Working on /etc/pacman.conf
+         apply /usr/share/holo/files/01-base/etc/pacman.conf
 
     !! skipping target: file has been deleted by user (use --force to restore)
 
     Working on user:test
-      found in target/usr/share/holo/01-base.toml
+      found in /usr/share/holo/users-groups/01-base.toml
           with UID: 1003
 
     !! User has UID: 2003, expected 1003 (use --force to overwrite)
@@ -158,7 +166,7 @@ C<user:mysql> or C<group:sudo>).
 
 Read the configuration repository and entity definitions and apply the selected
 (or all) targets. Also, when repository files or target files have been deleted,
-but there still exist target bases in F</var/lib/holo/base>, scrub these.
+but there still exist target bases in F</var/lib/holo/files/base>, scrub these.
 
 Scrubbing means to delete the target base if the target file has also been
 deleted, or to restore the target base when only the repository entries have

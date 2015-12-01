@@ -86,19 +86,20 @@ different location:
     target = "/usr/lib/systemd/system/nginx.service"
 
     [[file]]
-    path        = "/usr/share/holo/repo/10-mywebserver/etc/nginx/nginx.conf"
+    path        = "/usr/share/holo/files/10-mywebserver/etc/nginx/nginx.conf"
     contentFrom = "nginx.conf"
 
     $ holo-build < configure-mywebserver.pkg.toml
 
-The configuration file has been moved to Holo's configuration repository below
-F</usr/share/holo/repo>. (Don't worry about the C<10-mywebserver> bit for now, we'll
-see why it's useful in the next example.) Since C<holo-build> knows what this
-is, it has automatically added C<holo> as a dependency for the package:
+The configuration file has been moved to Holo's resource directory below
+F</usr/share/holo/files>. (Don't worry about the C<10-mywebserver> bit for now,
+we'll see why it's useful in the next example.) Since C<holo-build> knows what
+this is, it has automatically added C<holo-files> (the Holo plugin for
+provisioning configuration files) as a dependency for the package:
 
     $ pacman -Qip configure-mywebserver-1.0.0-2-any.tar.xz
     ...
-    Depends On     : nginx  holo
+    Depends On     : nginx  holo-files
     ...
 
 And it has added a post-install script to the package that runs:
@@ -106,8 +107,8 @@ And it has added a post-install script to the package that runs:
     # holo apply
 
     Working on /etc/nginx/nginx.conf
-      store at /var/lib/holo/base/etc/nginx/nginx.conf
-         apply /usr/share/holo/repo/10-mywebserver/etc/nginx/nginx.conf
+      store at /var/lib/holo/files/base/etc/nginx/nginx.conf
+         apply /usr/share/holo/files/10-mywebserver/etc/nginx/nginx.conf
 
 Of course you can use C<holo> without C<holo-build>, too, by building packages
 with the standard distribution tools.
@@ -137,7 +138,7 @@ configuration files, but also scripts that modify the configuration file
     requires = [ "configure-mywebserver" ]
 
     [[file]]
-    path    = "/usr/share/holo/repo/20-alternate-port/etc/nginx/nginx.conf.holoscript"
+    path    = "/usr/share/holo/files/20-alternate-port/etc/nginx/nginx.conf.holoscript"
     mode    = "0755"
     content = """
         #!/bin/sh
@@ -154,28 +155,17 @@ applied to the configuration from the previous configuration package.
     # holo apply
 
     Working on /etc/nginx/nginx.conf
-         apply /usr/share/holo/repo/10-mywebserver/etc/nginx/nginx.conf
-      passthru /usr/share/holo/repo/20-alternate-port/etc/nginx/nginx.conf.holoscript
+      store at /var/lib/holo/files/base/etc/nginx/nginx.conf
+         apply /usr/share/holo/files/10-mywebserver/etc/nginx/nginx.conf
+      passthru /usr/share/holo/files/20-alternate-port/etc/nginx/nginx.conf.holoscript
 
 The order in which repository files are applied is defined by the directory
-names below F</usr/share/holo/repo> (C<10-mywebserver> and C<20-alternate-port>), which
-we call I<disambiguators>.
+names below F</usr/share/holo/files> (C<10-mywebserver> and
+C<20-alternate-port>), which we call I<disambiguators>.
 
 Holoscripts can also be used on their own, without a plain configuration
 coming before it. In this case, the holoscript modifies the default
 configuration installed by the application package.
-
-=head1 5. Just how tiny is Holo?
-
-This tiny:
-
-    $ ls -lh /usr/bin/holo*
-    -rwxr-xr-x 1 root root 2,8M  6. Nov 22:38 /usr/bin/holo
-    -rwxr-xr-x 1 root root 2,6M  6. Nov 22:38 /usr/bin/holo-build
-
-Holo comes in two static binaries which are trivial to deploy even during
-initial setup of your system. To install it on your system as well, have a look
-at the user documentation.
 
 =begin html
 

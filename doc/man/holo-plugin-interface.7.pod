@@ -39,7 +39,7 @@ F</etc/holorc> (see L<holorc(5)>) by adding the line:
 
 It is RECOMMENDED that plugins install a holoscript to achieve this:
 
-    $ cat /usr/share/holo/repo/50-holo-foosql/etc/holorc.holoscript
+    $ cat /usr/share/holo/files/50-holo-foosql/etc/holorc.holoscript
     #!/bin/sh
     # This file is part of the holo-foosql package.
     cat

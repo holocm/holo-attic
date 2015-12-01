@@ -201,9 +201,10 @@ tests are required, the same package can be stated multiple times.
     # require any version of foo, and a 2.x version of bar
     requires = [ "foo", "bar >= 2.0", "bar < 3.0" ]
 
-When the package contains any files below C</usr/share/holo>, a requirement
+When the package contains any files below C</usr/share/holo/$PLUGIN_ID>, a
+requirement
 
-    requires = [ "holo" ]
+    requires = [ "holo-$PLUGIN_ID" ]
 
 is implied automatically.
 
@@ -427,7 +428,7 @@ installed. For example:
     [package]
     name           = "foobar"
     version        = "1.0"
-    definitionFile = "/usr/share/holo/01-example.toml"
+    definitionFile = "/usr/share/holo/users-groups/01-example.toml"
 
     [[group]]
     name   = "foobargroup"
@@ -440,9 +441,9 @@ installed. For example:
 
 The user and group definitions are validated at package compilation time, and
 written into the file named in the C<[package]> section. Since this file must
-be in F</usr/share/holo>, a dependency on C<holo> is implied and C<holo apply>
-is executed in the setup and cleanup scripts. So the previous example is
-functionally equivalent to:
+be in F</usr/share/holo/users-groups>, a dependency on C<holo-users-groups> is
+implied and C<holo apply> is executed in the setup and cleanup scripts. So the
+previous example is functionally equivalent to:
 
     [package]
     name          = "foobar"
@@ -452,7 +453,7 @@ functionally equivalent to:
     cleanupScript = "holo apply"
 
     [[file]]
-    path    = "/usr/share/holo/01-example.toml"
+    path    = "/usr/share/holo/users-groups/01-example.toml"
     content = """
         [[group]]
         name   = "foobargroup"
