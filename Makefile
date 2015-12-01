@@ -15,9 +15,9 @@ build/holo-users-groups: src/holo-users-groups/main.go src/holo-users-groups/*/*
 # should be readily available on almost every Unix system)
 # TODO: build/man/holo-build.8 should use version string from src/holo-build/common/version.go
 #       (will fix this when splitting holo-build into a separate repo)
-build/man/%: doc/man/%.pod src/shared/version.go
+build/man/%: doc/man/%.pod src/holo/main.go
 	pod2man --name="$(shell echo $* | cut -d. -f1)" --section=$(shell echo $* | cut -d. -f2) --center="Configuration Management" \
-		--release="Holo $(shell grep 'var version =' src/shared/version.go | cut -d'"' -f2)" \
+		--release="Holo $(shell grep 'var version =' src/holo/main.go | cut -d'"' -f2)" \
 		$< $@
 
 # this utility is needed only for testing

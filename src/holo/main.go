@@ -28,6 +28,10 @@ import (
 	"./plugins"
 )
 
+//Note: This line is parsed by the Makefile to get the version string. If you
+//change the format, adjust the Makefile too.
+var version = "v0.10.0-pre"
+
 const (
 	optionApplyForce = iota
 	optionScanShort
@@ -53,7 +57,7 @@ func main() {
 		command = commandScan
 		knownOpts = map[string]int{"-s": optionScanShort, "--short": optionScanShort}
 	case "version", "--version":
-		fmt.Println(shared.VersionString())
+		fmt.Println(version)
 		return
 	default:
 		commandHelp()
