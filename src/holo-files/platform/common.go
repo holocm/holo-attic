@@ -22,7 +22,14 @@
 //running (most notably the package manager).
 package platform
 
-import "../../shared"
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"regexp"
+	"sort"
+	"strings"
+)
 
 //Impl provides integration points with a distribution's toolchain.
 type Impl interface {
@@ -56,7 +63,7 @@ func Implementation() Impl {
 
 func init() {
 	//which distribution are we running on?
-	isDist := shared.GetCurrentDistribution()
+	isDist := GetCurrentDistribution()
 	switch {
 	case isDist["arch"]:
 		impl = archImpl{}
@@ -68,7 +75,78 @@ func init() {
 		//set via HOLO_CURRENT_DISTRIBUTION=unittest only
 		impl = genericImpl{}
 	default:
-		shared.ReportUnsupportedDistribution(isDist)
+		ReportUnsupportedDistribution(isDist)
 		impl = genericImpl{}
 	}
+}
+
+//GetCurrentDistribution returns a set of distribution IDs, drawing on the ID=
+//and ID_LIKE= fields of os-release(5).
+func GetCurrentDistribution() map[string]bool {
+	//check if a unit test override is active
+	if value := os.Getenv("HOLO_CURRENT_DISTRIBUTION"); value != "" {
+		return map[string]bool{value: true}
+	}
+
+	//read /etc/os-release, fall back to /usr/lib/os-release if not available
+	bytes, err := ioutil.ReadFile("/etc/os-release")
+	if err != nil {
+		if os.IsNotExist(err) {
+			bytes, err = ioutil.ReadFile("/usr/lib/os-release")
+		}
+	}
+	if err != nil {
+		panic("Cannot read os-release: " + err.Error())
+	}
+
+	//parse os-release syntax (a harshly limited subset of shell script)
+	variables := make(map[string]string)
+	lines := strings.Split(string(bytes), "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		//ignore comments
+		if line == "" || line[0] == '#' {
+			continue
+		}
+		//line format is key=value
+		if !strings.Contains(line, "=") {
+			continue
+		}
+		split := strings.SplitN(line, "=", 2)
+		key, value := split[0], split[1]
+		//value may be enclosed in quotes
+		switch {
+		case strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\""):
+			value = strings.TrimPrefix(strings.TrimSuffix(value, "\""), "\"")
+		case strings.HasPrefix(value, "'") && strings.HasSuffix(value, "'"):
+			value = strings.TrimPrefix(strings.TrimSuffix(value, "'"), "'")
+		}
+		//special characters may be escaped
+		value = regexp.MustCompile(`\\(.)`).ReplaceAllString(value, "$1")
+		//store assignment
+		variables[key] = value
+	}
+
+	//the distribution IDs we're looking for are in ID= (single value) or ID_LIKE= (space-separated list)
+	result := map[string]bool{variables["ID"]: true}
+	if idLike, ok := variables["ID_LIKE"]; ok {
+		ids := strings.Split(idLike, " ")
+		for _, id := range ids {
+			result[id] = true
+		}
+	}
+	return result
+}
+
+//ReportUnsupportedDistribution prints the standard warning that the current
+//executable is running on an unsupported distribution.
+func ReportUnsupportedDistribution(isDist map[string]bool) {
+	dists := make([]string, 0, len(isDist))
+	for dist := range isDist {
+		dists = append(dists, dist)
+	}
+	sort.Strings(dists)
+	fmt.Fprintf(os.Stderr, "!! Running on an unrecognized distribution. Distribution IDs: %s\n", strings.Join(dists, ","))
+	fmt.Fprintf(os.Stderr, ">> Please report this error at <https://github.com/holocm/holo/issues/new>\n")
+	fmt.Fprintf(os.Stderr, ">> and include the contents of your /etc/os-release file.\n")
 }
