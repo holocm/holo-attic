@@ -13,6 +13,8 @@ build/holo-users-groups: src/holo-users-groups/main.go src/holo-users-groups/*/*
 
 # manpages are generated using pod2man (which comes with Perl and therefore
 # should be readily available on almost every Unix system)
+# TODO: build/man/holo-build.8 should use version string from src/holo-build/common/version.go
+#       (will fix this when splitting holo-build into a separate repo)
 build/man/%: doc/man/%.pod src/shared/version.go
 	pod2man --name="$(shell echo $* | cut -d. -f1)" --section=$(shell echo $* | cut -d. -f2) --center="Configuration Management" \
 		--release="Holo $(shell grep 'var version =' src/shared/version.go | cut -d'"' -f2)" \
@@ -26,7 +28,7 @@ test: check # just a synonym
 check: default build/dump-package
 	@bash test/run_tests.sh
 
-install: default src/holo/holorc src/holo-run-scripts util/completions/holo.bash util/completions/holo-build.bash util/completions/holo.zsh util/completions/holo-build.zsh
+install: default src/holo/holorc src/holo-build/holo-build.sh src/holo-run-scripts util/completions/holo.bash util/completions/holo-build.bash util/completions/holo.zsh util/completions/holo-build.zsh
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo"
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo/files"
 	install -d -m 0755 "$(DESTDIR)/var/lib/holo/files/base"
@@ -34,13 +36,14 @@ install: default src/holo/holorc src/holo-run-scripts util/completions/holo.bash
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo/run-scripts"
 	install -d -m 0755 "$(DESTDIR)/usr/share/holo/repo"
-	install -D -m 0644 src/holo/holorc         "$(DESTDIR)/etc/holo/holorc"
-	install -D -m 0755 build/holo              "$(DESTDIR)/usr/bin/holo"
-	install -D -m 0755 build/holo-build        "$(DESTDIR)/usr/bin/holo-build"
-	install -D -m 0755 src/holo-run-scripts    "$(DESTDIR)/usr/lib/holo/holo-run-scripts"
-	install -D -m 0755 build/holo-users-groups "$(DESTDIR)/usr/lib/holo/holo-users-groups"
-	install -D -m 0644 build/man/holo.8        "$(DESTDIR)/usr/share/man/man8/holo.8"
-	install -D -m 0644 build/man/holo-build.8  "$(DESTDIR)/usr/share/man/man8/holo-build.8"
+	install -D -m 0644 src/holo/holorc              "$(DESTDIR)/etc/holo/holorc"
+	install -D -m 0755 build/holo                   "$(DESTDIR)/usr/bin/holo"
+	install -D -m 0755 src/holo-build/holo-build.sh "$(DESTDIR)/usr/bin/holo-build"
+	install -D -m 0755 build/holo-build             "$(DESTDIR)/usr/lib/holo/holo-build"
+	install -D -m 0755 src/holo-run-scripts         "$(DESTDIR)/usr/lib/holo/holo-run-scripts"
+	install -D -m 0755 build/holo-users-groups      "$(DESTDIR)/usr/lib/holo/holo-users-groups"
+	install -D -m 0644 build/man/holo.8             "$(DESTDIR)/usr/share/man/man8/holo.8"
+	install -D -m 0644 build/man/holo-build.8       "$(DESTDIR)/usr/share/man/man8/holo-build.8"
 	install -D -m 0644 build/man/holo-plugin-interface.7 "$(DESTDIR)/usr/share/man/man7/holo-plugin-interface.7"
 	install -D -m 0644 util/completions/holo.bash        "$(DESTDIR)/usr/share/bash-completion/completions/holo"
 	install -D -m 0644 util/completions/holo-build.bash  "$(DESTDIR)/usr/share/bash-completion/completions/holo-build"

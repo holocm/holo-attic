@@ -26,7 +26,6 @@ import (
 	"os"
 	"syscall"
 
-	"../shared"
 	"./common"
 	"./debian"
 	"./pacman"
@@ -45,14 +44,8 @@ func main() {
 	syscall.Exec(args[0], args, os.Environ())
 }
 
-const (
-	formatAuto = iota
-	formatPacman
-	formatDebian
-)
-
 type options struct {
-	format        int
+	generator     common.Generator
 	printToStdout bool
 	reproducible  bool
 	filenameOnly  bool
@@ -63,7 +56,7 @@ func actualMain() {
 	if earlyExit {
 		return
 	}
-	generator := findGenerator(opts.format)
+	generator := opts.generator
 
 	//read package definition from stdin
 	pkg, errs := common.ParsePackageDefinition(os.Stdin)
@@ -92,7 +85,7 @@ func actualMain() {
 	//build package
 	err := pkg.Build(generator, opts.printToStdout, opts.reproducible)
 	if err != nil {
-		showError(fmt.Errorf("cannot build %s: %s\n",
+		showError(fmt.Errorf("cannot build %s: %s",
 			generator.RecommendedFileName(pkg), err.Error(),
 		))
 		os.Exit(2)
@@ -102,7 +95,7 @@ func actualMain() {
 func parseArgs() (result options, exit bool) {
 	//default settings
 	opts := options{
-		format:        formatAuto,
+		generator:     nil,
 		printToStdout: false,
 		reproducible:  false,
 	}
@@ -129,17 +122,19 @@ func parseArgs() (result options, exit bool) {
 		case "--no-reproducible":
 			opts.reproducible = false
 		case "--pacman":
-			if opts.format != formatAuto {
+			if opts.generator != nil {
 				showError(errors.New("Multiple package formats specified."))
 				hasArgsError = true
 			}
-			opts.format = formatPacman
+			opts.generator = &pacman.Generator{}
 		case "--debian":
-			if opts.format != formatAuto {
+			if opts.generator != nil {
 				showError(errors.New("Multiple package formats specified."))
 				hasArgsError = true
 			}
-			opts.format = formatDebian
+			opts.generator = &debian.Generator{}
+		//NOTE: When adding new package formats here, don't forget to update
+		//holo-build.sh accordingly!
 		default:
 			showError(fmt.Errorf("Unrecognized argument: '%s'", arg))
 			hasArgsError = true
@@ -147,6 +142,10 @@ func parseArgs() (result options, exit bool) {
 	}
 	if hasArgsError {
 		printHelp()
+		os.Exit(1)
+	}
+	if opts.generator == nil {
+		showError(errors.New("No package format specified. Use the wrapper script at /usr/bin/holo-build to autoselect a package format."))
 		os.Exit(1)
 	}
 
@@ -163,29 +162,6 @@ func printHelp() {
 	fmt.Println("  --debian\t\tBuild a debian package\n")
 	fmt.Println("  --pacman\t\tBuild a pacman package\n")
 	fmt.Println("If no options are given, the package format for the current distribution is selected.\n")
-}
-
-func findGenerator(format int) common.Generator {
-	switch format {
-	case formatAuto:
-		//which distribution are we running on?
-		isDist := shared.GetCurrentDistribution()
-		switch {
-		case isDist["arch"]:
-			return &pacman.Generator{}
-		case isDist["debian"]:
-			return &debian.Generator{}
-		default:
-			shared.ReportUnsupportedDistribution(isDist)
-			return nil
-		}
-	case formatPacman:
-		return &pacman.Generator{}
-	case formatDebian:
-		return &debian.Generator{}
-	default:
-		panic("Impossible format")
-	}
 }
 
 func showError(err error) {
